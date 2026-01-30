@@ -1,0 +1,144 @@
+@model AMRVI.Models.InspectionSession
+
+@{
+    ViewData["Title"] = "Inspection Details";
+}
+
+<div class="container fade-in">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1 style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                📋 Inspection Details #@Model.Id
+            </h1>
+            <a href="@Url.Action("ExportToExcel", "History", new { id = Model.Id })" 
+               class="btn btn-primary" 
+               style="padding: 0.75rem 2rem; font-size: 1rem; text-decoration: none; display: inline-block;">
+                📥 Export CSV
+            </a>
+        </div>
+
+        <!-- Session Info -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="detail-section">
+                <div class="detail-title">Machine</div>
+                <div class="detail-content">@Model.MachineNumber.Machine.Name</div>
+            </div>
+            <div class="detail-section">
+                <div class="detail-title">Machine Number</div>
+                <div class="detail-content">@Model.MachineNumber.Number</div>
+            </div>
+            <div class="detail-section">
+                <div class="detail-title">Inspector</div>
+                <div class="detail-content">@Model.InspectorName</div>
+            </div>
+            <div class="detail-section">
+                <div class="detail-title">Inspection Date</div>
+                <div class="detail-content">@Model.InspectionDate.ToString("dd/MM/yyyy HH:mm:ss")</div>
+            </div>
+            <div class="detail-section">
+                <div class="detail-title">Status</div>
+                <div class="detail-content">
+                    @if (Model.IsCompleted)
+                    {
+                        <span class="badge badge-success">Completed</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-warning">In Progress</span>
+                    }
+                </div>
+            </div>
+            @if (Model.CompletedAt.HasValue)
+            {
+                <div class="detail-section">
+                    <div class="detail-title">Completed At</div>
+                    <div class="detail-content">@Model.CompletedAt.Value.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                </div>
+            }
+        </div>
+
+        <!-- Results Summary -->
+        @{
+            var okCount = Model.InspectionResults.Count(r => r.Judgement == "OK");
+            var ngCount = Model.InspectionResults.Count(r => r.Judgement == "NG");
+            var totalCount = Model.InspectionResults.Count;
+        }
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="detail-section" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); border-color: rgba(16, 185, 129, 0.3);">
+                <div class="detail-title" style="color: #10b981;">OK Items</div>
+                <div class="detail-content" style="font-size: 2rem; font-weight: 800; color: #10b981;">@okCount</div>
+            </div>
+            <div class="detail-section" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%); border-color: rgba(239, 68, 68, 0.3);">
+                <div class="detail-title" style="color: #ef4444;">NG Items</div>
+                <div class="detail-content" style="font-size: 2rem; font-weight: 800; color: #ef4444;">@ngCount</div>
+            </div>
+            <div class="detail-section" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%); border-color: rgba(59, 130, 246, 0.3);">
+                <div class="detail-title" style="color: #3b82f6;">Total Items</div>
+                <div class="detail-content" style="font-size: 2rem; font-weight: 800; color: #3b82f6;">@totalCount</div>
+            </div>
+        </div>
+
+        <!-- Detailed Results -->
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary);">
+            Checklist Results
+        </h2>
+
+        @if (Model.InspectionResults.Any())
+        {
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Detail</th>
+                            <th>Standard</th>
+                            <th>Judgement</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var result in Model.InspectionResults.OrderBy(r => r.ChecklistItem.OrderNumber))
+                        {
+                            <tr>
+                                <td><strong>@result.ChecklistItem.OrderNumber</strong></td>
+                                <td>@result.ChecklistItem.DetailName</td>
+                                <td>@result.ChecklistItem.StandardDescription</td>
+                                <td>
+                                    @if (result.Judgement == "OK")
+                                    {
+                                        <span class="badge badge-success">OK</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">NG</span>
+                                    }
+                                </td>
+                                <td>@(result.Remarks ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                <p>No results recorded yet</p>
+            </div>
+        }
+
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="@Url.Action("Index", "History")" class="btn btn-primary" style="text-decoration: none; display: inline-block;">
+                ← Back to History
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="fab-container">
+    <button class="fab secondary" onclick="window.location.href='@Url.Action("Index", "Home")'" title="Home">
+        🏠
+    </button>
+</div>

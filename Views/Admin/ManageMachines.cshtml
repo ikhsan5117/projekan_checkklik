@@ -1,0 +1,543 @@
+@model IEnumerable<AMRVI.Models.Machine>
+
+@{
+    ViewData["Title"] = "Data Mesin";
+}
+
+<div class="container fade-in" style="max-width: 1200px;">
+    <div class="dark-card">
+        <div class="header-section">
+            <div>
+                <a href="@Url.Action("Index", "Admin")" class="back-link">
+                    <span>←</span> Kembali ke Menu
+                </a>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 2rem;">🏭</span>
+                    <h1 class="page-title">
+                        Data Mesin
+                    </h1>
+                </div>
+            </div>
+            <button onclick="showCreateModal()" class="btn btn-action-primary">
+                + TAMBAH MESIN
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th width="5%">NO</th>
+                        <th width="25%">NAMA MESIN</th>
+                        <th width="35%">DESKRIPSI</th>
+                        <th width="15%" class="text-center">JML NOMOR</th>
+                        <th width="20%" class="text-right">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int i = 1; }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-center">@i</td>
+                            <td style="font-weight: 700; font-size: 1.1rem;">@item.Name</td>
+                            <td style="color: #94a3b8;">@item.Description</td>
+                            <td class="text-center">
+                                <span class="badge-number">
+                                    @item.MachineNumbers.Count NOMOR
+                                </span>
+                            </td>
+                            <td class="text-right">
+                                <div class="action-buttons">
+                                    <button onclick="manageNumbers(@item.Id, '@item.Name')" title="Kelola Nomor" class="btn-icon btn-blue">
+                                        🔢
+                                    </button>
+                                    <button onclick="editMachine(@item.Id, '@item.Name', '@item.Description')" title="Edit" class="btn-icon btn-indigo">
+                                        ✏️
+                                    </button>
+                                    <button onclick="deleteMachine(@item.Id)" title="Hapus" class="btn-icon btn-red">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                    @if (!Model.Any()) {
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 3rem; color: #64748b;">Belum ada data mesin.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create/Edit Machine -->
+<div id="machineModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content dark-modal">
+        <h2 id="modalTitle" class="modal-title">Tambah Mesin</h2>
+        
+        <form id="machineForm">
+            <input type="hidden" id="machineId" name="id" value="0">
+            <div class="form-group">
+                <label>NAMA MESIN</label>
+                <input type="text" id="machineName" name="name" class="form-control" required placeholder="Contoh: MESIN INJECTION">
+            </div>
+            <div class="form-group">
+                <label>DESKRIPSI</label>
+                <textarea id="machineDesc" name="description" class="form-control" rows="3" placeholder="Deskripsi mesin..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" onclick="closeModal()" class="btn btn-cancel">Batal</button>
+                <button type="submit" class="btn btn-submit">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Manage Numbers -->
+<div id="numbersModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content dark-modal" style="width: 100%; max-width: 700px;">
+        <div class="modal-header-row">
+            <div>
+                <h4 style="margin:0; color: #94a3b8; font-size: 0.9rem; text-transform: uppercase;">Manage Numbers</h4>
+                <h2 style="margin: 0; font-size: 1.5rem; color: #fff;" id="numberMachineName"></h2>
+            </div>
+            <button onclick="closeNumbersModal()" class="btn-close">&times;</button>
+        </div>
+
+        <!-- Add/Edit Form -->
+        <div class="form-inline-card">
+            <form id="saveNumberForm" style="display: flex; gap: 1rem; align-items: flex-end; width: 100%;">
+                <input type="hidden" id="numMachineId" name="machineId">
+                <input type="hidden" id="numberId" name="id" value="0"> <!-- 0 for Add, >0 for Edit -->
+                
+                <div style="flex: 1;">
+                    <label style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.25rem; display: block;">NOMOR</label>
+                    <input type="text" id="newNumber" class="form-control" placeholder="01" required>
+                </div>
+                <div style="flex: 2;">
+                    <label style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.25rem; display: block;">LOKASI / AREA</label>
+                    <input type="text" id="newLocation" class="form-control" placeholder="Line 1">
+                </div>
+                <button type="submit" id="btnSaveNumber" class="btn btn-action-primary" style="height: 42px;">
+                    + TAMBAH
+                </button>
+                 <button type="button" id="btnCancelEdit" onclick="resetNumberForm()" class="btn btn-cancel" style="height: 42px; display: none;">
+                    BATAL
+                </button>
+            </form>
+        </div>
+        
+        <!-- List -->
+        <div class="list-container">
+            <table class="custom-table small-table">
+                <thead>
+                    <tr>
+                        <th width="20%">NOMOR</th>
+                        <th>LOKASI</th>
+                        <th width="20%" class="text-right">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="numbersTableBody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Dark Theme Styles matching the image */
+    body {
+        background-color: #0f172a !important; /* Very dark blue bg */
+        color: #e2e8f0 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    .dark-card {
+        background-color: #1e293b; /* Slate 800 */
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+    }
+
+    .back-link {
+        text-decoration: none;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+    }
+    .back-link:hover { color: #fff; }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #3b82f6; /* Blue 500 */
+        margin: 0;
+        letter-spacing: -1px;
+    }
+
+    .btn-action-primary {
+        background-color: #2563eb; /* Blue 600 */
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-action-primary:hover { background-color: #1d4ed8; }
+
+    /* Table Styles */
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1rem;
+    }
+
+    .custom-table thead th {
+        background-color: #2563eb; /* Blue Header */
+        color: white;
+        padding: 1rem 1.5rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: left;
+    }
+
+    .custom-table thead th:first-child { border-top-left-radius: 8px; }
+    .custom-table thead th:last-child { border-top-right-radius: 8px; }
+
+    .custom-table tbody tr {
+        background-color: #1e293b;
+        transition: background 0.2s;
+    }
+    .custom-table tbody tr:hover {
+        background-color: #334155;
+    }
+
+    .custom-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #334155;
+        vertical-align: middle;
+        color: #fff;
+    }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+
+    .badge-number {
+        background-color: #334155;
+        color: #60a5fa;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.1s;
+    }
+    .btn-icon:hover { transform: scale(1.1); }
+
+    .btn-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .btn-indigo { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+    .btn-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    /* Modals */
+    .modal-backdrop {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .dark-modal {
+        background: #1e293b;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        border: 1px solid #334155;
+    }
+
+    .modal-title {
+        color: white;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+    }
+
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label {
+        display: block;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+    }
+
+    .form-control {
+        width: 100%;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        color: white;
+        font-size: 1rem;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: #94a3b8;
+        border: 1px solid #334155;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    .btn-submit {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Inline Add Form */
+    .form-inline-card {
+        background: #0f172a;
+        padding: 1.25rem;
+        border-radius: 10px;
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #334155;
+    }
+    
+    .list-container {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .small-table td, .small-table th {
+        padding: 0.75rem 1rem;
+    }
+    .btn-close {
+        background: none; border: none; font-size: 2rem; color: #94a3b8; cursor: pointer; line-height: 1;
+    }
+    .modal-header-row {
+        display: flex; justify-content: space-between; align-items: flex-start;
+    }
+</style>
+
+@section Scripts {
+    <script>
+    // --- Machine CRUD ---
+
+    function showCreateModal() {
+        $('#machineId').val(0);
+        $('#machineName').val('');
+        $('#machineDesc').val('');
+        $('#modalTitle').text('Tambah Mesin');
+        $('#machineModal').fadeIn(200);
+    }
+
+    function editMachine(id, name, desc) {
+        $('#machineId').val(id);
+        $('#machineName').val(name);
+        $('#machineDesc').val(desc);
+        $('#modalTitle').text('Edit Mesin');
+        $('#machineModal').fadeIn(200);
+    }
+
+    function closeModal() {
+        $('#machineModal').fadeOut(200);
+    }
+
+    $('#machineForm').submit(function(e) {
+        e.preventDefault();
+        
+        const id = $('#machineId').val();
+        const url = id == 0 ? '@Url.Action("CreateMachine", "Admin")' : '@Url.Action("EditMachine", "Admin")';
+        
+        const data = {
+            id: id,
+            name: $('#machineName').val(),
+            description: $('#machineDesc').val(),
+            isActive: true
+        };
+
+        $.post(url, data, function(response) {
+            if (response.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + response.message);
+            }
+        });
+    });
+
+    function deleteMachine(id) {
+        if(confirm('Apakah Anda yakin ingin menghapus mesin ini?')) {
+            $.post('@Url.Action("DeleteMachine", "Admin")', { id: id }, function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Gagal menghapus');
+                }
+            });
+        }
+    }
+
+    // --- Machine Numbers CRUD ---
+
+    function manageNumbers(machineId, machineName) {
+        $('#numMachineId').val(machineId);
+        $('#numberMachineName').text(machineName);
+        $('#numbersModal').fadeIn(200);
+        loadNumbers(machineId);
+        resetNumberForm();
+    }
+
+    function closeNumbersModal() {
+        $('#numbersModal').fadeOut(200);
+    }
+    
+    function resetNumberForm() {
+        $('#numberId').val(0);
+        $('#newNumber').val('');
+        $('#newLocation').val('');
+        $('#btnSaveNumber').text('+ TAMBAH');
+        $('#btnCancelEdit').hide();
+    }
+
+    function loadNumbers(machineId) {
+        $('#numbersTableBody').html('<tr><td colspan="3" class="text-center">Memuat...</td></tr>');
+        
+        $.get('@Url.Action("GetMachineNumbers", "Admin")', { machineId: machineId }, function(response) {
+            if (response.success) {
+                const tbody = $('#numbersTableBody');
+                tbody.empty();
+                
+                if (response.data.length === 0) {
+                     tbody.html('<tr><td colspan="3" class="text-center" style="color: #64748b;">Belum ada nomor mesin</td></tr>');
+                     return;
+                }
+
+                response.data.forEach(item => {
+                    tbody.append(`
+                        <tr>
+                            <td style="font-weight:bold; color: #fff;">${item.number}</td>
+                            <td>${item.location || '-'}</td>
+                            <td class="text-right">
+                                <button onclick="editNumber(${item.id}, '${item.number}', '${item.location || ''}')" class="btn-icon btn-indigo" style="width: 30px; height: 30px; display: inline-flex; margin-right: 0.25rem;">✏️</button>
+                                <button onclick="deleteNumber(${item.id})" class="btn-icon btn-red" style="width: 30px; height: 30px; display: inline-flex;">🗑️</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+        });
+    }
+
+    function editNumber(id, number, location) {
+         $('#numberId').val(id);
+         $('#newNumber').val(number);
+         $('#newLocation').val(location);
+         $('#btnSaveNumber').text('UPDATE');
+         $('#btnCancelEdit').show();
+         $('#newNumber').focus();
+    }
+
+    $('#saveNumberForm').submit(function(e) {
+        e.preventDefault();
+        const machineId = $('#numMachineId').val();
+        const numberId = $('#numberId').val();
+        
+        let url = '@Url.Action("AddMachineNumber", "Admin")';
+        let data = {
+            machineId: machineId,
+            number: $('#newNumber').val(),
+            location: $('#newLocation').val()
+        };
+
+        if (numberId > 0) {
+             url = '@Url.Action("EditMachineNumber", "Admin")';
+             data.id = numberId;
+        }
+
+        $.post(url, data, function(response) {
+            if (response.success) {
+                resetNumberForm();
+                loadNumbers(machineId);
+            } else {
+                alert('Gagal menyimpan nomor');
+            }
+        });
+    });
+
+    function deleteNumber(id) {
+        if(confirm('Hapus nomor ini?')) {
+            $.post('@Url.Action("DeleteMachineNumber", "Admin")', { id: id }, function(response) {
+                if (response.success) {
+                    loadNumbers($('#numMachineId').val());
+                } else {
+                    alert('Gagal menghapus');
+                }
+            });
+        }
+    }
+    </script>
+}

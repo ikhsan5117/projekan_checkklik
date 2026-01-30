@@ -1,0 +1,304 @@
+@model AMRVI.ViewModels.InspectionViewModel
+
+@{
+    ViewData["Title"] = "AM RVI Inspection";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="inspection-portal">
+    <div class="terminal-shell">
+        <!-- Terminal Header -->
+        <header class="terminal-bar">
+            <div class="terminal-id">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="ph-terminal-window-bold"></i>
+                    <span>DIAGNOSTIC_OS_v4.2</span>
+                </div>
+                <div class="nav-divider-v" style="height: 15px; opacity: 0.2;"></div>
+                <div id="inspectionDate">--/--/---- --:--:--</div>
+            </div>
+            <div class="system-status-nav">
+                <div class="status-dot-pulse"></div>
+                <span class="status-label-nav">STREAM_ACTIVE</span>
+            </div>
+        </header>
+
+        <!-- Main Diagnostic Grid -->
+        <main class="diagnostic-grid">
+            <!-- Left: Visual Analysis -->
+            <section class="visual-pane">
+                <div class="pane-label">
+                    <i class="ph-eye-bold"></i>
+                    <span>VISUAL_TELEMETRY_FEED</span>
+                </div>
+                <div class="viewscreen-frame">
+                    <div id="imageContainer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                         <i class="ph-camera-bold" style="font-size: 5rem; opacity: 0.1;"></i>
+                    </div>
+                    <div class="viewscreen-scanline"></div>
+                </div>
+            </section>
+
+            <!-- Right: Decision & Telemetry -->
+            <section class="data-pane">
+                <div class="telemetry-group">
+                    <label class="telemetry-label">DETECTION_OBJECTIVE</label>
+                    <div id="detailText" class="telemetry-value-lg">INITIALIZING...</div>
+                </div>
+
+                <div class="telemetry-group" style="min-height: 120px;">
+                    <label class="telemetry-label">OPERATIONAL_STANDARD</label>
+                    <p id="standardText" class="telemetry-text">System waiting for machine unit selection. Connect to a stream via the terminal footer.</p>
+                </div>
+
+                <!-- Strategic Inputs -->
+                <div class="telemetry-group">
+                    <label class="telemetry-label">FINAL_DECISION</label>
+                    <div class="decision-grid">
+                        <label class="tactical-choice">
+                            <input type="radio" name="currentJudgement" value="OK" disabled>
+                            <div class="tactical-switch-btn">
+                                <i class="ph-check-circle-bold"></i>
+                                <span>SYSTEM_OK</span>
+                            </div>
+                        </label>
+                        <label class="tactical-choice">
+                            <input type="radio" name="currentJudgement" value="NG" disabled>
+                            <div class="tactical-switch-btn" style="--accent: var(--danger);">
+                                <i class="ph-warning-circle-bold"></i>
+                                <span>ANOMALY_NG</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Functional Navigation -->
+                <div class="d-flex gap-3 mt-auto">
+                    <button id="prevBtn" class="neural-btn secondary" style="flex: 1; padding: 1rem; visibility: hidden;" disabled>
+                        <i class="ph-arrow-left-bold"></i>
+                    </button>
+                    <button id="nextBtn" class="neural-btn" style="flex: 4;" disabled>
+                        <i class="ph-arrow-right-bold"></i>
+                        EXECUTE_NEXT
+                    </button>
+                </div>
+
+                <!-- Progress Tracker -->
+                <div class="progress-module">
+                    <div class="progress-stats">
+                        <span>AUDIT_FLOW_PROGRESS</span>
+                        <span id="progressText">0 / 0</span>
+                    </div>
+                    <div class="progress-bar-glow">
+                        <div id="progressBar" class="progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Terminal System Footer (Selection) -->
+        <footer class="terminal-footer" id="selectionSection">
+            <div class="filter-group">
+                <i class="ph-gear-six-bold" style="color: var(--secondary); font-size: 1.5rem;"></i>
+                <select id="machineSelect" class="deck-select w-100">
+                    <option value="">- SELECT_MACHINE_SYSTEM -</option>
+                    @foreach (var machine in Model.Machines)
+                    {
+                        <option value="@machine.Id">@machine.Name</option>
+                    }
+                </select>
+                <div class="nav-divider-v" style="height: 30px; opacity: 0.1;"></div>
+                <select id="machineNumberSelect" class="deck-select w-100" disabled>
+                    <option value="">- IDENTIFY_UNIT_ID -</option>
+                </select>
+            </div>
+            <div class="terminal-id" style="font-size: 0.6rem; opacity: 0.5;">
+                PORTAL_SECURED // SHIFT_A1
+            </div>
+        </footer>
+    </div>
+
+    <!-- Completion Overlay -->
+    <div id="completionSection" class="terminal-shell text-center" style="display: none; padding: 8rem 2rem; align-items: center; justify-content: center;">
+        <i class="ph-shield-check-bold" style="font-size: 6rem; color: var(--success); filter: drop-shadow(0 0 30px var(--success)); margin-bottom: 2rem;"></i>
+        <h1 style="font-size: 3.5rem; font-weight: 900; letter-spacing: -3px; margin-bottom: 1rem;">MISSION_SUCCESS</h1>
+        <p style="color: var(--text-secondary); font-size: 1.25rem; font-family: 'JetBrains Mono', monospace; margin-bottom: 4rem;">All diagnostic points verified and synchronized to central command.</p>
+        <button onclick="window.location.href='@Url.Action("Index", "Home")'" class="neural-btn" style="width: 300px;">
+            <i class="ph-house-bold"></i>
+            RETURN_TO_BASE
+        </button>
+    </div>
+</div>
+
+<!-- Floating Action Buttons -->
+<div class="fab-container">
+    <button class="fab" onclick="window.location.href='@Url.Action("Index", "History")'" title="History">
+        <i class="ph-clock-counter-clockwise"></i>
+    </button>
+    <button class="fab secondary" onclick="window.location.href='@Url.Action("Index", "Home")'" title="Home">
+        <i class="ph-house"></i>
+    </button>
+</div>
+
+@section Scripts {
+    <script>
+        let currentState = {
+            sessionId: 0,
+            items: [],
+            currentIndex: 0,
+            judgements: {} // Map of itemId -> { result: 'OK'/'NG', remarks: '' }
+        };
+
+        // Time Update
+        function updateDate() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB'); 
+            document.getElementById('inspectionDate').textContent = dateStr;
+        }
+        setInterval(updateDate, 1000);
+        updateDate();
+
+        // Initial State
+        function setInitialState() {
+             $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 5rem; opacity: 0.1;"></i>');
+             $('#detailText').text('AWAITING_INPUT...');
+             $('#standardText').text('Select machine unit to begin diagnostic stream.');
+             $('#progressText').text('0 / 0');
+             $('#progressBar').css('width', '0%');
+             $('input[name="currentJudgement"]').prop('disabled', true);
+             $('#nextBtn, #prevBtn').prop('disabled', true);
+        }
+        setInitialState();
+
+        // Machine Selection Logic
+        $('#machineSelect').change(function() {
+            const machineId = $(this).val();
+            $('#machineNumberSelect').prop('disabled', true).html('<option value="">- IDENTIFY_UNIT_ID -</option>');
+            setInitialState();
+
+            if (machineId) {
+                $.get('@Url.Action("GetMachineNumbers", "Inspection")', { machineId: machineId }, function(data) {
+                    let options = '<option value="">- IDENTIFY_UNIT_ID -</option>';
+                    if (data && data.length > 0) {
+                        data.forEach(item => options += `<option value="${item.id}">${item.number}</option>`);
+                    }
+                    $('#machineNumberSelect').html(options).prop('disabled', false);
+                });
+            }
+        });
+
+        // Auto Start when Number is Selected
+        $('#machineNumberSelect').change(function() {
+            const machineNumberId = $(this).val();
+            const machineId = $('#machineSelect').val();
+
+            if (machineNumberId && machineId) {
+                $('#detailText').text('SYNCING_STREAM...');
+                
+                $.post('@Url.Action("StartInspection", "Inspection")', 
+                    { machineId: machineId, machineNumberId: machineNumberId },
+                    function(response) {
+                        if (response.success) {
+                            currentState.sessionId = response.sessionId;
+                            currentState.items = response.checklistItems;
+                            currentState.currentIndex = 0;
+                            currentState.judgements = {};
+                            $('input[name="currentJudgement"]').prop('disabled', false);
+                            renderCurrentItem();
+                        } else {
+                            alert(response.message);
+                            setInitialState();
+                        }
+                    }
+                );
+            } else {
+                 setInitialState();
+            }
+        });
+
+        $('#nextBtn').click(function() {
+            saveCurrentJudgementAndNext();
+        });
+
+        $('#prevBtn').click(function() {
+            if (currentState.currentIndex > 0) {
+                currentState.currentIndex--;
+                renderCurrentItem();
+            }
+        });
+
+        $('input[name="currentJudgement"]').change(function() {
+            $('#nextBtn').prop('disabled', false);
+        });
+
+        function renderCurrentItem() {
+            const item = currentState.items[currentState.currentIndex];
+            const total = currentState.items.length;
+            const progressPercent = ((currentState.currentIndex + 1) / total) * 100;
+            
+            $('#progressText').text(`${currentState.currentIndex + 1} / ${total}`);
+            $('#progressBar').css('width', progressPercent + '%');
+            
+            $('#detailText').text(item.detailName);
+            $('#standardText').text(item.standardDescription);
+            
+            if (item.imagePath) {
+                $('#imageContainer').html(`<img src="${item.imagePath}" onclick="window.open(this.src, '_blank')">`);
+            } else {
+                $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 5rem; opacity: 0.1;"></i>');
+            }
+
+            $('input[name="currentJudgement"]').prop('checked', false);
+            if (currentState.judgements[item.id]) {
+                 $(`input[name="currentJudgement"][value="${currentState.judgements[item.id]}"]`).prop('checked', true);
+                 $('#nextBtn').prop('disabled', false);
+            } else {
+                 $('#nextBtn').prop('disabled', true);
+            }
+
+            $('#prevBtn').prop('disabled', currentState.currentIndex === 0);
+            $('#prevBtn').css('visibility', currentState.currentIndex === 0 ? 'hidden' : 'visible');
+            
+            if (currentState.currentIndex === total - 1) {
+                 $('#nextBtn').html('<i class="ph-check-bold"></i> EXECUTE_FINISH_AUDIT');
+            } else {
+                 $('#nextBtn').html('<i class="ph-arrow-right-bold"></i> EXECUTE_NEXT');
+            }
+        }
+
+        function saveCurrentJudgementAndNext() {
+            const item = currentState.items[currentState.currentIndex];
+            const result = $('input[name="currentJudgement"]:checked').val();
+            
+            if (!result) return;
+            currentState.judgements[item.id] = result;
+
+             $.ajax({
+                url: '@Url.Action("SubmitJudgement", "Inspection")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    inspectionSessionId: currentState.sessionId,
+                    checklistItemId: item.id,
+                    judgement: result,
+                    remarks: ''
+                }),
+                success: function(response) {
+                    if (!response.success) console.error('Failed to save background judgement', response.message);
+                }
+            });
+
+            if (currentState.currentIndex < currentState.items.length - 1) {
+                currentState.currentIndex++;
+                renderCurrentItem();
+            } else {
+                showCompletion();
+            }
+        }
+
+        function showCompletion() {
+            $('.terminal-shell').hide();
+            $('#completionSection').fadeIn();
+        }
+    </script>
+}

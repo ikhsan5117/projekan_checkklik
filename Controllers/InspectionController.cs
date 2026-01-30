@@ -1,0 +1,244 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using AMRVI.Data;
+using AMRVI.Models;
+using AMRVI.ViewModels;
+
+namespace AMRVI.Controllers
+{
+    public class InspectionController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<InspectionController> _logger;
+
+        public InspectionController(ApplicationDbContext context, ILogger<InspectionController> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var viewModel = new InspectionViewModel
+            {
+                Machines = await _context.Machines
+                    .Where(m => m.IsActive)
+                    .Select(m => new MachineViewModel
+                    {
+                        Id = m.Id,
+                        Name = m.Name
+                    })
+                    .ToListAsync()
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMachineNumbers(int machineId)
+        {
+            var machineNumbers = await _context.MachineNumbers
+                .Where(mn => mn.MachineId == machineId && mn.IsActive)
+                .OrderBy(mn => mn.Number)
+                .Select(mn => new MachineNumberViewModel
+                {
+                    Id = mn.Id,
+                    Number = mn.Number,
+                    MachineId = mn.MachineId
+                })
+                .ToListAsync();
+
+            return Json(machineNumbers);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> StartInspection(int machineId, int machineNumberId)
+        {
+            try
+            {
+                // Create new inspection session
+                var session = new InspectionSession
+                {
+                    MachineNumberId = machineNumberId,
+                    InspectorName = "Inspector", // TODO: Get from user authentication
+                    InspectionDate = DateTime.Now,
+                    IsCompleted = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.InspectionSessions.Add(session);
+                await _context.SaveChangesAsync();
+
+                // Get ALL checklist items
+                var checklistItems = await _context.ChecklistItems
+                    .Where(ci => ci.MachineId == machineId && ci.IsActive)
+                    .OrderBy(ci => ci.OrderNumber)
+                    .Select(ci => new 
+                    {
+                        id = ci.Id,
+                        orderNumber = ci.OrderNumber,
+                        detailName = ci.DetailName,
+                        standardDescription = ci.StandardDescription,
+                        imagePath = ci.ImagePath ?? ""
+                    })
+                    .ToListAsync();
+
+                if (checklistItems.Count == 0)
+                {
+                    return Json(new { success = false, message = "No checklist items found for this machine" });
+                }
+
+                var machine = await _context.Machines.FindAsync(machineId);
+                var machineNumber = await _context.MachineNumbers.FindAsync(machineNumberId);
+
+                return Json(new
+                {
+                    success = true,
+                    sessionId = session.Id,
+                    checklistItems = checklistItems, // Return full list
+                    machineName = machine?.Name,
+                    machineNumber = machineNumber?.Number
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error starting inspection");
+                return Json(new { success = false, message = "Error starting inspection" });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetChecklistItem(int sessionId, int checklistItemId)
+        {
+            try
+            {
+                var session = await _context.InspectionSessions
+                    .Include(s => s.MachineNumber)
+                    .ThenInclude(mn => mn.Machine)
+                    .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+                if (session == null)
+                {
+                    return Json(new { success = false, message = "Session not found" });
+                }
+
+                var checklistItem = await _context.ChecklistItems
+                    .FirstOrDefaultAsync(ci => ci.Id == checklistItemId);
+
+                if (checklistItem == null)
+                {
+                    return Json(new { success = false, message = "Checklist item not found" });
+                }
+
+                // Check if already answered
+                var existingResult = await _context.InspectionResults
+                    .FirstOrDefaultAsync(ir => ir.InspectionSessionId == sessionId && ir.ChecklistItemId == checklistItemId);
+
+                var totalChecklists = await _context.ChecklistItems
+                    .CountAsync(ci => ci.MachineId == session.MachineNumber.MachineId && ci.IsActive);
+
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        id = checklistItem.Id,
+                        orderNumber = checklistItem.OrderNumber,
+                        detailName = checklistItem.DetailName,
+                        standardDescription = checklistItem.StandardDescription,
+                        imagePath = checklistItem.ImagePath,
+                        currentJudgement = existingResult?.Judgement,
+                        currentIndex = checklistItem.OrderNumber,
+                        totalChecklists = totalChecklists
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting checklist item");
+                return Json(new { success = false, message = "Error getting checklist item" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitJudgement([FromBody] InspectionSubmitModel model)
+        {
+            try
+            {
+                var session = await _context.InspectionSessions
+                    .Include(s => s.MachineNumber)
+                    .FirstOrDefaultAsync(s => s.Id == model.InspectionSessionId);
+
+                if (session == null)
+                {
+                    return Json(new { success = false, message = "Session not found" });
+                }
+
+                // Check if already exists
+                var existingResult = await _context.InspectionResults
+                    .FirstOrDefaultAsync(ir => ir.InspectionSessionId == model.InspectionSessionId 
+                        && ir.ChecklistItemId == model.ChecklistItemId);
+
+                if (existingResult != null)
+                {
+                    // Update existing
+                    existingResult.Judgement = model.Judgement;
+                    existingResult.Remarks = model.Remarks;
+                }
+                else
+                {
+                    // Create new
+                    var result = new InspectionResult
+                    {
+                        InspectionSessionId = model.InspectionSessionId,
+                        ChecklistItemId = model.ChecklistItemId,
+                        Judgement = model.Judgement,
+                        Remarks = model.Remarks,
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.InspectionResults.Add(result);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Get next checklist item
+                var currentItem = await _context.ChecklistItems.FindAsync(model.ChecklistItemId);
+                var nextItem = await _context.ChecklistItems
+                    .Where(ci => ci.MachineId == session.MachineNumber.MachineId 
+                        && ci.IsActive 
+                        && ci.OrderNumber > currentItem!.OrderNumber)
+                    .OrderBy(ci => ci.OrderNumber)
+                    .FirstOrDefaultAsync();
+
+                if (nextItem != null)
+                {
+                    return Json(new
+                    {
+                        success = true,
+                        hasNext = true,
+                        nextChecklistItemId = nextItem.Id
+                    });
+                }
+                else
+                {
+                    // Complete the session
+                    session.IsCompleted = true;
+                    session.CompletedAt = DateTime.Now;
+                    await _context.SaveChangesAsync();
+
+                    return Json(new
+                    {
+                        success = true,
+                        hasNext = false,
+                        message = "Inspection completed successfully!"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error submitting judgement");
+                return Json(new { success = false, message = "Error submitting judgement" });
+            }
+        }
+    }
+}

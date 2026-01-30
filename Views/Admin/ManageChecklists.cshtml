@@ -1,0 +1,241 @@
+@model IEnumerable<AMRVI.Models.Machine>
+
+@{
+    ViewData["Title"] = "Data Checklist";
+}
+
+<div class="container fade-in">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <a href="@Url.Action("Index", "Admin")" style="text-decoration: none; color: var(--text-secondary); display: flex; align-items: center; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                    <span style="margin-right: 0.5rem;">←</span> Kembali ke Menu
+                </a>
+                <h1 style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0;">
+                    📝 Data Checklist
+                </h1>
+            </div>
+            <button onclick="showCreateModal()" id="btnAdd" class="btn" style="padding: 0.75rem 1.5rem; font-size: 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;" disabled>
+                + Tambah Item
+            </button>
+        </div>
+
+        <div class="form-group" style="max-width: 300px;">
+            <label class="form-label">Filter Mesin</label>
+            <select id="machineFilter" class="form-select" onchange="loadChecklists()">
+                <option value="">- Pilih Mesin -</option>
+                @foreach (var m in Model)
+                {
+                    <option value="@m.Id">@m.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <tr>
+                        <th width="15%">Mesin</th>
+                        <th width="8%">Urutan</th>
+                        <th width="25%">Bagian (Detail)</th>
+                        <th width="30%">Standar</th>
+                        <th>Gambar</th>
+                        <th width="10%" style="text-align: right;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="checklistTableBody">
+                    <!-- Data will loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create Item -->
+<div id="itemModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content glass-card" style="width: 100%; max-width: 500px; padding: 2rem;">
+        <h2 style="margin-top: 0; margin-bottom: 1.5rem;">Tambah Item Checklist</h2>
+        
+        <form id="itemForm">
+            <input type="hidden" id="machineIdInput" name="machineId">
+            <div class="form-group">
+                <label>Nomor Urut</label>
+                <input type="number" id="orderNumber" name="orderNumber" class="form-control" required value="1">
+            </div>
+            <div class="form-group">
+                <label>Nama Bagian (Detail)</label>
+                <input type="text" id="detailName" name="detailName" class="form-control" required placeholder="Contoh: Tekanan Oli">
+            </div>
+            <div class="form-group">
+                <label>Standar</label>
+                <textarea id="standardDescription" name="standardDescription" class="form-control" rows="3" required placeholder="Contoh: Harus antara 3-5 Bar"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Upload Gambar (Opsional)</label>
+                <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*">
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                <button type="button" onclick="closeModal()" class="btn" style="background: rgba(255,255,255,0.1);">Batal</button>
+                <button type="submit" class="btn" style="background: #10b981; color: white;">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .modal-backdrop {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 8px;
+        color: white;
+        font-family: inherit;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+</style>
+
+@section Scripts {
+    <script>
+    $(document).ready(function() {
+        loadChecklists();
+    });
+
+    function loadChecklists() {
+        const machineId = $('#machineFilter').val();
+        
+        // Enable Add button ONLY if a specific machine is selected
+        if (machineId) {
+            $('#btnAdd').prop('disabled', false).attr('title', 'Tambah item baru');
+        } else {
+            $('#btnAdd').prop('disabled', true).attr('title', 'Pilih mesin untuk menambah item');
+        }
+
+        $('#checklistTableBody').html('<tr><td colspan="6" style="text-align:center;">Memuat...</td></tr>');
+
+        $.get('@Url.Action("GetChecklistItems", "Admin")', { machineId: machineId }, function(response) {
+            if (response.success) {
+                const tbody = $('#checklistTableBody');
+                tbody.empty();
+                
+                if (response.data.length === 0) {
+                     tbody.html('<tr><td colspan="6" style="text-align:center; color: #64748b;">Belum ada item checklist.</td></tr>');
+                     return;
+                }
+
+                // Auto-suggest next order number
+                let maxOrder = 0;
+                
+                response.data.forEach(item => {
+                    if(item.orderNumber > maxOrder) maxOrder = item.orderNumber;
+
+                    const imgDisplay = item.imagePath ? `<img src="${item.imagePath}" style="width:50px; height:50px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="window.open(this.src, '_blank')">` : '-';
+                    
+                    tbody.append(`
+                        <tr>
+                            <td style="color: #94a3b8; font-size: 0.9rem;">${item.machineName || '-'}</td>
+                            <td style="font-weight:bold; color: #fff;">${item.orderNumber}</td>
+                            <td>${item.detailName}</td>
+                            <td>${item.standardDescription}</td>
+                            <td>${imgDisplay}</td>
+                            <td style="text-align: right;">
+                                <button onclick="deleteItem(${item.id})" style="border: none; background: rgba(239, 68, 68, 0.2); color: #f87171; width: 32px; height: 32px; border-radius: 8px; cursor: pointer;">🗑️</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+
+                if(machineId) {
+                    $('#orderNumber').val(maxOrder + 1);
+                }
+            }
+        });
+    }
+
+    function showCreateModal() {
+        const machineId = $('#machineFilter').val();
+         if (!machineId) {
+             alert("Silakan pilih mesin terlebih dahulu dari filter di atas.");
+             return;
+         }
+
+        $('#machineIdInput').val(machineId);
+        $('#detailName').val('');
+        $('#standardDescription').val('');
+        $('#imageFile').val(''); // Clear file input
+        
+        // Order Number is auto-set in loadChecklists but can be overridden
+        $('#itemModal').fadeIn(200);
+    }
+
+    function closeModal() {
+        $('#itemModal').fadeOut(200);
+    }
+
+    $('#itemForm').submit(function(e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: '@Url.Action("AddChecklistItem", "Admin")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    loadChecklists();
+                } else {
+                    alert('Gagal menambah item: ' + (response.message || 'Unknown error'));
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error uploading: ' + error);
+            }
+        });
+    });
+
+    function deleteItem(id) {
+        if(confirm('Hapus item ini?')) {
+            $.post('@Url.Action("DeleteChecklistItem", "Admin")', { id: id }, function(response) {
+                if (response.success) {
+                    loadChecklists();
+                } else {
+                    alert('Gagal menghapus');
+                }
+            });
+        }
+    }
+    </script>
+}

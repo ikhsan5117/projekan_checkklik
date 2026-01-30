@@ -1,0 +1,80 @@
+@model IEnumerable<AMRVI.Models.InspectionSession>
+
+@{
+    ViewData["Title"] = "Inspection History";
+}
+
+<div class="container fade-in">
+    <div class="glass-card">
+        <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 2rem; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            📊 Inspection History
+        </h1>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Machine</th>
+                            <th>Machine No</th>
+                            <th>Inspector</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Items</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var session in Model)
+                        {
+                            <tr>
+                                <td><strong>#@session.Id</strong></td>
+                                <td>@session.MachineNumber.Machine.Name</td>
+                                <td>@session.MachineNumber.Number</td>
+                                <td>@session.InspectorName</td>
+                                <td>@session.InspectionDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (session.IsCompleted)
+                                    {
+                                        <span class="badge badge-success">Completed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-warning">In Progress</span>
+                                    }
+                                </td>
+                                <td>@session.InspectionResults.Count items</td>
+                                <td>
+                                    <a href="@Url.Action("Details", "History", new { id = session.Id })" 
+                                       style="color: var(--primary-light); text-decoration: none; font-weight: 600;">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
+                <h3>No inspection history found</h3>
+                <p>Start your first inspection to see data here</p>
+                <a href="@Url.Action("Index", "Inspection")" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-block; text-decoration: none;">
+                    Start Inspection
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="fab-container">
+    <button class="fab secondary" onclick="window.location.href='@Url.Action("Index", "Home")'" title="Home">
+        🏠
+    </button>
+</div>

@@ -1,0 +1,145 @@
+﻿@model AMRVI.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Executive Dashboard";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="dashboard-viewport fade-in">
+    <!-- Hero Section: Atmospheric Command -->
+    <div class="quantum-hero">
+        <div class="hero-main">
+            <div class="hero-chip">SYSTEM STATUS: NOMINAL</div>
+            <h1 class="hero-title">Welcome back, <span class="glow-text">Operator</span></h1>
+            <p class="hero-subtitle">All diagnostic systems are online. You have <strong>@Model.InspectionsToday</strong> successful audits today.</p>
+            
+        </div>
+        
+        <div class="hero-sidebar">
+            @{
+                var auditPercent = Model.TotalMachines > 0 ? (Model.InspectionsToday * 100) / Model.TotalMachines : 0;
+            }
+             <div class="mini-gauge-card">
+                 <div class="gauge-ring" style="--percent: @auditPercent;">
+                     <svg><circle cx="110" cy="110" r="100"></circle><circle cx="110" cy="110" r="100"></circle></svg>
+                     <div class="gauge-data">
+                         <span class="g-num">@Model.TotalMachines</span>
+                         <span class="g-unit">UNITS</span>
+                     </div>
+                 </div>
+                 <p>Audit Progress: @auditPercent%</p>
+             </div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="quantum-grid">
+        <!-- Analytics (Span 3x2) -->
+        <div class="bento-card analytics-card" style="grid-column: span 3; grid-row: span 2;">
+            <div class="card-top">
+                <div class="card-identity">
+                    <div class="card-orb secondary"></div>
+                    <h3>Performance Analytics</h3>
+                </div>
+                <div class="trend-pill positive">+12.4% vs prev week</div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="quantumChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Live Feed (Span 1x2) -->
+        <div class="bento-card feed-card" style="grid-row: span 2;">
+            <div class="card-top">
+                <h3>Neural Stream</h3>
+                <span class="live-dot">LIVE</span>
+            </div>
+            <div class="stream-container">
+                @foreach(var item in Model.RecentInspections.Take(6))
+                {
+                    <div class="stream-item">
+                        <div class="stream-marker"></div>
+                        <div class="stream-content">
+                            <div class="stream-header">
+                                <span class="s-user">@item.InspectorName</span>
+                                <span class="s-time">@item.InspectionDate.ToString("HH:mm")</span>
+                            </div>
+                            <p class="s-desc">Verified machine <strong>@item.MachineNumber?.Number</strong></p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Bottom Row Actions -->
+        <div class="stat-box" style="--accent: var(--secondary);">
+            <div class="stat-info">
+                <h3>@Model.IssuesToday</h3>
+                <p>Anomalies Detected</p>
+            </div>
+            <div class="stat-visual"><i class="ph-warning-octagon-bold"></i></div>
+        </div>
+
+        <div class="stat-box" style="--accent: var(--primary);">
+            <div class="stat-info">
+                <h3>Active</h3>
+                <p>System State</p>
+            </div>
+            <div class="stat-visual"><i class="ph-broadcast-bold"></i></div>
+        </div>
+        
+        <div class="bento-card quick-access">
+             <h3>Global Config</h3>
+             <div class="access-grid">
+                 <a href="@Url.Action("Index", "History")" class="access-item">
+                     <i class="ph-file-search-bold ai-icon"></i>
+                     <span class="ai-label">Logs</span>
+                 </a>
+                 <a href="@Url.Action("Index", "Admin")" class="access-item">
+                     <i class="ph-cpu-bold ai-icon"></i>
+                     <span class="ai-label">Core</span>
+                 </a>
+             </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('quantumChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(129, 140, 248, 0.4)');
+        gradient.addColorStop(1, 'rgba(129, 140, 248, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    data: [18, 24, 21, 32, 28, @Model.InspectionsToday, 0],
+                    borderColor: '#818cf8',
+                    borderWidth: 4,
+                    pointRadius: 0,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#818cf8',
+                    pointHoverBorderWidth: 4,
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: gradient
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Sora', weight: 600 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b', font: { family: 'Sora' } } }
+                },
+                hover: { mode: 'index', intersect: false }
+            }
+        });
+    });
+</script>

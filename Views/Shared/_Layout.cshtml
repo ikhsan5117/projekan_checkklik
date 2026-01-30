@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AM RVI</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="mesh-bg">
+        <div class="mesh-blob blob-1"></div>
+        <div class="mesh-blob blob-2"></div>
+        <div class="mesh-blob blob-3"></div>
+    </div>
+
+    <!-- App Shell -->
+    <div class="app-shell" id="appShell">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-wrapper">
+                    <i class="ph-atom-bold logo-icon"></i>
+                    <span class="sidebar-logo-text">AM RVI</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="@Url.Action("Index", "Home")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")">
+                    <i class="ph-house-line"></i>
+                    <span class="link-text">Dashboard</span>
+                </a>
+                <a href="@Url.Action("Index", "Inspection")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Inspection" ? "active" : "")">
+                    <i class="ph-magnifying-glass"></i>
+                    <span class="link-text">Inspection</span>
+                </a>
+                <a href="@Url.Action("Index", "History")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "History" ? "active" : "")">
+                    <i class="ph-clock-counter-clockwise"></i>
+                    <span class="link-text">History</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="@Url.Action("Index", "Admin")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")">
+                    <i class="ph-gear-six"></i>
+                    <span class="link-text">Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="copyright">© 2026 AM RVI</div>
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <main class="main-wrapper">
+            <!-- Navbar: The Command Deck -->
+            <header class="app-navbar">
+                <div class="nav-left">
+                    <button class="nav-btn" id="sidebarToggle" title="Toggle Navigation">
+                        <i class="ph-list-bold"></i>
+                    </button>
+                    
+                    <!-- Global Adaptive Search -->
+                    <div class="search-wrapper-nav">
+                        <i class="ph-magnifying-glass"></i>
+                        <input type="text" placeholder="Search machine, inspector or logs..." id="globalSearch">
+                    </div>
+
+                    <div class="nav-divider-v"></div>
+
+                    <!-- System Health Indicator -->
+                    <div class="system-status-nav">
+                        <div class="status-dot-pulse"></div>
+                        <span class="status-label-nav">System Online</span>
+                    </div>
+                </div>
+
+                <div class="nav-right">
+                    <!-- Real-time Command Clock (Stacked) -->
+                    <div class="nav-clock">
+                        <div class="clock-time">
+                            <i class="ph-clock-bold"></i>
+                            <span id="navTime">--:--:--</span>
+                        </div>
+                        <div class="clock-date" id="navDate">--------</div>
+                    </div>
+
+                    <!-- Fullscreen Command -->
+                    <button class="fullscreen-btn" id="fullscreenToggle" title="Toggle Fullscreen">
+                        <i class="ph-corners-out"></i>
+                    </button>
+
+                    <div class="nav-user-deck">
+                        <div class="user-avatar-hex">
+                            <div class="avatar-inner">OP</div>
+                        </div>
+                        <div class="user-meta-vision">
+                            <span class="u-name">Operator A1</span>
+                            <div class="u-role-tag">
+                                <span class="dot"></span>
+                                ADMIN COMMAND
+                            </div>
+                        </div>
+                        <button class="user-dropdown-btn">
+                            <i class="ph-caret-down-bold"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Menu Toggle (FAB) -->
+    <div class="fab-container d-md-none">
+        <button class="fab" onclick="document.querySelector('.sidebar').classList.toggle('active')" title="Menu">
+            ☰
+        </button>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            
+            // 1. Persistence: Restore Sidebar State
+            const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+            if (isCollapsed && window.innerWidth > 1024) {
+                sidebar.classList.add('collapsed');
+            }
+
+            // 2. Real-time Clock Logic
+            function updateClock() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('en-US', { 
+                    hour12: false, 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                });
+                const dateStr = now.toLocaleDateString('en-GB', { 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+                
+                document.getElementById('navTime').textContent = timeStr;
+                document.getElementById('navDate').textContent = dateStr;
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // 3. Fullscreen Toggle Logic
+            const fsBtn = document.getElementById('fullscreenToggle');
+            const fsIcon = fsBtn.querySelector('i');
+
+            fsBtn.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                    });
+                    fsIcon.classList.replace('ph-corners-out', 'ph-corners-in');
+                } else {
+                    document.exitFullscreen();
+                    fsIcon.classList.replace('ph-corners-in', 'ph-corners-out');
+                }
+            });
+
+            // Update icon on ESC or other system exits
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement) {
+                    fsIcon.classList.replace('ph-corners-in', 'ph-corners-out');
+                }
+            });
+
+            // Sidebar Toggle Logic
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (window.innerWidth > 1024) {
+                    sidebar.classList.toggle('collapsed');
+                    // 2. Persistence: Save State
+                    localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+                } else {
+                    sidebar.classList.toggle('mobile-active');
+                }
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 1024 && 
+                    !sidebar.contains(e.target) && 
+                    sidebar.classList.contains('mobile-active')) {
+                    sidebar.classList.remove('mobile-active');
+                }
+            });
+
+            // Card Spotlight Effect
+            document.addEventListener('mousemove', (e) => {
+                document.querySelectorAll('.bento-card, .stat-box, .nav-link').forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                });
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

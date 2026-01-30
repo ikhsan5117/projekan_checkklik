@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Manajemen Sistem";
+}
+
+<div class="container fade-in">
+    <div class="glass-card">
+        <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 2rem; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+             ⚙️ Manajemen Sistem
+        </h1>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+            Kelola data master dan konfigurasi sistem AM RVI.
+        </p>
+
+        <div class="dashboard-grid">
+            <a href="@Url.Action("ManageMachines", "Admin")" style="text-decoration: none;">
+                <div class="menu-card">
+                    <div class="menu-icon">🏭</div>
+                    <h2 class="menu-title">Data Mesin</h2>
+                    <p class="menu-description">Kelola daftar mesin, nomor mesin, dan area</p>
+                </div>
+            </a>
+
+            <a href="@Url.Action("ManageChecklists", "Admin")" style="text-decoration: none;">
+                <div class="menu-card secondary">
+                    <div class="menu-icon">📝</div>
+                    <h2 class="menu-title">Data Checklist</h2>
+                    <p class="menu-description">Kelola item checklist, standar, dan gambar</p>
+                </div>
+            </a>
+
+            <a href="@Url.Action("ManageUsers", "Admin")" style="text-decoration: none;">
+                <div class="menu-card tertiary">
+                    <div class="menu-icon">👥</div>
+                    <h2 class="menu-title">Manajemen User</h2>
+                    <p class="menu-description">Kelola pengguna dan hak akses</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
