@@ -289,14 +289,19 @@
     .custom-table thead th::after { content: none; }
     
     .custom-table tbody tr {
-        background: transparent;
+        background: rgba(30, 41, 59, 0.3);
         transition: background 0.15s;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Separator antar baris */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Garis lebih terang */
+    }
+    
+    /* Zebra striping untuk readability */
+    .custom-table tbody tr:nth-child(even) {
+        background: rgba(15, 23, 42, 0.4);
     }
     
     .custom-table tbody tr:hover {
-        background: rgba(56, 189, 248, 0.05); /* Hover halus */
-        transform: none; /* No movement */
+        background: rgba(56, 189, 248, 0.15); /* Hover lebih jelas */
+        transform: none;
         box-shadow: none;
     }
     
@@ -308,8 +313,12 @@
         padding: 1rem 1.5rem;
         vertical-align: middle;
         font-size: 0.95rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Garis pemisah baris */
-        white-space: nowrap; /* Teks sebaris */
+        border-right: 1px solid rgba(255, 255, 255, 0.08); /* Garis vertikal antar kolom */
+        white-space: nowrap;
+    }
+    
+    .custom-table td:last-child {
+        border-right: none; /* Hapus border di kolom terakhir */
     }
     
     /* Allow description to wrap if too long, or set max-width */

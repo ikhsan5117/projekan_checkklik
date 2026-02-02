@@ -1,0 +1,671 @@
+@model IEnumerable<AMRVI.Models.Machine>
+
+@{
+    ViewData["Title"] = "Kelola Data Checklist";
+}
+
+<div class="container-fluid" style="padding: 2rem 3rem;">
+    <div class="dark-card">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="title-block">
+                <div class="icon-wrapper">
+                    <span style="font-size: 2rem;">📝</span>
+                </div>
+                <div>
+                    <h1 class="page-title">Kelola Data Checklist</h1>
+                    <p class="subtitle">Manajemen item checklist inspeksi per mesin</p>
+                </div>
+            </div>
+            <button onclick="showCreateModal()" id="btnAdd" class="btn-primary" disabled>
+                <i class="ph-plus-bold"></i> Tambah Item
+            </button>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="form-group" style="max-width: 350px;">
+                <label class="form-label">Filter Mesin</label>
+                <select id="machineFilter" class="form-select" onchange="loadChecklists()">
+                    <option value="">- Pilih Mesin -</option>
+                    @foreach (var m in Model)
+                    {
+                        <option value="@m.Id">@m.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th width="5%" class="text-center">NO</th>
+                        <th width="15%">MESIN</th>
+                        <th width="8%" class="text-center">URUTAN</th>
+                        <th width="22%">BAGIAN (DETAIL)</th>
+                        <th width="30%">STANDAR</th>
+                        <th width="10%" class="text-center">GAMBAR</th>
+                        <th width="10%" class="text-right">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="checklistTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align:center; color: #64748b;">Pilih mesin untuk melihat data checklist</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create/Edit Item -->
+<div id="itemModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header-row">
+            <h2 class="modal-title" id="modalTitle">Tambah Item Checklist</h2>
+            <button type="button" class="btn-close-modal" onclick="closeModal()">
+                <i class="ph-x-bold"></i>
+            </button>
+        </div>
+
+        <form id="itemForm" class="modal-form">
+            <input type="hidden" id="itemId" name="id">
+            <input type="hidden" id="machineIdInput" name="machineId">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Nomor Urut</label>
+                    <input type="number" id="orderNumber" name="orderNumber" class="form-input" required value="1">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Nama Bagian (Detail)</label>
+                    <input type="text" id="detailName" name="detailName" class="form-input" required placeholder="Contoh: Tekanan Oli">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Standar</label>
+                    <textarea id="standardDescription" name="standardDescription" class="form-input" rows="3" required placeholder="Contoh: Harus antara 3-5 Bar"></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Upload Gambar (Opsional)</label>
+                    <input type="file" id="imageFile" name="imageFile" class="form-input" accept="image/*">
+                    <div id="currentImagePreview" style="margin-top: 0.5rem; display: none;">
+                        <img id="currentImage" src="" style="max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem;">Gambar saat ini (upload file baru untuk mengganti)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" onclick="closeModal()" class="btn-secondary">Batal</button>
+                <button type="submit" class="btn-primary" id="btnSubmit">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* --- Premium Page Layout --- */
+    .dark-card {
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 100%;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .title-block {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .icon-wrapper {
+        width: 64px;
+        height: 64px;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #e2e8f0;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin: 0.25rem 0 0 0;
+    }
+
+    .filter-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .form-select, .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        color: #e2e8f0;
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .form-select:focus, .form-input:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        background: rgba(15, 23, 42, 0.8);
+    }
+
+    textarea.form-input {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    /* --- Table Styles --- */
+    .table-responsive {
+        background: rgba(15, 23, 42, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        overflow: auto;
+        max-height: 65vh;
+        position: relative;
+    }
+
+    /* Custom Scrollbar */
+    .table-responsive::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    .table-responsive::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.5);
+    }
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: rgba(16, 185, 129, 0.3);
+        border-radius: 4px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: rgba(16, 185, 129, 0.5);
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: #e2e8f0;
+    }
+
+    .custom-table thead tr {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: #047857;
+        background: linear-gradient(90deg, #047857 0%, #065f46 100%);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .custom-table thead th {
+        background: transparent;
+        padding: 1rem 1.5rem;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #e2e8f0;
+        border-bottom: 2px solid rgba(16, 185, 129, 0.4);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .custom-table tbody tr {
+        background: rgba(30, 41, 59, 0.3);
+        transition: background 0.15s;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .custom-table tbody tr:nth-child(even) {
+        background: rgba(15, 23, 42, 0.4);
+    }
+
+    .custom-table tbody tr:hover {
+        background: rgba(16, 185, 129, 0.15);
+        transform: none;
+        box-shadow: none;
+    }
+
+    .custom-table td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        font-size: 0.95rem;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        white-space: nowrap;
+    }
+
+    .custom-table td:last-child {
+        border-right: none;
+    }
+
+    .custom-table td:nth-child(4),
+    .custom-table td:nth-child(5) {
+        white-space: normal;
+        min-width: 200px;
+    }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+
+    /* --- Buttons --- */
+    .btn-primary {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        font-size: 1.1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
+    }
+
+    .btn-icon:hover {
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-indigo:hover {
+        background: #6366f1;
+        border-color: #6366f1;
+        box-shadow: 0 8px 15px -3px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-red:hover {
+        background: #ef4444;
+        border-color: #ef4444;
+        box-shadow: 0 8px 15px -3px rgba(239, 68, 68, 0.5);
+    }
+
+    /* --- Modal Styles --- */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: rgba(30, 41, 59, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 2rem;
+        width: 90%;
+        max-width: 550px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin: 0;
+    }
+
+    .btn-close-modal {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: none;
+        background: rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        transition: all 0.2s;
+    }
+
+    .btn-close-modal:hover {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        transform: rotate(90deg);
+    }
+
+    .modal-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+    }
+
+    /* --- RESPONSIVE MEDIA QUERIES --- */
+    @@media (max-width: 768px) {
+        .container-fluid {
+            padding: 0 1rem !important;
+        }
+
+        .header-section {
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .title-block {
+            width: 100%;
+        }
+
+        .header-section button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .dark-card {
+            padding: 1.5rem 1rem;
+            border-radius: 16px;
+        }
+
+        .table-responsive {
+            margin: 0 -1rem;
+            padding: 0 1rem 1.5rem 1rem;
+            width: calc(100% + 2rem);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+        }
+
+        .modal-content {
+            padding: 1.5rem;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-actions {
+            flex-direction: column;
+        }
+
+        .modal-actions button {
+            width: 100%;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+    $(document).ready(function() {
+        loadChecklists();
+    });
+
+    function loadChecklists() {
+        const machineId = $('#machineFilter').val();
+        
+        // Enable Add button ONLY if a specific machine is selected
+        if (machineId) {
+            $('#btnAdd').prop('disabled', false).attr('title', 'Tambah item baru');
+        } else {
+            $('#btnAdd').prop('disabled', true).attr('title', 'Pilih mesin untuk menambah item');
+        }
+
+        $('#checklistTableBody').html('<tr><td colspan="7" style="text-align:center;">Memuat...</td></tr>');
+
+        $.get('@Url.Action("GetChecklistItems", "ChecklistData")', { machineId: machineId }, function(response) {
+            if (response.success) {
+                const tbody = $('#checklistTableBody');
+                tbody.empty();
+                
+                if (response.data.length === 0) {
+                     tbody.html('<tr><td colspan="7" style="text-align:center; color: #64748b;">Belum ada item checklist.</td></tr>');
+                     return;
+                }
+
+                // Auto-suggest next order number
+                let maxOrder = 0;
+                
+                response.data.forEach((item, index) => {
+                    if(item.orderNumber > maxOrder) maxOrder = item.orderNumber;
+
+                    const imgDisplay = item.imagePath 
+                        ? `<img src="${item.imagePath}" style="width:50px; height:50px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);" onclick="window.open(this.src, '_blank')" title="Klik untuk memperbesar">` 
+                        : '<span style="color: #64748b;">-</span>';
+                    
+                    tbody.append(`
+                        <tr>
+                            <td class="text-center" style="color: #64748b;">${index + 1}</td>
+                            <td style="color: #94a3b8; font-size: 0.9rem;">${item.machineName || '-'}</td>
+                            <td class="text-center" style="font-weight:bold; color: #10b981;">${item.orderNumber}</td>
+                            <td style="color: #e2e8f0;">${item.detailName}</td>
+                            <td style="color: #cbd5e1;">${item.standardDescription}</td>
+                            <td class="text-center">${imgDisplay}</td>
+                            <td class="text-right">
+                                <button onclick="editItem(${item.id})" class="btn-icon btn-indigo" title="Edit item" style="margin-right: 0.5rem;">✏️</button>
+                                <button onclick="deleteItem(${item.id})" class="btn-icon btn-red" title="Hapus item">🗑️</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+
+                if(machineId) {
+                    $('#orderNumber').val(maxOrder + 1);
+                }
+            }
+        });
+    }
+
+    function showCreateModal() {
+        const machineId = $('#machineFilter').val();
+         if (!machineId) {
+             alert("Silakan pilih mesin terlebih dahulu dari filter di atas.");
+             return;
+         }
+
+        // Reset form for CREATE mode
+        $('#itemId').val('');
+        $('#machineIdInput').val(machineId);
+        $('#detailName').val('');
+        $('#standardDescription').val('');
+        $('#imageFile').val('');
+        $('#currentImagePreview').hide();
+        $('#modalTitle').text('Tambah Item Checklist');
+        $('#btnSubmit').text('Simpan');
+        
+        $('#itemModal').fadeIn(200);
+    }
+
+    function editItem(id) {
+        // Fetch item data
+        $.get('@Url.Action("GetChecklistItem", "ChecklistData")', { id: id }, function(response) {
+            if (response.success) {
+                const item = response.data;
+                
+                // Populate form for EDIT mode
+                $('#itemId').val(item.id);
+                $('#machineIdInput').val(item.machineId);
+                $('#orderNumber').val(item.orderNumber);
+                $('#detailName').val(item.detailName);
+                $('#standardDescription').val(item.standardDescription);
+                $('#imageFile').val('');
+                
+                // Show existing image if available
+                if (item.imagePath) {
+                    $('#currentImage').attr('src', item.imagePath);
+                    $('#currentImagePreview').show();
+                } else {
+                    $('#currentImagePreview').hide();
+                }
+                
+                $('#modalTitle').text('Edit Item Checklist');
+                $('#btnSubmit').text('Update');
+                $('#itemModal').fadeIn(200);
+            } else {
+                alert('Gagal memuat data item');
+            }
+        });
+    }
+
+    function closeModal() {
+        $('#itemModal').fadeOut(200);
+    }
+
+    $('#itemForm').submit(function(e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        const itemId = $('#itemId').val();
+        const isEdit = itemId !== '';
+        
+        const url = isEdit 
+            ? '@Url.Action("UpdateChecklistItem", "ChecklistData")' 
+            : '@Url.Action("AddChecklistItem", "ChecklistData")';
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    loadChecklists();
+                } else {
+                    alert('Gagal menyimpan: ' + (response.message || 'Unknown error'));
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error: ' + error);
+            }
+        });
+    });
+
+    function deleteItem(id) {
+        if(confirm('Hapus item checklist ini?')) {
+            $.post('@Url.Action("DeleteChecklistItem", "ChecklistData")', { id: id }, function(response) {
+                if (response.success) {
+                    loadChecklists();
+                } else {
+                    alert('Gagal menghapus');
+                }
+            });
+        }
+    }
+    </script>
+}
