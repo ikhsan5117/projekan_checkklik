@@ -180,20 +180,22 @@
             // Sidebar Toggle Logic
             toggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                // Check for Desktop vs Tablet/Mobile
                 if (window.innerWidth > 1024) {
                     sidebar.classList.toggle('collapsed');
-                    // 2. Persistence: Save State
                     localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
                 } else {
+                    // For Tablet & Mobile, we use the active overlay mode
                     sidebar.classList.toggle('mobile-active');
                 }
             });
 
-            // Close sidebar when clicking outside on mobile
+            // Close sidebar when clicking outside on mobile/tablet
             document.addEventListener('click', (e) => {
-                if (window.innerWidth <= 1024 && 
-                    !sidebar.contains(e.target) && 
-                    sidebar.classList.contains('mobile-active')) {
+                const isMobileOrTablet = window.innerWidth <= 1024;
+                const isClickOutside = !sidebar.contains(e.target) && !toggleBtn.contains(e.target);
+                
+                if (isMobileOrTablet && isClickOutside && sidebar.classList.contains('mobile-active')) {
                     sidebar.classList.remove('mobile-active');
                 }
             });

@@ -3,7 +3,6 @@ using System;
 using AMRVI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -12,52 +11,46 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AMRVI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260130032258_InitialCreate")]
+    [Migration("20260202032316_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
             modelBuilder.Entity("AMRVI.Models.ChecklistItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("DetailName")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ImagePath")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("MachineId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("OrderNumber")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("StandardDescription")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -69,7 +62,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5064),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7028),
                             DetailName = "Emergency Stop",
                             ImagePath = "/images/checklist/injection/emergency-stop.jpg",
                             IsActive = true,
@@ -80,7 +73,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5067),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7031),
                             DetailName = "Safety Light Curtain",
                             ImagePath = "/images/checklist/injection/safety-light-curtain.jpg",
                             IsActive = true,
@@ -91,7 +84,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5069),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7033),
                             DetailName = "Safety Door",
                             ImagePath = "/images/checklist/injection/safety-door.jpg",
                             IsActive = true,
@@ -102,7 +95,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5071),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7035),
                             DetailName = "Hydraulic Pressure",
                             ImagePath = "/images/checklist/injection/hydraulic-pressure.jpg",
                             IsActive = true,
@@ -113,7 +106,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5073),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7037),
                             DetailName = "Heating System",
                             ImagePath = "/images/checklist/injection/heating-system.jpg",
                             IsActive = true,
@@ -124,7 +117,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5075),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7039),
                             DetailName = "Cooling System",
                             ImagePath = "/images/checklist/injection/cooling-system.jpg",
                             IsActive = true,
@@ -135,7 +128,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5077),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7040),
                             DetailName = "Mold Condition",
                             ImagePath = "/images/checklist/injection/mold-condition.jpg",
                             IsActive = true,
@@ -146,7 +139,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 8,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5079),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7042),
                             DetailName = "Ejector System",
                             ImagePath = "/images/checklist/injection/ejector-system.jpg",
                             IsActive = true,
@@ -157,7 +150,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 9,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5081),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7044),
                             DetailName = "Hopper Dryer",
                             ImagePath = "/images/checklist/injection/hopper-dryer.jpg",
                             IsActive = true,
@@ -168,7 +161,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 10,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5110),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7046),
                             DetailName = "Robot Arm",
                             ImagePath = "/images/checklist/injection/robot-arm.jpg",
                             IsActive = true,
@@ -179,7 +172,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 11,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5112),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7048),
                             DetailName = "Oil Level",
                             ImagePath = "/images/checklist/injection/oil-level.jpg",
                             IsActive = true,
@@ -190,7 +183,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 12,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5114),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7050),
                             DetailName = "Cleanliness",
                             ImagePath = "/images/checklist/injection/cleanliness.jpg",
                             IsActive = true,
@@ -201,7 +194,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 13,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5117),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(7052),
                             DetailName = "Control Panel",
                             ImagePath = "/images/checklist/injection/control-panel.jpg",
                             IsActive = true,
@@ -215,27 +208,25 @@ namespace AMRVI.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("ChecklistItemId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("InspectionSessionId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Judgement")
                         .IsRequired()
                         .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Remarks")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -250,29 +241,27 @@ namespace AMRVI.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("InspectionDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("InspectorName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("MachineNumberId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -287,24 +276,22 @@ namespace AMRVI.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -316,7 +303,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(4873),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(6844),
                             Description = "Injection Molding Machine",
                             IsActive = true,
                             Name = "MESIN INJECTION"
@@ -324,7 +311,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(4875),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(6846),
                             Description = "Press Machine",
                             IsActive = true,
                             Name = "MESIN PRESS"
@@ -332,7 +319,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(4878),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(6848),
                             Description = "CNC Machine",
                             IsActive = true,
                             Name = "MESIN CNC"
@@ -343,27 +330,25 @@ namespace AMRVI.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Location")
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("MachineId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Number")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -375,7 +360,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5032),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(6956),
                             IsActive = true,
                             Location = "Area A",
                             MachineId = 1,
@@ -384,7 +369,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5034),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(6959),
                             IsActive = true,
                             Location = "Area A",
                             MachineId = 1,
@@ -393,7 +378,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5036),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(6961),
                             IsActive = true,
                             Location = "Area B",
                             MachineId = 1,
@@ -402,7 +387,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5038),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(6962),
                             IsActive = true,
                             Location = "Area C",
                             MachineId = 2,
@@ -411,7 +396,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5040),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(6964),
                             IsActive = true,
                             Location = "Area C",
                             MachineId = 2,
@@ -420,7 +405,7 @@ namespace AMRVI.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2026, 1, 30, 10, 22, 58, 492, DateTimeKind.Local).AddTicks(5042),
+                            CreatedAt = new DateTime(2026, 2, 2, 10, 23, 13, 257, DateTimeKind.Local).AddTicks(6966),
                             IsActive = true,
                             Location = "Area D",
                             MachineId = 3,

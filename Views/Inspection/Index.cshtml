@@ -66,44 +66,62 @@
 
             <hr style="border-top: 1px solid rgba(255,255,255,0.05);">
 
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="h-label-simple" style="color: #fff; font-weight: 700;">Judgement</label>
-                <div class="d-flex gap-4">
-                    <label class="judgement-radio">
+            <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%;">
+                <label class="h-label-simple m-0" style="color: #fff; font-weight: 700;">Judgement</label>
+                
+                <div style="display: flex; gap: 15px;">
+                    <label class="judgement-option">
                         <input type="radio" name="currentJudgement" value="OK" disabled>
-                        <span class="radio-mark"></span>
-                        <span class="radio-label">OK</span>
+                        <span class="j-btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">OK</span>
                     </label>
-                    <label class="judgement-radio">
+                    <label class="judgement-option">
                         <input type="radio" name="currentJudgement" value="NG" disabled>
-                        <span class="radio-mark"></span>
-                        <span class="radio-label">NG</span>
+                        <span class="j-btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">NG</span>
                     </label>
                 </div>
             </div>
         </div>
 
-        <!-- Navigation -->
-        <div class="text-center">
-
-            <button id="nextBtn" class="neural-btn w-100 py-3" disabled>
-                NEXT
+        <div class="text-center position-relative mt-4" style="width: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+            
+            <!-- Previous Icon (No Background) -->
+            <button id="prevBtn" type="button" class="p-0 border-0" style="position: absolute; left: 0; background: none; outline: none; box-shadow: none; fill: #fff; opacity: 0.5; visibility: hidden; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" height="28px" viewBox="0 -960 960 960" width="28px" fill="currentColor">
+                    <path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z"/>
+                </svg>
             </button>
-            <button id="prevBtn" class="btn btn-link text-secondary mt-2 small" style="visibility: hidden;">
-                Previous Task
+
+            <button id="nextBtn" class="neural-btn py-3 w-100" disabled>
+                NEXT
             </button>
         </div>
     </div>
 
     <!-- Completion Overlay -->
-    <div id="completionSection" class="glass-card-simple text-center py-5" style="display: none;">
-        <i class="ph-check-circle-bold mb-3" style="font-size: 4rem; color: var(--success);"></i>
-        <h2 class="mb-2">Selesai!</h2>
-        <p class="text-secondary mb-4">Semua data inspeksi telah berhasil disimpan.</p>
-        <button onclick="window.location.href='@Url.Action("Index", "Home")'" class="neural-btn px-5">
+    <!-- Completion Overlay - Holographic Success Card -->
+    <div id="completionSection" class="glass-card-simple text-center py-5" style="display: none; background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        
+        <!-- Animated Success Icon -->
+        <div class="success-icon-wrapper mb-4" style="position: relative; display: inline-flex; align-items: center; justify-content: center;">
+            <div style="position: absolute; width: 80px; height: 80px; background: rgba(16, 185, 129, 0.2); border-radius: 50%; animation: pulseSuccess 2s infinite;"></div>
+            <div style="position: absolute; width: 60px; height: 60px; background: rgba(16, 185, 129, 0.4); border-radius: 50%; animation: pulseSuccess 2s infinite 0.5s;"></div>
+            <i class="ph-check-circle-fill" style="font-size: 5rem; color: #10b981; z-index: 2; filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.6));"></i>
+        </div>
+
+        <h2 class="mb-2 text-center" style="font-weight: 800; font-size: 2rem; background: linear-gradient(to right, #fff, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">INSPEKSI SELESAI</h2>
+        <p class="text-secondary mb-5 text-center" style="font-size: 1rem; letter-spacing: 0.5px;">Data telah terverifikasi dan tersimpan aman di sistem.</p>
+        
+        <button onclick="window.location.href='@Url.Action("Index", "Home")'" class="neural-btn w-100 py-3" style="font-size: 1rem; letter-spacing: 2px;">
             KEMBALI KE DASHBOARD
         </button>
     </div>
+
+    <style>
+        @@keyframes pulseSuccess {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+    </style>
 </div>
 
 <!-- Floating Action Buttons -->
@@ -139,11 +157,14 @@
              $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>');
              $('#detailText').text('No data').addClass('text-secondary');
              $('#standardText').text('No data');
-             $('#detailText').text('No data').addClass('text-secondary');
-             $('#standardText').text('No data');
              $('#progressText').text('0/0').hide();
              $('input[name="currentJudgement"]').prop('disabled', true);
              $('#nextBtn, #prevBtn').prop('disabled', true);
+             
+             // Ensure correct visibility state
+             $('#completionSection').hide();
+             $('#selectionSection').show();
+             $('#inspectionSection').show();
         }
         setInitialState();
 
