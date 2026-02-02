@@ -59,6 +59,52 @@ public class HomeController : Controller
             .Take(4)
             .ToList();
 
+        // Calculate Monthly Chart Data (Last 12 months for current year)
+        var currentYear = today.Year;
+        var okCountsPerMonth = new List<int>();
+        var ngCountsPerMonth = new List<int>();
+        var monthLabels = new List<string>();
+        
+        for (int month = 1; month <= 12; month++)
+        {
+            var monthStart = new DateTime(currentYear, month, 1);
+            var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+            
+            var okCount = _context.InspectionResults
+                .Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "OK");
+            
+            var ngCount = _context.InspectionResults
+                .Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "NG");
+            
+            okCountsPerMonth.Add(okCount);
+            ngCountsPerMonth.Add(ngCount);
+            monthLabels.Add(monthStart.ToString("MMM"));
+        }
+
+        // Calculate Weekly Performance (OK vs NG Percentage for This Week)
+        var startOfThisWeek = today.AddDays(-(int)today.DayOfWeek + 1); // Monday of this week
+        
+        var thisWeekOkCount = _context.InspectionResults
+            .Count(r => r.CreatedAt >= startOfThisWeek && r.CreatedAt < today.AddDays(1) && r.Judgement == "OK");
+        
+        var thisWeekNgCount = _context.InspectionResults
+            .Count(r => r.CreatedAt >= startOfThisWeek && r.CreatedAt < today.AddDays(1) && r.Judgement == "NG");
+        
+        var thisWeekTotal = thisWeekOkCount + thisWeekNgCount;
+        
+        double okPercentage = 0;
+        double ngPercentage = 0;
+        
+        if (thisWeekTotal > 0)
+        {
+            okPercentage = ((double)thisWeekOkCount / thisWeekTotal) * 100;
+            ngPercentage = ((double)thisWeekNgCount / thisWeekTotal) * 100;
+        }
+
+        // Calculate Total OK/NG Counts (All-Time)
+        var totalOkCount = _context.InspectionResults.Count(r => r.Judgement == "OK");
+        var totalNgCount = _context.InspectionResults.Count(r => r.Judgement == "NG");
+
         var viewModel = new AMRVI.ViewModels.DashboardViewModel
         {
             TotalMachines = totalMachines,
@@ -66,7 +112,18 @@ public class HomeController : Controller
             InspectionsToday = inspectionsToday,
             IssuesToday = issuesToday,
             RecentInspections = recentInspections,
-            MachineStatuses = machineStats
+            MachineStatuses = machineStats,
+            OkCountsPerDay = okCountsPerMonth,
+            NgCountsPerDay = ngCountsPerMonth,
+            ChartLabels = monthLabels,
+            OkPercentage = okPercentage,
+            NgPercentage = ngPercentage,
+            ThisWeekOkCount = thisWeekOkCount,
+            ThisWeekNgCount = thisWeekNgCount,
+            TotalOkCount = totalOkCount,
+            TotalNgCount = totalNgCount,
+            ViewLevel = "monthly",
+            CurrentYear = currentYear
         };
 
         return View(viewModel);

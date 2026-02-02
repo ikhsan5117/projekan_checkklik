@@ -8,11 +8,11 @@
 
 <div class="dashboard-viewport fade-in">
     <!-- Hero Section: Atmospheric Command -->
-    <div class="quantum-hero">
+    <div class="quantum-hero" style="margin-bottom: 3rem;">
         <div class="hero-main">
             <div class="hero-chip">SYSTEM STATUS: NOMINAL</div>
-            <h1 class="hero-title">Welcome back, <span class="glow-text">Operator</span></h1>
-            <p class="hero-subtitle">All diagnostic systems are online. You have <strong>@Model.InspectionsToday</strong> successful audits today.</p>
+            <h1 class="hero-title">Dashboard <span class="glow-text">Checklist Mesin</span></h1>
+            <p class="hero-subtitle">Semua mesin dalam kondisi terpantau. Anda telah melakukan <strong>@Model.InspectionsToday</strong> inspeksi hari ini.</p>
             
         </div>
         
@@ -34,112 +34,351 @@
     </div>
 
     <!-- Main Grid -->
-    <div class="quantum-grid">
-        <!-- Analytics (Span 3x2) -->
-        <div class="bento-card analytics-card" style="grid-column: span 3; grid-row: span 2;">
+    <div class="quantum-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
+        <!-- Analytics (Span 3x1) -->
+        <div class="bento-card analytics-card" style="grid-column: span 3; grid-row: span 1;">
+            <!-- Breadcrumb Navigation -->
+            <div id="breadcrumb" style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; padding: 0.75rem 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
+                <!-- Back Button (Hidden by default) -->
+                <button id="btnBack" onclick="goUpLevel()" style="display: none; align-items: center; gap: 0.5rem; background: rgba(129, 140, 248, 0.2); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: 'Sora', sans-serif; transition: all 0.2s ease;">
+                    <i class="ph-arrow-u-up-left-bold"></i> Back
+                </button>
+                
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="ph-house-fill" style="color: #64748b; font-size: 1.1rem;"></i>
+                    <span id="breadcrumbPath" style="color: #94a3b8; font-weight: 600; font-size: 0.95rem;"></span>
+                </div>
+            </div>
+            
             <div class="card-top">
                 <div class="card-identity">
                     <div class="card-orb secondary"></div>
                     <h3>Performance Analytics</h3>
                 </div>
-                <div class="trend-pill positive">+12.4% vs prev week</div>
+                <div class="trend-pill @(Model.OkPercentage >= Model.NgPercentage ? "positive" : "negative")">
+                    OK: @Model.OkPercentage.ToString("F1")% | NG: @Model.NgPercentage.ToString("F1")%
+                </div>
             </div>
-            <div class="chart-wrapper">
+            <div class="chart-wrapper" style="max-height: 220px; height: 220px;">
                 <canvas id="quantumChart"></canvas>
             </div>
         </div>
 
         <!-- Live Feed (Span 1x2) -->
         <div class="bento-card feed-card" style="grid-row: span 2;">
-            <div class="card-top">
-                <h3>Neural Stream</h3>
-                <span class="live-dot">LIVE</span>
+            <div class="card-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0; font-weight: 700; color: #f8fafc;">Neural Stream</h3>
+                <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.8rem; background: rgba(34, 211, 238, 0.15); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #22d3ee; animation: pulse 2s infinite;">
+                    <span style="width: 6px; height: 6px; background: #22d3ee; border-radius: 50%; box-shadow: 0 0 8px #22d3ee;"></span>
+                    LIVE
+                </span>
             </div>
-            <div class="stream-container">
+            <div id="neuralStreamContainer" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
                 @foreach(var item in Model.RecentInspections.Take(6))
                 {
-                    <div class="stream-item">
-                        <div class="stream-marker"></div>
-                        <div class="stream-content">
-                            <div class="stream-header">
-                                <span class="s-user">@item.InspectorName</span>
-                                <span class="s-time">@item.InspectionDate.ToString("HH:mm")</span>
+                    <div style="display: flex; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(129,140,248,0.3)'; this.style.transform='translateX(5px)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.borderColor='rgba(255,255,255,0.05)'; this.style.transform='translateX(0)';">
+                        <!-- Icon -->
+                        <div style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, rgba(129, 140, 248, 0.2), rgba(129, 140, 248, 0.1)); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <i class="ph-gear-fill" style="font-size: 1.5rem; color: #818cf8;"></i>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                                <span style="font-weight: 600; color: #cbd5e1; font-size: 0.9rem;">@item.InspectorName</span>
+                                <span style="padding: 0.2rem 0.6rem; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: 12px; font-size: 0.7rem; font-weight: 600; color: #818cf8;">@item.InspectionDate.ToString("HH:mm")</span>
                             </div>
-                            <p class="s-desc">Verified machine <strong>@item.MachineNumber?.Number</strong></p>
+                            <p style="margin: 0; color: #64748b; font-size: 0.85rem; line-height: 1.4;">
+                                Verified machine <strong style="color: #94a3b8;">@item.MachineNumber?.Number</strong>
+                            </p>
                         </div>
                     </div>
                 }
             </div>
         </div>
+        
+        <style>
+            @@keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+            }
+            
+            /* Custom scrollbar for Neural Stream */
+            .feed-card div::-webkit-scrollbar {
+                width: 6px;
+            }
+            .feed-card div::-webkit-scrollbar-track {
+                background: rgba(255,255,255,0.02);
+                border-radius: 10px;
+            }
+            .feed-card div::-webkit-scrollbar-thumb {
+                background: rgba(129, 140, 248, 0.3);
+                border-radius: 10px;
+            }
+            .feed-card div::-webkit-scrollbar-thumb:hover {
+                background: rgba(129, 140, 248, 0.5);
+            }
+        </style>
 
-        <!-- Bottom Row Actions -->
-        <div class="stat-box" style="--accent: var(--secondary);">
-            <div class="stat-info">
-                <h3>@Model.IssuesToday</h3>
-                <p>Anomalies Detected</p>
+        <!-- Total OK Card -->
+        <div id="cardOk" class="bento-card" onclick="toggleFilter('ok')" style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.05)); border: 1px solid rgba(52, 211, 153, 0.3); cursor: pointer; transition: all 0.3s ease;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <p style="color: #94a3b8; margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.9rem;">Total OK</p>
+                    <h2 id="totalOkCount" style="font-size: 3rem; font-weight: 800; color: #34d399; margin: 0;">@Model.TotalOkCount</h2>
+                    <p id="filterBadgeOk" style="display:none; color: #34d399; font-size: 0.75rem; background: rgba(52, 211, 153, 0.1); padding: 2px 8px; border-radius: 4px; margin-top: 5px; width: fit-content;">Filtered</p>
+                </div>
+                <i class="ph-check-circle-fill" style="font-size: 4rem; color: #34d399; opacity: 0.5;"></i>
             </div>
-            <div class="stat-visual"><i class="ph-warning-octagon-bold"></i></div>
         </div>
 
-        <div class="stat-box" style="--accent: var(--primary);">
-            <div class="stat-info">
-                <h3>Active</h3>
-                <p>System State</p>
+        <!-- Total NG Card -->
+        <div id="cardNg" class="bento-card" onclick="toggleFilter('ng')" style="background: linear-gradient(135deg, rgba(251, 113, 133, 0.1), rgba(251, 113, 133, 0.05)); border: 1px solid rgba(251, 113, 133, 0.3); cursor: pointer; transition: all 0.3s ease;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <p style="color: #94a3b8; margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.9rem;">Total NG</p>
+                    <h2 id="totalNgCount" style="font-size: 3rem; font-weight: 800; color: #fb7185; margin: 0;">@Model.TotalNgCount</h2>
+                    <p id="filterBadgeNg" style="display:none; color: #fb7185; font-size: 0.75rem; background: rgba(251, 113, 133, 0.1); padding: 2px 8px; border-radius: 4px; margin-top: 5px; width: fit-content;">Filtered</p>
+                </div>
+                <i class="ph-warning-octagon-fill" style="font-size: 4rem; color: #fb7185; opacity: 0.5;"></i>
             </div>
-            <div class="stat-visual"><i class="ph-broadcast-bold"></i></div>
+        </div>
+
+        <!-- Total Inspections Card -->
+        <div id="cardTotal" class="bento-card" onclick="toggleFilter('all')" style="background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(129, 140, 248, 0.05)); border: 1px solid rgba(129, 140, 248, 0.3); cursor: pointer; transition: all 0.3s ease;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <p style="color: #94a3b8; margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.9rem;">Total Inspections</p>
+                    <h2 id="totalInspectionsCount" style="font-size: 3rem; font-weight: 800; color: #818cf8; margin: 0;">@(Model.TotalOkCount + Model.TotalNgCount)</h2>
+                    <p id="filterBadgeTotal" style="display:none; color: #818cf8; font-size: 0.75rem; background: rgba(129, 140, 248, 0.1); padding: 2px 8px; border-radius: 4px; margin-top: 5px; width: fit-content;">Filtered</p>
+                </div>
+                <i class="ph-clipboard-text-fill" style="font-size: 4rem; color: #818cf8; opacity: 0.5;"></i>
+            </div>
         </div>
         
-        <div class="bento-card quick-access">
-             <h3>Global Config</h3>
-             <div class="access-grid">
-                 <a href="@Url.Action("Index", "History")" class="access-item">
-                     <i class="ph-file-search-bold ai-icon"></i>
-                     <span class="ai-label">Logs</span>
-                 </a>
-                 <a href="@Url.Action("Index", "Admin")" class="access-item">
-                     <i class="ph-cpu-bold ai-icon"></i>
-                     <span class="ai-label">Core</span>
-                 </a>
-             </div>
-        </div>
     </div>
 </div>
 
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const ctx = document.getElementById('quantumChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(129, 140, 248, 0.4)');
-        gradient.addColorStop(1, 'rgba(129, 140, 248, 0)');
+        // --- State Management ---
+        const state = {
+            viewLevel: '@Model.ViewLevel', // 'monthly', 'weekly', 'daily'
+            year: @Model.CurrentYear,
+            month: null, // 1-12
+            week: null, // 1-5
+            filterType: 'all', // 'all', 'ok', 'ng'
+            
+            // Store original total counts to restore when navigating back
+            originalTotals: {
+                ok: @Model.TotalOkCount,
+                ng: @Model.TotalNgCount,
+                inspections: @(Model.TotalOkCount + Model.TotalNgCount)
+            },
+            
+            // Store raw data for client-side filtering
+            recentInspections: @Html.Raw(Json.Serialize(Model.RecentInspections.Take(6).Select(s => new { inspectorName = s.InspectorName, inspectionDate = s.InspectionDate, machineNumber = s.MachineNumber != null ? s.MachineNumber.Number : "N/A" })))
+        };
 
-        new Chart(ctx, {
+        // --- Chart Context & Gradients ---
+        const ctx = document.getElementById('quantumChart').getContext('2d');
+        const gradientOk = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientOk.addColorStop(0, 'rgba(52, 211, 153, 0.3)'); gradientOk.addColorStop(1, 'rgba(52, 211, 153, 0)');
+        const gradientNg = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientNg.addColorStop(0, 'rgba(251, 113, 133, 0.3)'); gradientNg.addColorStop(1, 'rgba(251, 113, 133, 0)');
+
+        // --- Initial Chart Config ---
+        const chartConfig = {
             type: 'line',
             data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    data: [18, 24, 21, 32, 28, @Model.InspectionsToday, 0],
-                    borderColor: '#818cf8',
-                    borderWidth: 4,
-                    pointRadius: 0,
-                    pointHoverRadius: 8,
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: '#818cf8',
-                    pointHoverBorderWidth: 4,
-                    tension: 0.4,
-                    fill: true,
-                    backgroundColor: gradient
-                }]
+                labels: @Html.Raw(Json.Serialize(Model.ChartLabels)),
+                datasets: [
+                    { label: 'OK', data: [@string.Join(", ", Model.OkCountsPerDay)], borderColor: '#34d399', borderWidth: 3, pointRadius: 5, pointHoverRadius: 10, pointBackgroundColor: '#34d399', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: '#34d399', pointHoverBorderWidth: 4, tension: 0.4, fill: true, backgroundColor: gradientOk },
+                    { label: 'NG', data: [@string.Join(", ", Model.NgCountsPerDay)], borderColor: '#fb7185', borderWidth: 3, pointRadius: 5, pointHoverRadius: 10, pointBackgroundColor: '#fb7185', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: '#fb7185', pointHoverBorderWidth: 4, tension: 0.4, fill: true, backgroundColor: gradientNg }
+                ]
             },
             options: {
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Sora', weight: 600 } } },
-                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b', font: { family: 'Sora' } } }
+                responsive: true, maintainAspectRatio: false, animation: { duration: 1000, easing: 'easeInOutQuart' },
+                plugins: { 
+                    legend: { display: true, position: 'top', labels: { color: '#94a3b8', font: { family: 'Sora', weight: 600, size: 12 }, padding: 15, usePointStyle: true }, onClick: function(e, legendItem, legend) { /* Custom handled by cards but allow toggle */ const index = legendItem.datasetIndex; const ci = legend.chart; const meta = ci.getDatasetMeta(index); meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null; ci.update(); } },
+                    tooltip: { enabled: true, backgroundColor: 'rgba(15, 23, 42, 0.95)', titleColor: '#f8fafc', bodyColor: '#cbd5e1', borderColor: 'rgba(129, 140, 248, 0.3)', borderWidth: 1, padding: 12, displayColors: true, callbacks: { label: function(c) { return (c.dataset.label || '') + ': ' + c.parsed.y + ' inspections'; } } }
                 },
-                hover: { mode: 'index', intersect: false }
+                scales: { x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Sora', weight: 600 } } }, y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b', font: { family: 'Sora' }, stepSize: 1 } } },
+                hover: { mode: 'index', intersect: false }, interaction: { mode: 'index', intersect: false }, onClick: handleChartClick
             }
-        });
+        };
+
+        let myChart = new Chart(ctx, chartConfig);
+
+        // --- FILTER FUNCTIONALITY ---
+        function toggleFilter(type) {
+            if (type !== 'all' && state.filterType === type) { state.filterType = 'all'; } 
+            else { state.filterType = type; }
+            applyFilter();
+        }
+
+        function applyFilter() {
+            const isOk = state.filterType === 'ok';
+            const isNg = state.filterType === 'ng';
+            const isAll = state.filterType === 'all';
+
+            if(myChart.data.datasets.length >= 2) {
+                myChart.setDatasetVisibility(0, isAll || isOk);
+                myChart.setDatasetVisibility(1, isAll || isNg);
+                myChart.update();
+            }
+
+            updateNeuralStream(state.recentInspections);
+            updateCardVisuals();
+        }
+
+        function updateCardVisuals() {
+            const cardOk = document.getElementById('cardOk');
+            const cardNg = document.getElementById('cardNg');
+            const cardTotal = document.getElementById('cardTotal');
+            
+            const setActive = (el, color) => { el.style.border = `2px solid ${color}`; el.style.boxShadow = `0 0 15px ${color}`; el.style.opacity = '1'; el.style.transform = 'scale(1.02)'; };
+            const setInactive = (el) => { el.style.border = '1px solid rgba(255,255,255,0.1)'; el.style.boxShadow = 'none'; el.style.opacity = '0.5'; el.style.transform = 'scale(0.98)'; };
+            const setNormal = (el, bc) => { el.style.border = `1px solid ${bc}`; el.style.boxShadow = 'none'; el.style.opacity = '1'; el.style.transform = 'scale(1)'; };
+
+            if (state.filterType === 'all') {
+                setNormal(cardOk, 'rgba(52, 211, 153, 0.3)');
+                setNormal(cardNg, 'rgba(251, 113, 133, 0.3)');
+                setNormal(cardTotal, 'rgba(129, 140, 248, 0.3)');
+                setActive(cardTotal, 'rgba(129, 140, 248, 0.5)');
+            } else if (state.filterType === 'ok') {
+                setActive(cardOk, '#34d399'); setInactive(cardNg); setInactive(cardTotal);
+            } else if (state.filterType === 'ng') {
+                setInactive(cardOk); setActive(cardNg, '#fb7185'); setInactive(cardTotal);
+            }
+        }
+
+        // --- Event Handlers & Core Functions ---
+        function handleChartClick(evt, elements) {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                if (state.viewLevel === 'monthly') drillDownToWeekly(index + 1);
+                else if (state.viewLevel === 'weekly') drillDownToDaily(index + 1);
+            }
+        }
+
+        function drillDownToWeekly(month) {
+            state.viewLevel = 'weekly'; state.month = month;
+            fetchDataAndRefresh(`/api/dashboard/weekly?year=${state.year}&month=${month}`);
+            updateBreadcrumb();
+        }
+
+        function drillDownToDaily(week) {
+            state.viewLevel = 'daily'; state.week = week;
+            fetchDataAndRefresh(`/api/dashboard/daily?year=${state.year}&month=${state.month}&week=${week}`);
+            updateBreadcrumb();
+        }
+
+        function resetToMonthly() {
+            state.viewLevel = 'monthly'; state.month = null; state.week = null;
+            fetchDataAndRefresh(`/api/dashboard/monthly?year=${state.year}`);
+            updateBreadcrumb();
+        }
+        
+        function goUpLevel() {
+            if (state.viewLevel === 'daily') drillDownToWeekly(state.month);
+            else if (state.viewLevel === 'weekly') resetToMonthly();
+        }
+
+        function fetchDataAndRefresh(url) {
+            document.body.style.cursor = 'wait';
+            fetch(url).then(r => r.json()).then(data => {
+                myChart.data.labels = data.labels;
+                myChart.data.datasets[0].data = data.okCounts;
+                myChart.data.datasets[1].data = data.ngCounts;
+                myChart.update('active');
+                
+                const isFiltered = state.viewLevel !== 'monthly';
+                const filterLabel = getFilterLabel();
+                const updateStat = (id, bid, val) => {
+                    const el = document.getElementById(id); const bel = document.getElementById(bid);
+                    animateValue(el, parseInt(el.innerText), val, 500);
+                    if (isFiltered) { bel.style.display = 'inline-block'; bel.innerText = filterLabel; } else { bel.style.display = 'none'; }
+                };
+                updateStat('totalOkCount', 'filterBadgeOk', data.totalOk);
+                updateStat('totalNgCount', 'filterBadgeNg', data.totalNg);
+                updateStat('totalInspectionsCount', 'filterBadgeTotal', data.totalInspections);
+
+                state.recentInspections = data.recentInspections;
+                applyFilter();
+                
+                document.body.style.cursor = 'default';
+            });
+        }
+
+        function updateNeuralStream(items) {
+            const container = document.getElementById('neuralStreamContainer');
+            container.innerHTML = '';
+            if (items.length === 0) { container.innerHTML = '<div style="padding:1rem;color:#64748b;text-align:center">No data.</div>'; return; }
+            items.forEach(item => {
+                const date = new Date(item.inspectionDate);
+                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                container.innerHTML += `
+                    <div style="display:flex;gap:1rem;padding:1rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;cursor:pointer;transition:all 0.3s ease;" 
+                         onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(129,140,248,0.3)';this.style.transform='translateX(5px)'" 
+                         onmouseout="this.style.background='rgba(255,255,255,0.02)';this.style.borderColor='rgba(255,255,255,0.05)';this.style.transform='translateX(0)'">
+                        <div style="width:40px;height:40px;background:rgba(129,140,248,0.2);border-radius:10px;display:flex;justify-content:center;align-items:center;">
+                            <i class="ph-gear-fill" style="color:#818cf8;font-size:1.5rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight:600;color:#cbd5e1;">${item.inspectorName || 'Operator'}</div>
+                            <div style="color:#64748b;font-size:0.85rem;">Verified <strong style="color:#94a3b8;">${item.machineNumber}</strong> at <span style="background:rgba(129,140,248,0.15);padding:0 5px;border-radius:4px;color:#818cf8;">${timeStr}</span></div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function updateBreadcrumb() {
+            const breadcrumbEl = document.getElementById('breadcrumbPath');
+            const btnBack = document.getElementById('btnBack');
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            
+            btnBack.style.display = state.viewLevel === 'monthly' ? 'none' : 'inline-flex';
+            
+            let html = `<span style="color:${state.viewLevel === 'monthly'?'#f8fafc':'#64748b'}">Dashboard</span>`;
+            if (state.viewLevel === 'monthly') html += ` <span style="color:#64748b">></span> <span style="color:#f8fafc">${state.year}</span>`;
+            else html += ` <span style="color:#64748b">></span> <span style="cursor:pointer;color:#94a3b8" onclick="resetToMonthly()">${state.year}</span>`;
+
+            if (state.month) {
+                const mName = monthNames[state.month - 1];
+                if (state.viewLevel === 'weekly') html += ` <span style="color:#64748b">></span> <span style="color:#f8fafc">${mName}</span>`;
+                else html += ` <span style="color:#64748b">></span> <span style="cursor:pointer;color:#94a3b8" onclick="drillDownToWeekly(${state.month})">${mName}</span>`;
+            }
+            if (state.week) html += ` <span style="color:#64748b">></span> <span style="color:#f8fafc">Week ${state.week}</span>`;
+            
+            breadcrumbEl.innerHTML = html;
+        }
+
+        function getFilterLabel() {
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            if (state.viewLevel === 'weekly') return `${monthNames[state.month - 1]} ${state.year}`;
+            if (state.viewLevel === 'daily') return `Week ${state.week}, ${monthNames[state.month - 1]}`;
+            return '';
+        }
+
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        window.resetToMonthly = resetToMonthly;
+        window.drillDownToWeekly = drillDownToWeekly;
+        window.goUpLevel = goUpLevel;
+        window.toggleFilter = toggleFilter;
+        
+        updateBreadcrumb();
+        updateCardVisuals();
     });
 </script>
