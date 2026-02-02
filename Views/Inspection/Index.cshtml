@@ -39,7 +39,10 @@
 
     <!-- Inspection Items -->
     <div id="inspectionSection">
-        <label class="h-label-simple mb-2 d-block px-2">Checklist</label>
+        <div style="display: flex; flex-direction: row; align-items: center; margin-bottom: 0.5rem; padding: 0 0.5rem; gap: 10px;">
+            <label class="h-label-simple m-0">Checklist</label>
+            <div id="progressText" style="font-size: 0.9rem; font-weight: 700; color: rgba(255, 255, 255, 0.8); display: none;">0/0</div>
+        </div>
         
         <!-- Image Card -->
         <div class="glass-card-simple text-center" style="margin-bottom: 1.5rem;">
@@ -53,7 +56,7 @@
         <div class="glass-card-simple" style="margin-bottom: 1.5rem;">
             <div class="mb-3">
                 <label class="h-label-small d-block">Detail</label>
-                <div id="detailText" class="value-text">-</div>
+                <div id="detailText" class="value-text text-secondary">No data</div>
             </div>
             
             <div class="mb-3">
@@ -82,7 +85,7 @@
 
         <!-- Navigation -->
         <div class="text-center">
-            <div class="mb-3" id="progressText" style="font-size: 0.9rem; font-weight: 700; color: rgba(255, 255, 255, 0.8);">0/0</div>
+
             <button id="nextBtn" class="neural-btn w-100 py-3" disabled>
                 NEXT
             </button>
@@ -134,9 +137,11 @@
         // Initial State
         function setInitialState() {
              $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>');
-             $('#detailText').text('-');
+             $('#detailText').text('No data').addClass('text-secondary');
              $('#standardText').text('No data');
-             $('#progressText').text('0 / 0');
+             $('#detailText').text('No data').addClass('text-secondary');
+             $('#standardText').text('No data');
+             $('#progressText').text('0/0').hide();
              $('input[name="currentJudgement"]').prop('disabled', true);
              $('#nextBtn, #prevBtn').prop('disabled', true);
         }
@@ -207,7 +212,7 @@
             const item = currentState.items[currentState.currentIndex];
             const total = currentState.items.length;
             
-            $('#progressText').text(`${currentState.currentIndex + 1}/${total}`);
+            $('#progressText').text(`${currentState.currentIndex + 1}/${total}`).show();
             
             $('#detailText').text(item.detailName);
             $('#standardText').text(item.standardDescription);
