@@ -2504,3 +2504,93 @@ body:has(.inspection-portal-v2) .mesh-bg {
     margin-bottom: 1rem;
     padding-left: 0.5rem;
 }
+/* ==========================================================================
+   Responsive Tablet Adjustments for Navbar
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .app-navbar {
+        padding: 0.5rem 1rem;
+        min-height: 70px;
+        gap: 0.5rem;
+    }
+
+    .nav-left, .nav-right {
+        gap: 0.75rem;
+    }
+
+    /* Collapse Search Bar */
+    .search-wrapper-nav {
+        width: 44px;
+        padding: 0;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        border-color: transparent;
+        cursor: pointer;
+    }
+    
+    .search-wrapper-nav input {
+        display: none;
+    }
+    
+    .search-wrapper-nav i {
+        font-size: 1.25rem;
+        color: #fff;
+    }
+
+    /* Collapse System Status */
+    .system-status-nav {
+        padding: 0.5rem;
+        width: 44px;
+        height: 44px;
+        justify-content: center;
+        background: rgba(52, 211, 153, 0.15);
+        gap: 0;
+    }
+    
+    .status-label-nav {
+        display: none;
+    }
+
+    /* Compact Clock */
+    .nav-clock {
+        min-width: auto;
+        padding: 0.25rem 0.75rem;
+        height: 44px;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        border-top: none;
+        display: flex; /* Maintain flex layout */
+        flex-direction: row; /* Horizontal alignment */
+        align-items: center;
+    }
+    
+    .clock-date {
+        display: none;
+    }
+    
+    .clock-time {
+        font-size: 0.9rem;
+    }
+
+    /* Hide extra User Info */
+    .user-meta-vision {
+        display: none;
+    }
+    
+    .nav-user-deck {
+        padding-left: 0.75rem;
+        gap: 0.5rem;
+        border: none;
+    }
+
+    /* Hide Dividers */
+    .nav-divider-v {
+        display: none;
+    }
+    
+    /* Ensure icons are centered */
+    .status-dot-pulse {
+        margin: 0;
+    }
+}

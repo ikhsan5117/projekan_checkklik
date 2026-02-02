@@ -5,138 +5,111 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="inspection-portal">
-    <div class="terminal-shell">
-        <!-- Terminal Header -->
-        <header class="terminal-bar">
-            <div class="terminal-id">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="ph-terminal-window-bold"></i>
-                    <span>DIAGNOSTIC_OS_v4.2</span>
-                </div>
-                <div class="nav-divider-v" style="height: 15px; opacity: 0.2;"></div>
-                <div id="inspectionDate">--/--/---- --:--:--</div>
-            </div>
-            <div class="system-status-nav">
-                <div class="status-dot-pulse"></div>
-                <span class="status-label-nav">STREAM_ACTIVE</span>
-            </div>
-        </header>
+<div class="inspection-portal-v2 container py-4" style="max-width: 650px;">
+    <!-- Simple Header -->
+    <div class="d-flex flex-column align-items-center mb-4">
+        <h1 class="h-label m-0" style="font-size: 1.5rem; letter-spacing: 2px; text-align: center; color: #fff; font-weight: 800; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);">AM RVI</h1>
+        <div id="inspectionDate" class="text-secondary small" style="text-align: center; color: rgba(255, 255, 255, 0.7);">@DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</div>
+    </div>
 
-        <!-- Main Diagnostic Grid -->
-        <main class="diagnostic-grid">
-            <!-- Left: Visual Analysis -->
-            <section class="visual-pane">
-                <div class="pane-label">
-                    <i class="ph-eye-bold"></i>
-                    <span>VISUAL_TELEMETRY_FEED</span>
-                </div>
-                <div class="viewscreen-frame">
-                    <div id="imageContainer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-                         <i class="ph-camera-bold" style="font-size: 5rem; opacity: 0.1;"></i>
-                    </div>
-                    <div class="viewscreen-scanline"></div>
-                </div>
-            </section>
-
-            <!-- Right: Decision & Telemetry -->
-            <section class="data-pane">
-                <div class="telemetry-group">
-                    <label class="telemetry-label">DETECTION_OBJECTIVE</label>
-                    <div id="detailText" class="telemetry-value-lg">INITIALIZING...</div>
-                </div>
-
-                <div class="telemetry-group" style="min-height: 120px;">
-                    <label class="telemetry-label">OPERATIONAL_STANDARD</label>
-                    <p id="standardText" class="telemetry-text">System waiting for machine unit selection. Connect to a stream via the terminal footer.</p>
-                </div>
-
-                <!-- Strategic Inputs -->
-                <div class="telemetry-group">
-                    <label class="telemetry-label">FINAL_DECISION</label>
-                    <div class="decision-grid">
-                        <label class="tactical-choice">
-                            <input type="radio" name="currentJudgement" value="OK" disabled>
-                            <div class="tactical-switch-btn">
-                                <i class="ph-check-circle-bold"></i>
-                                <span>SYSTEM_OK</span>
-                            </div>
-                        </label>
-                        <label class="tactical-choice">
-                            <input type="radio" name="currentJudgement" value="NG" disabled>
-                            <div class="tactical-switch-btn" style="--accent: var(--danger);">
-                                <i class="ph-warning-circle-bold"></i>
-                                <span>ANOMALY_NG</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Functional Navigation -->
-                <div class="d-flex gap-3 mt-auto">
-                    <button id="prevBtn" class="neural-btn secondary" style="flex: 1; padding: 1rem; visibility: hidden;" disabled>
-                        <i class="ph-arrow-left-bold"></i>
-                    </button>
-                    <button id="nextBtn" class="neural-btn" style="flex: 4;" disabled>
-                        <i class="ph-arrow-right-bold"></i>
-                        EXECUTE_NEXT
-                    </button>
-                </div>
-
-                <!-- Progress Tracker -->
-                <div class="progress-module">
-                    <div class="progress-stats">
-                        <span>AUDIT_FLOW_PROGRESS</span>
-                        <span id="progressText">0 / 0</span>
-                    </div>
-                    <div class="progress-bar-glow">
-                        <div id="progressBar" class="progress-bar-fill" style="width: 0%"></div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Terminal System Footer (Selection) -->
-        <footer class="terminal-footer" id="selectionSection">
-            <div class="filter-group">
-                <i class="ph-gear-six-bold" style="color: var(--secondary); font-size: 1.5rem;"></i>
-                <select id="machineSelect" class="deck-select w-100">
-                    <option value="">- SELECT_MACHINE_SYSTEM -</option>
+    <!-- Selection Section -->
+    <div id="selectionSection">
+        <div class="glass-card-simple" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <label class="h-label-simple text-nowrap m-0">Pilih Mesin</label>
+                <select id="machineSelect" class="form-select deck-select-v2" style="width: 65%;">
+                    <option value="">- Pilih Mesin -</option>
                     @foreach (var machine in Model.Machines)
                     {
                         <option value="@machine.Id">@machine.Name</option>
                     }
                 </select>
-                <div class="nav-divider-v" style="height: 30px; opacity: 0.1;"></div>
-                <select id="machineNumberSelect" class="deck-select w-100" disabled>
-                    <option value="">- IDENTIFY_UNIT_ID -</option>
+            </div>
+        </div>
+
+        <div class="glass-card-simple" style="margin-bottom: 3rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <label class="h-label-simple text-nowrap m-0">No Mesin</label>
+                <select id="machineNumberSelect" class="form-select deck-select-v2" style="width: 65%;" disabled>
+                    <option value="">- Pilih No Mesin -</option>
                 </select>
             </div>
-            <div class="terminal-id" style="font-size: 0.6rem; opacity: 0.5;">
-                PORTAL_SECURED // SHIFT_A1
+        </div>
+    </div>
+
+    <!-- Inspection Items -->
+    <div id="inspectionSection">
+        <label class="h-label-simple mb-2 d-block px-2">Checklist</label>
+        
+        <!-- Image Card -->
+        <div class="glass-card-simple text-center" style="margin-bottom: 1.5rem;">
+            <label class="h-label-small mb-3 d-block">GAMBAR STANDAR</label>
+            <div id="imageContainer" class="viewscreen-v2">
+                 <i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>
             </div>
-        </footer>
+        </div>
+
+        <!-- Details & Judgement Card -->
+        <div class="glass-card-simple" style="margin-bottom: 1.5rem;">
+            <div class="mb-3">
+                <label class="h-label-small d-block">Detail</label>
+                <div id="detailText" class="value-text">-</div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="h-label-small d-block">Standar</label>
+                <div id="standardText" class="value-text text-secondary">No data</div>
+            </div>
+
+            <hr style="border-top: 1px solid rgba(255,255,255,0.05);">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="h-label-simple" style="color: #fff; font-weight: 700;">Judgement</label>
+                <div class="d-flex gap-4">
+                    <label class="judgement-radio">
+                        <input type="radio" name="currentJudgement" value="OK" disabled>
+                        <span class="radio-mark"></span>
+                        <span class="radio-label">OK</span>
+                    </label>
+                    <label class="judgement-radio">
+                        <input type="radio" name="currentJudgement" value="NG" disabled>
+                        <span class="radio-mark"></span>
+                        <span class="radio-label">NG</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="text-center">
+            <div class="mb-3" id="progressText" style="font-size: 0.9rem; font-weight: 700; color: rgba(255, 255, 255, 0.8);">0/0</div>
+            <button id="nextBtn" class="neural-btn w-100 py-3" disabled>
+                NEXT
+            </button>
+            <button id="prevBtn" class="btn btn-link text-secondary mt-2 small" style="visibility: hidden;">
+                Previous Task
+            </button>
+        </div>
     </div>
 
     <!-- Completion Overlay -->
-    <div id="completionSection" class="terminal-shell text-center" style="display: none; padding: 8rem 2rem; align-items: center; justify-content: center;">
-        <i class="ph-shield-check-bold" style="font-size: 6rem; color: var(--success); filter: drop-shadow(0 0 30px var(--success)); margin-bottom: 2rem;"></i>
-        <h1 style="font-size: 3.5rem; font-weight: 900; letter-spacing: -3px; margin-bottom: 1rem;">MISSION_SUCCESS</h1>
-        <p style="color: var(--text-secondary); font-size: 1.25rem; font-family: 'JetBrains Mono', monospace; margin-bottom: 4rem;">All diagnostic points verified and synchronized to central command.</p>
-        <button onclick="window.location.href='@Url.Action("Index", "Home")'" class="neural-btn" style="width: 300px;">
-            <i class="ph-house-bold"></i>
-            RETURN_TO_BASE
+    <div id="completionSection" class="glass-card-simple text-center py-5" style="display: none;">
+        <i class="ph-check-circle-bold mb-3" style="font-size: 4rem; color: var(--success);"></i>
+        <h2 class="mb-2">Selesai!</h2>
+        <p class="text-secondary mb-4">Semua data inspeksi telah berhasil disimpan.</p>
+        <button onclick="window.location.href='@Url.Action("Index", "Home")'" class="neural-btn px-5">
+            KEMBALI KE DASHBOARD
         </button>
     </div>
 </div>
 
 <!-- Floating Action Buttons -->
 <div class="fab-container">
-    <button class="fab" onclick="window.location.href='@Url.Action("Index", "History")'" title="History">
+    <button class="fab" onclick="window.location.href='@Url.Action("Index", "History")'" title="History" style="background: rgba(129, 140, 248, 0.8); backdrop-filter: blur(20px);">
         <i class="ph-clock-counter-clockwise"></i>
     </button>
-    <button class="fab secondary" onclick="window.location.href='@Url.Action("Index", "Home")'" title="Home">
-        <i class="ph-house"></i>
+    <button class="fab secondary" onclick="window.location.href='@Url.Action("Index", "Home")'" title="Home" style="background: rgba(251, 191, 36, 0.8); backdrop-filter: blur(20px);">
+        <i class="ph-list-bold"></i>
     </button>
 </div>
 
@@ -160,11 +133,10 @@
 
         // Initial State
         function setInitialState() {
-             $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 5rem; opacity: 0.1;"></i>');
-             $('#detailText').text('AWAITING_INPUT...');
-             $('#standardText').text('Select machine unit to begin diagnostic stream.');
+             $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>');
+             $('#detailText').text('-');
+             $('#standardText').text('No data');
              $('#progressText').text('0 / 0');
-             $('#progressBar').css('width', '0%');
              $('input[name="currentJudgement"]').prop('disabled', true);
              $('#nextBtn, #prevBtn').prop('disabled', true);
         }
@@ -173,12 +145,12 @@
         // Machine Selection Logic
         $('#machineSelect').change(function() {
             const machineId = $(this).val();
-            $('#machineNumberSelect').prop('disabled', true).html('<option value="">- IDENTIFY_UNIT_ID -</option>');
+            $('#machineNumberSelect').prop('disabled', true).html('<option value="">- Pilih No Mesin -</option>');
             setInitialState();
 
             if (machineId) {
                 $.get('@Url.Action("GetMachineNumbers", "Inspection")', { machineId: machineId }, function(data) {
-                    let options = '<option value="">- IDENTIFY_UNIT_ID -</option>';
+                    let options = '<option value="">- Pilih No Mesin -</option>';
                     if (data && data.length > 0) {
                         data.forEach(item => options += `<option value="${item.id}">${item.number}</option>`);
                     }
@@ -193,7 +165,7 @@
             const machineId = $('#machineSelect').val();
 
             if (machineNumberId && machineId) {
-                $('#detailText').text('SYNCING_STREAM...');
+                $('#detailText').text('Loading data...');
                 
                 $.post('@Url.Action("StartInspection", "Inspection")', 
                     { machineId: machineId, machineNumberId: machineNumberId },
@@ -234,10 +206,8 @@
         function renderCurrentItem() {
             const item = currentState.items[currentState.currentIndex];
             const total = currentState.items.length;
-            const progressPercent = ((currentState.currentIndex + 1) / total) * 100;
             
-            $('#progressText').text(`${currentState.currentIndex + 1} / ${total}`);
-            $('#progressBar').css('width', progressPercent + '%');
+            $('#progressText').text(`${currentState.currentIndex + 1}/${total}`);
             
             $('#detailText').text(item.detailName);
             $('#standardText').text(item.standardDescription);
@@ -245,7 +215,7 @@
             if (item.imagePath) {
                 $('#imageContainer').html(`<img src="${item.imagePath}" onclick="window.open(this.src, '_blank')">`);
             } else {
-                $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 5rem; opacity: 0.1;"></i>');
+                $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>');
             }
 
             $('input[name="currentJudgement"]').prop('checked', false);
@@ -260,9 +230,9 @@
             $('#prevBtn').css('visibility', currentState.currentIndex === 0 ? 'hidden' : 'visible');
             
             if (currentState.currentIndex === total - 1) {
-                 $('#nextBtn').html('<i class="ph-check-bold"></i> EXECUTE_FINISH_AUDIT');
+                 $('#nextBtn').text('FINISH');
             } else {
-                 $('#nextBtn').html('<i class="ph-arrow-right-bold"></i> EXECUTE_NEXT');
+                 $('#nextBtn').text('NEXT');
             }
         }
 
@@ -297,7 +267,7 @@
         }
 
         function showCompletion() {
-            $('.terminal-shell').hide();
+            $('#selectionSection, #inspectionSection').hide();
             $('#completionSection').fadeIn();
         }
     </script>
