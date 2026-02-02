@@ -4,52 +4,70 @@
     ViewData["Title"] = "Inspection History";
 }
 
-<div class="container fade-in">
-    <div class="glass-card">
-        <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 2rem; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-            📊 Inspection History
-        </h1>
+<div class="container fade-in" style="padding-top: 1rem;">
+    <!-- Page Header -->
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <div style="width: 4px; height: 32px; background: #3b82f6; border-radius: 2px; box-shadow: 0 0 10px #3b82f6;"></div>
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; margin: 0;">Inspection History</h1>
+    </div>
 
+    <!-- Main Card -->
+    <div class="glass-card" style="padding: 0; overflow: hidden; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05);">
+        
         @if (Model != null && Model.Any())
         {
-            <div class="table-container">
-                <table class="data-table">
+            <div class="table-responsive">
+                <table class="history-table" style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Machine</th>
-                            <th>Machine No</th>
-                            <th>Inspector</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Items</th>
-                            <th>Actions</th>
+                            <th class="th-style" style="width: 80px;">ID</th>
+                            <th class="th-style">MACHINE</th>
+                            <th class="th-style">NO.</th>
+                            <th class="th-style">INSPECTOR</th>
+                            <th class="th-style">DATE</th>
+                            <th class="th-style">STATUS</th>
+                            <th class="th-style">ITEMS</th>
+                            <th class="th-style" style="text-align: right;">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var session in Model)
                         {
-                            <tr>
-                                <td><strong>#@session.Id</strong></td>
-                                <td>@session.MachineNumber.Machine.Name</td>
-                                <td>@session.MachineNumber.Number</td>
-                                <td>@session.InspectorName</td>
-                                <td>@session.InspectionDate.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td>
+                            <tr class="tr-hover">
+                                <td class="td-style font-mono" style="color: #64748b;">#@session.Id</td>
+                                <td class="td-style fw-bold text-white">@session.MachineNumber.Machine.Name</td>
+                                <td class="td-style text-secondary">@session.MachineNumber.Number</td>
+                                <td class="td-style">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="width: 24px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #94a3b8;">
+                                            <i class="ph-user"></i>
+                                        </div>
+                                        <span style="color: #cbd5e1;">@session.InspectorName</span>
+                                    </div>
+                                </td>
+                                <td class="td-style font-mono" style="color: #94a3b8; font-size: 0.85rem;">@session.InspectionDate.ToString("dd MMM yyyy, HH:mm")</td>
+                                <td class="td-style">
                                     @if (session.IsCompleted)
                                     {
-                                        <span class="badge badge-success">Completed</span>
+                                        <span class="status-badge success">
+                                            <i class="ph-check-circle-fill"></i> Completed
+                                        </span>
                                     }
                                     else
                                     {
-                                        <span class="badge badge-warning">In Progress</span>
+                                        <span class="status-badge warning">
+                                            <i class="ph-clock-fill"></i> In Progress
+                                        </span>
                                     }
                                 </td>
-                                <td>@session.InspectionResults.Count items</td>
-                                <td>
-                                    <a href="@Url.Action("Details", "History", new { id = session.Id })" 
-                                       style="color: var(--primary-light); text-decoration: none; font-weight: 600;">
-                                        View Details
+                                <td class="td-style" style="color: #94a3b8;">
+                                    <span style="background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">
+                                        @session.InspectionResults.Count
+                                    </span>
+                                </td>
+                                <td class="td-style" style="text-align: right;">
+                                    <a href="@Url.Action("Details", "History", new { id = session.Id })" class="action-btn">
+                                        Details <i class="ph-arrow-right"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -60,16 +78,114 @@
         }
         else
         {
-            <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
-                <h3>No inspection history found</h3>
-                <p>Start your first inspection to see data here</p>
-                <a href="@Url.Action("Index", "Inspection")" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-block; text-decoration: none;">
-                    Start Inspection
+            <div style="text-align: center; padding: 5rem 2rem; color: #64748b;">
+                <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.03); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+                    <i class="ph-clipboard-text" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                </div>
+                <h3 style="color: #cbd5e1; font-weight: 600; margin-bottom: 0.5rem;">No History Found</h3>
+                <p style="margin-bottom: 2rem;">You haven't performed any inspections yet.</p>
+                <a href="@Url.Action("Index", "Inspection")" class="neural-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;">
+                    <i class="ph-plus-bold"></i> Start Inspection
                 </a>
             </div>
         }
     </div>
 </div>
 
+<style>
+    /* Table Styling */
+    .th-style {
+        padding: 1rem 1.5rem;
+        background: rgba(15, 23, 42, 0.4);
+        color: #64748b;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: left;
+    }
+    
+    .td-style {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        vertical-align: middle;
+        font-size: 0.9rem;
+        color: #e2e8f0;
+    }
+    
+    .tr-hover:last-child .td-style {
+        border-bottom: none;
+    }
 
+    .tr-hover:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    
+    .tr-hover:hover .td-style {
+        color: #fff;
+    }
+    
+    /* Font Mono for ID & Date */
+    .font-mono {
+        font-family: 'JetBrains Mono', monospace; 
+        /* Fallback if JetBrains isn't loaded, plain monospace works too */
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 1px solid transparent;
+    }
+    
+    .status-badge.success {
+        background: rgba(16, 185, 129, 0.1);
+        color: #34d399;
+        border-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+    }
+    
+    .status-badge.warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: #fbbf24;
+        border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    /* Action Button */
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: rgba(129, 140, 248, 0.1);
+        color: #818cf8;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(129, 140, 248, 0.2);
+    }
+    
+    .action-btn:hover {
+        background: rgba(129, 140, 248, 0.2);
+        color: #fff;
+        border-color: rgba(129, 140, 248, 0.4);
+        transform: translateY(-1px);
+    }
+
+    /* Glass Card override */
+    .glass-card {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(20px);
+        border-radius: 16px; 
+        border: 1px solid rgba(255, 255, 255, 0.08); 
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+</style>

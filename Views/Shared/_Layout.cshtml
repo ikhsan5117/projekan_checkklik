@@ -38,10 +38,32 @@
                     <span class="link-text">History</span>
                 </a>
                 <div class="nav-divider"></div>
-                <a href="@Url.Action("Index", "Admin")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")">
-                    <i class="ph-gear-six"></i>
-                    <span class="link-text">Settings</span>
-                </a>
+                
+                <!-- System Management Dropdown -->
+                <div class="nav-dropdown">
+                    <!-- Parent Menu -->
+                    <div class="nav-link has-submenu" onclick="toggleDropdown(this)">
+                        <i class="ph-gear-six"></i>
+                        <span class="link-text">Manajemen Sistem</span>
+                        <i class="ph-caret-down dropdown-arrow"></i>
+                    </div>
+                    
+                    <!-- Submenu -->
+                    <div class="submenu">
+                        <a href="@Url.Action("Index", "MachineData")" class="nav-link submenu-item" title="Data Mesin">
+                            <i class="ph-hard-drives"></i>
+                            <span class="submenu-text">Data Mesin</span>
+                        </a>
+                        <a href="@Url.Action("Index", "ChecklistData")" class="nav-link submenu-item" title="Data Checklist">
+                            <i class="ph-clipboard-text"></i>
+                            <span class="submenu-text">Data Checklist</span>
+                        </a>
+                        <a href="@Url.Action("Index", "UserManagement")" class="nav-link submenu-item" title="Manajemen User">
+                            <i class="ph-users"></i>
+                            <span class="submenu-text">Manajemen User</span>
+                        </a>
+                    </div>
+                </div>
             </nav>
 
             <div class="sidebar-footer">
@@ -74,7 +96,7 @@
                 </div>
 
                 <div class="nav-right">
-                    <!-- Real-time Command Clock (Stacked) -->
+                    <!-- Real-time Command Clock -->
                     <div class="nav-clock">
                         <div class="clock-time">
                             <i class="ph-clock-bold"></i>
@@ -113,96 +135,209 @@
         </main>
     </div>
 
+    <style>
+        /* --- SUBMENU STYLES (DEFAULT / EXPANDED) --- */
+        .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-top: 4px;
+        }
+        .submenu.open { max-height: 200px; }
+        
+        .submenu-item {
+            padding-left: 1rem !important;
+            font-size: 0.85rem !important;
+            color: #94a3b8 !important;
+            height: 42px !important;
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+        }
+        .submenu-item i {
+            font-size: 1.1rem;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+        .submenu-item:hover { color: #fff !important; background: rgba(255,255,255,0.05); }
+        .submenu-item:hover i { color: #818cf8; }
+        
+        .has-submenu { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .dropdown-arrow { font-size: 0.8rem; transition: transform 0.3s; margin-left: auto; }
+        .nav-dropdown.active .dropdown-arrow { transform: rotate(180deg); }
 
+
+        /* --- COLLAPSED SIDEBAR LOGIC --- */
+
+        /* 1. Force Overflow Visible so menu can pop out */
+        .sidebar.collapsed { width: 84px; overflow: visible !important; }
+        .sidebar.collapsed .nav-dropdown { position: relative; }
+
+        /* 2. Hide Text & Arrow */
+        .sidebar.collapsed .dropdown-arrow,
+        .sidebar.collapsed .link-text { display: none !important; }
+
+        /* 3. Floating Submenu Container (Sharp & Compact) */
+        .sidebar.collapsed .submenu {
+            display: none; 
+            max-height: none !important; 
+            
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 100%; 
+            width: 50px; /* Lebar pas untuk icon */
+            
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px; /* Lancip / Sharp corners */
+            padding: 8px 0;
+            margin-top: 8px;
+            
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+            overflow: hidden; /* Mencegah text bocor */
+            
+            box-shadow: 0 10px 40px -5px rgba(0,0,0,0.8);
+            z-index: 9999;
+        }
+
+        /* 4. Show Submenu when Active (Clicked) */
+        .sidebar.collapsed .nav-dropdown.active .submenu {
+            display: flex;
+            animation: slideDownFade 0.2s ease-out;
+        }
+
+        /* 5. Submenu Item Styling (Icon Only) */
+        .sidebar.collapsed .submenu-item {
+            padding: 0 !important;
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 4px; /* Lancip item juga */
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar.collapsed .submenu-item:hover {
+            background: rgba(129, 140, 248, 0.2);
+            border: 1px solid rgba(129, 140, 248, 0.3);
+        }
+
+        /* 6. Text Annihilator (Aggressive Hide) */
+        .sidebar.collapsed .submenu-text,
+        .sidebar.collapsed .submenu-item span {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            width: 0 !important;
+            font-size: 0 !important;
+            position: absolute;
+        }
+
+        /* 7. Icon Visibility */
+        .sidebar.collapsed .submenu-item i {
+            display: block !important;
+            margin: 0 !important;
+            font-size: 1.4rem !important;
+            color: #94a3b8;
+            position: static !important; /* Reset positioning */
+        }
+        
+        .sidebar.collapsed .submenu-item:hover i { 
+            color: #fff;
+            filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.6));
+        }
+
+        @@keyframes slideDownFade {
+            from { opacity: 0; transform: translate(-50%, -15px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+    </style>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="https://unpkg.com/phosphor-icons"></script>
     <script>
+        function toggleDropdown(element) {
+            // Simple toggle logic regardless of sidebar state
+            const parent = element.parentElement;
+            const submenu = parent.querySelector('.submenu');
+            
+            parent.classList.toggle('active');
+            
+            // Special handling for normal state animation
+            if (!document.getElementById('sidebar').classList.contains('collapsed')) {
+                 submenu.classList.toggle('open');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('sidebarToggle');
             
-            // 1. Persistence: Restore Sidebar State
+            // 1. Persistence
             const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
             if (isCollapsed && window.innerWidth > 1024) {
                 sidebar.classList.add('collapsed');
             }
 
-            // 2. Real-time Clock Logic
+            // 2. Clock
             function updateClock() {
                 const now = new Date();
-                const timeStr = now.toLocaleTimeString('en-US', { 
-                    hour12: false, 
-                    hour: '2-digit', 
-                    minute: '2-digit', 
-                    second: '2-digit' 
-                });
-                const dateStr = now.toLocaleDateString('en-GB', { 
-                    day: '2-digit', 
-                    month: 'short', 
-                    year: 'numeric' 
-                });
-                
-                document.getElementById('navTime').textContent = timeStr;
-                document.getElementById('navDate').textContent = dateStr;
+                document.getElementById('navTime').textContent = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                document.getElementById('navDate').textContent = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
             }
             setInterval(updateClock, 1000);
             updateClock();
-
-            // 3. Fullscreen Toggle Logic
+            
+            // 3. Fullscreen
             const fsBtn = document.getElementById('fullscreenToggle');
             const fsIcon = fsBtn.querySelector('i');
-
             fsBtn.addEventListener('click', () => {
                 if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(err => {
-                        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-                    });
+                    document.documentElement.requestFullscreen().catch(e => console.error(e));
                     fsIcon.classList.replace('ph-corners-out', 'ph-corners-in');
                 } else {
                     document.exitFullscreen();
                     fsIcon.classList.replace('ph-corners-in', 'ph-corners-out');
                 }
             });
-
-            // Update icon on ESC or other system exits
             document.addEventListener('fullscreenchange', () => {
-                if (!document.fullscreenElement) {
-                    fsIcon.classList.replace('ph-corners-in', 'ph-corners-out');
-                }
+                if (!document.fullscreenElement) fsIcon.classList.replace('ph-corners-in', 'ph-corners-out');
             });
 
-            // Sidebar Toggle Logic
+            // 4. Sidebar Toggle
             toggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Check for Desktop vs Tablet/Mobile
                 if (window.innerWidth > 1024) {
                     sidebar.classList.toggle('collapsed');
                     localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+                    
+                    // Logic reset dihapus agar status dropdown tetap tersimpan (persist)
                 } else {
-                    // For Tablet & Mobile, we use the active overlay mode
                     sidebar.classList.toggle('mobile-active');
                 }
             });
 
-            // Close sidebar when clicking outside on mobile/tablet
             document.addEventListener('click', (e) => {
-                const isMobileOrTablet = window.innerWidth <= 1024;
-                const isClickOutside = !sidebar.contains(e.target) && !toggleBtn.contains(e.target);
-                
-                if (isMobileOrTablet && isClickOutside && sidebar.classList.contains('mobile-active')) {
+                if (window.innerWidth <= 1024 && !sidebar.contains(e.target) && !toggleBtn.contains(e.target) && sidebar.classList.contains('mobile-active')) {
                     sidebar.classList.remove('mobile-active');
                 }
             });
 
-            // Card Spotlight Effect
+            // 5. Card Spotlight
             document.addEventListener('mousemove', (e) => {
                 document.querySelectorAll('.bento-card, .stat-box, .nav-link').forEach(card => {
                     const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    card.style.setProperty('--mouse-x', `${x}px`);
-                    card.style.setProperty('--mouse-y', `${y}px`);
+                    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
                 });
             });
         });

@@ -34,9 +34,9 @@
     </div>
 
     <!-- Main Grid -->
-    <div class="quantum-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
+    <div class="quantum-grid">
         <!-- Analytics (Span 3x1) -->
-        <div class="bento-card analytics-card" style="grid-column: span 3; grid-row: span 1;">
+        <div class="bento-card analytics-card">
             <!-- Breadcrumb Navigation -->
             <div id="breadcrumb" style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; padding: 0.75rem 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
                 <!-- Back Button (Hidden by default) -->
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Live Feed (Span 1x2) -->
-        <div class="bento-card feed-card" style="grid-row: span 2;">
+        <div class="bento-card feed-card">
             <div class="card-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0; font-weight: 700; color: #f8fafc;">Neural Stream</h3>
                 <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.8rem; background: rgba(34, 211, 238, 0.15); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #22d3ee; animation: pulse 2s infinite;">
@@ -98,61 +98,103 @@
         </div>
         
         <style>
+            /* Default Grid (Desktop > 1400px) */
+            .quantum-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 2rem;
+            }
+            .analytics-card {
+                grid-column: span 3;
+                grid-row: span 1;
+            }
+            .feed-card {
+                grid-column: span 1; /* Explicitly set */
+                grid-row: span 2;
+            }
+            .stats-card {
+                grid-column: span 1;
+            }
+
+            /* Pulse Animation */
             @@keyframes pulse {
                 0%, 100% { opacity: 1; }
                 50% { opacity: 0.7; }
             }
             
-            /* Custom scrollbar for Neural Stream */
-            .feed-card div::-webkit-scrollbar {
-                width: 6px;
+            /* Custom Scrollbar */
+            .feed-card div::-webkit-scrollbar { width: 6px; }
+            .feed-card div::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+            .feed-card div::-webkit-scrollbar-thumb { background: rgba(129, 140, 248, 0.3); border-radius: 10px; }
+            .feed-card div::-webkit-scrollbar-thumb:hover { background: rgba(129, 140, 248, 0.5); }
+
+            /* --- RESPONSIVE MEDIA QUERIES --- */
+
+            /* Laptop Standard (Max 1400px) */
+            @@media (max-width: 1400px) {
+                .quantum-grid {
+                    grid-template-columns: repeat(3, 1fr); /* Switch to 3 columns */
+                    gap: 1.5rem;
+                }
+                .analytics-card {
+                    grid-column: span 3; /* Full width chart */
+                }
+                .feed-card {
+                    grid-column: span 3; /* Feed moves to bottom, full width */
+                    grid-row: auto; /* Remove row span constraint */
+                    height: 350px; /* Fixed height for feed */
+                }
+                .stats-card, .bento-card:not(.analytics-card):not(.feed-card) {
+                    /* Stats cards take 1 column each */
+                    grid-column: span 1; 
+                }
             }
-            .feed-card div::-webkit-scrollbar-track {
-                background: rgba(255,255,255,0.02);
-                border-radius: 10px;
-            }
-            .feed-card div::-webkit-scrollbar-thumb {
-                background: rgba(129, 140, 248, 0.3);
-                border-radius: 10px;
-            }
-            .feed-card div::-webkit-scrollbar-thumb:hover {
-                background: rgba(129, 140, 248, 0.5);
+
+            /* Tablet/Small Laptop (Max 992px) */
+            @@media (max-width: 992px) {
+                .quantum-grid {
+                    grid-template-columns: 1fr; /* Single column stack */
+                }
+                .analytics-card, .feed-card, .stats-card, .bento-card {
+                    grid-column: span 1;
+                    grid-row: auto;
+                }
             }
         </style>
 
         <!-- Total OK Card -->
-        <div id="cardOk" class="bento-card" onclick="toggleFilter('ok')" style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.05)); border: 1px solid rgba(52, 211, 153, 0.3); cursor: pointer; transition: all 0.3s ease;">
+        <div id="cardOk" class="bento-card" onclick="toggleFilter('ok')" style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.05)); border: 1px solid rgba(52, 211, 153, 0.3); cursor: pointer; transition: all 0.3s ease; padding: 1.25rem;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
-                    <p style="color: #94a3b8; margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.9rem;">Total OK</p>
-                    <h2 id="totalOkCount" style="font-size: 3rem; font-weight: 800; color: #34d399; margin: 0;">@Model.TotalOkCount</h2>
-                    <p id="filterBadgeOk" style="display:none; color: #34d399; font-size: 0.75rem; background: rgba(52, 211, 153, 0.1); padding: 2px 8px; border-radius: 4px; margin-top: 5px; width: fit-content;">Filtered</p>
+                    <p style="color: #94a3b8; margin: 0 0 0.25rem 0; font-weight: 600; font-size: 0.85rem;">Total OK</p>
+                    <h2 id="totalOkCount" style="font-size: 2.2rem; font-weight: 800; color: #34d399; margin: 0; line-height: 1;">@Model.TotalOkCount</h2>
+                    <p id="filterBadgeOk" style="display:none; color: #34d399; font-size: 0.7rem; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content;">Filtered</p>
                 </div>
-                <i class="ph-check-circle-fill" style="font-size: 4rem; color: #34d399; opacity: 0.5;"></i>
+                <i class="ph-check-circle-fill" style="font-size: 2.8rem; color: #34d399; opacity: 0.5;"></i>
             </div>
         </div>
 
         <!-- Total NG Card -->
-        <div id="cardNg" class="bento-card" onclick="toggleFilter('ng')" style="background: linear-gradient(135deg, rgba(251, 113, 133, 0.1), rgba(251, 113, 133, 0.05)); border: 1px solid rgba(251, 113, 133, 0.3); cursor: pointer; transition: all 0.3s ease;">
+        <div id="cardNg" class="bento-card" onclick="toggleFilter('ng')" style="background: linear-gradient(135deg, rgba(251, 113, 133, 0.1), rgba(251, 113, 133, 0.05)); border: 1px solid rgba(251, 113, 133, 0.3); cursor: pointer; transition: all 0.3s ease; padding: 1.25rem;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
-                    <p style="color: #94a3b8; margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.9rem;">Total NG</p>
-                    <h2 id="totalNgCount" style="font-size: 3rem; font-weight: 800; color: #fb7185; margin: 0;">@Model.TotalNgCount</h2>
-                    <p id="filterBadgeNg" style="display:none; color: #fb7185; font-size: 0.75rem; background: rgba(251, 113, 133, 0.1); padding: 2px 8px; border-radius: 4px; margin-top: 5px; width: fit-content;">Filtered</p>
+                    <p style="color: #94a3b8; margin: 0 0 0.25rem 0; font-weight: 600; font-size: 0.85rem;">Total NG</p>
+                    <h2 id="totalNgCount" style="font-size: 2.2rem; font-weight: 800; color: #fb7185; margin: 0; line-height: 1;">@Model.TotalNgCount</h2>
+                    <p id="filterBadgeNg" style="display:none; color: #fb7185; font-size: 0.7rem; background: rgba(251, 113, 133, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content;">Filtered</p>
                 </div>
-                <i class="ph-warning-octagon-fill" style="font-size: 4rem; color: #fb7185; opacity: 0.5;"></i>
+                <i class="ph-warning-octagon-fill" style="font-size: 2.8rem; color: #fb7185; opacity: 0.5;"></i>
             </div>
         </div>
 
         <!-- Total Inspections Card -->
-        <div id="cardTotal" class="bento-card" onclick="toggleFilter('all')" style="background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(129, 140, 248, 0.05)); border: 1px solid rgba(129, 140, 248, 0.3); cursor: pointer; transition: all 0.3s ease;">
+        <div id="cardTotal" class="bento-card" onclick="toggleFilter('all')" style="background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(129, 140, 248, 0.05)); border: 1px solid rgba(129, 140, 248, 0.3); cursor: pointer; transition: all 0.3s ease; padding: 1.25rem;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
-                    <p style="color: #94a3b8; margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.9rem;">Total Inspections</p>
-                    <h2 id="totalInspectionsCount" style="font-size: 3rem; font-weight: 800; color: #818cf8; margin: 0;">@(Model.TotalOkCount + Model.TotalNgCount)</h2>
-                    <p id="filterBadgeTotal" style="display:none; color: #818cf8; font-size: 0.75rem; background: rgba(129, 140, 248, 0.1); padding: 2px 8px; border-radius: 4px; margin-top: 5px; width: fit-content;">Filtered</p>
+                    <p style="color: #94a3b8; margin: 0 0 0.25rem 0; font-weight: 600; font-size: 0.85rem;">Total Inspections</p>
+                    <h2 id="totalInspectionsCount" style="font-size: 2.2rem; font-weight: 800; color: #818cf8; margin: 0; line-height: 1;">@(Model.TotalOkCount + Model.TotalNgCount)</h2>
+                    <p id="filterBadgeTotal" style="display:none; color: #818cf8; font-size: 0.7rem; background: rgba(129, 140, 248, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content;">Filtered</p>
                 </div>
-                <i class="ph-clipboard-text-fill" style="font-size: 4rem; color: #818cf8; opacity: 0.5;"></i>
+                <i class="ph-clipboard-text-fill" style="font-size: 2.8rem; color: #818cf8; opacity: 0.5;"></i>
             </div>
         </div>
         
