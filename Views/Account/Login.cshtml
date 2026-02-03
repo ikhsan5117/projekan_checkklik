@@ -3,6 +3,22 @@
 @{
     ViewData["Title"] = "Access Control";
     Layout = null; // Standalone layout for login
+
+    // Helper function to generate random box shadows for stars
+    string MultipleBoxShadows(int n)
+    {
+        var random = new Random();
+        var shadows = new List<string>();
+        for (int i = 0; i < n; i++)
+        {
+            shadows.Add($"{random.Next(0, 3000)}px {random.Next(0, 3000)}px #FFF");
+        }
+        return string.Join(", ", shadows);
+    }
+
+    var shadowsSmall = MultipleBoxShadows(1000);
+    var shadowsMedium = MultipleBoxShadows(300);
+    var shadowsBig = MultipleBoxShadows(150);
 }
 
 <!DOCTYPE html>
@@ -15,18 +31,15 @@
     <link rel="stylesheet" href="https://unpkg.com/@@phosphor-icons/web@@2.0.3/src/regular/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@@phosphor-icons/web@@2.0.3/src/fill/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            background-color: #0f172a;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
             color: #f1f5f9;
             font-family: 'Outfit', sans-serif;
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(129, 140, 248, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(34, 211, 238, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(251, 113, 133, 0.08) 0%, transparent 60%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -36,41 +49,422 @@
             position: relative;
         }
 
-        /* Animated Background Orbs */
-        body::before, body::after {
+        /* Animated Gradient Orbs */
+        body::before {
             content: '';
             position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.3), transparent 70%);
             border-radius: 50%;
+            top: -200px;
+            left: -200px;
             filter: blur(80px);
-            opacity: 0.3;
-            animation: float 8s ease-in-out infinite;
-        }
-        
-        body::before {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(129, 140, 248, 0.4), transparent);
-            top: -100px;
-            left: -100px;
-            animation-delay: 0s;
-        }
-        
-        body::after {
-            width: 350px;
-            height: 350px;
-            background: radial-gradient(circle, rgba(34, 211, 238, 0.3), transparent);
-            bottom: -100px;
-            right: -100px;
-            animation-delay: 4s;
+            animation: float1 20s ease-in-out infinite;
+            z-index: 0;
         }
 
-        @@keyframes float {
+        body::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.25), transparent 70%);
+            border-radius: 50%;
+            bottom: -150px;
+            right: -150px;
+            filter: blur(80px);
+            animation: float2 18s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        /* Additional Orbs */
+        .gradient-orb-1 {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(20, 184, 166, 0.2), transparent 70%);
+            border-radius: 50%;
+            top: 50%;
+            left: 10%;
+            filter: blur(70px);
+            animation: float3 25s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .gradient-orb-2 {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.2), transparent 70%);
+            border-radius: 50%;
+            top: 20%;
+            right: 15%;
+            filter: blur(75px);
+            animation: float4 22s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .gradient-orb-3 {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.25), transparent 70%);
+            border-radius: 50%;
+            bottom: 30%;
+            left: 50%;
+            filter: blur(65px);
+            animation: float5 28s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @@keyframes float1 {
             0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(30px, -30px) scale(1.1); }
+            33% { transform: translate(100px, -50px) scale(1.1); }
+            66% { transform: translate(-50px, 100px) scale(0.9); }
+        }
+
+        @@keyframes float2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-80px, 60px) scale(1.15); }
+            66% { transform: translate(60px, -80px) scale(0.95); }
+        }
+
+        @@keyframes float3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(120px, -100px) scale(1.2); }
+        }
+
+        @@keyframes float4 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-100px, 80px) scale(1.1); }
+        }
+
+        @@keyframes float5 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(80px, 120px) scale(1.15); }
+        }
+
+        /* --- PARALLAX STARS CSS --- */
+        #stars {
+            width: 1px;
+            height: 1px;
+            background: transparent;
+            box-shadow: @shadowsSmall;
+            animation: animStar 100s linear infinite;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        #stars:after {
+            content: " ";
+            position: absolute;
+            top: 3000px;
+            width: 1px;
+            height: 1px;
+            background: transparent;
+            box-shadow: @shadowsSmall;
+        }
+
+        #stars2 {
+            width: 2px;
+            height: 2px;
+            background: transparent;
+            box-shadow: @shadowsMedium;
+            animation: animStar 200s linear infinite;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        #stars2:after {
+            content: " ";
+            position: absolute;
+            top: 3000px;
+            width: 2px;
+            height: 2px;
+            background: transparent;
+            box-shadow: @shadowsMedium;
+        }
+
+        #stars3 {
+            width: 3px;
+            height: 3px;
+            background: transparent;
+            box-shadow: @shadowsBig;
+            animation: animStar 300s linear infinite;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        #stars3:after {
+            content: " ";
+            position: absolute;
+            top: 3000px;
+            width: 3px;
+            height: 3px;
+            background: transparent;
+            box-shadow: @shadowsBig;
+        }
+
+        @@keyframes animStar {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-3000px); }
+        }
+
+        /* Shooting Stars Animation */
+        .night {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            transform: rotate(45deg);
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .shooting_star {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            height: 3px;
+            background: linear-gradient(-45deg, rgba(95, 145, 255, 1), rgba(0, 0, 255, 0));
+            border-radius: 999px;
+            filter: drop-shadow(0 0 10px rgba(105, 155, 255, 1));
+            animation:
+                tail 3000ms ease-in-out infinite,
+                shooting 3000ms ease-in-out infinite;
+        }
+
+        .shooting_star::before,
+        .shooting_star::after {
+            content: '';
+            position: absolute;
+            top: calc(50% - 1.5px);
+            right: 0;
+            height: 3px;
+            background: linear-gradient(-45deg, rgba(0, 0, 255, 0), rgba(95, 145, 255, 1), rgba(0, 0, 255, 0));
+            border-radius: 100%;
+            animation: shining 3000ms ease-in-out infinite;
+        }
+
+        .shooting_star::before {
+            transform: translateX(50%) rotateZ(45deg);
+        }
+
+        .shooting_star::after {
+            transform: translateX(50%) rotateZ(-45deg);
+        }
+
+        /* Random positions and delays for each shooting star */
+        /* Stars behind card (z-index: 1) */
+        .shooting_star:nth-child(1) { 
+            top: calc(50% - 350px); left: calc(50% - 450px); animation-delay: 1000ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(95, 145, 255, 1), rgba(0, 0, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(105, 155, 255, 1));
+        }
+        .shooting_star:nth-child(1)::before, .shooting_star:nth-child(1)::after { animation-delay: 1000ms; }
+        
+        .shooting_star:nth-child(2) { 
+            top: calc(50% + 280px); left: calc(50% - 300px); animation-delay: 2000ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(34, 211, 238, 1), rgba(0, 255, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(34, 211, 238, 1));
+        }
+        .shooting_star:nth-child(2)::before, .shooting_star:nth-child(2)::after { 
+            animation-delay: 2000ms;
+            background: linear-gradient(-45deg, rgba(0, 255, 255, 0), rgba(34, 211, 238, 1), rgba(0, 255, 255, 0));
+        }
+        
+        .shooting_star:nth-child(3) { 
+            top: calc(50% - 250px); left: calc(50% + 400px); animation-delay: 500ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(168, 85, 247, 1), rgba(128, 0, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(168, 85, 247, 1));
+        }
+        .shooting_star:nth-child(3)::before, .shooting_star:nth-child(3)::after { 
+            animation-delay: 500ms;
+            background: linear-gradient(-45deg, rgba(128, 0, 255, 0), rgba(168, 85, 247, 1), rgba(128, 0, 255, 0));
+        }
+        
+        /* Stars in front of card (z-index: 100) - passing over */
+        .shooting_star:nth-child(4) { 
+            top: calc(50% + 320px); left: calc(50% + 250px); animation-delay: 3500ms; z-index: 100;
+            background: linear-gradient(-45deg, rgba(56, 189, 248, 1), rgba(0, 180, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 1));
+        }
+        .shooting_star:nth-child(4)::before, .shooting_star:nth-child(4)::after { 
+            animation-delay: 3500ms;
+            background: linear-gradient(-45deg, rgba(0, 180, 255, 0), rgba(56, 189, 248, 1), rgba(0, 180, 255, 0));
+        }
+        
+        .shooting_star:nth-child(5) { 
+            top: calc(50% - 400px); left: calc(50% - 150px); animation-delay: 1500ms; z-index: 100;
+            background: linear-gradient(-45deg, rgba(59, 130, 246, 1), rgba(0, 100, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 1));
+        }
+        .shooting_star:nth-child(5)::before, .shooting_star:nth-child(5)::after { animation-delay: 1500ms; }
+        
+        .shooting_star:nth-child(6) { 
+            top: calc(50% + 250px); left: calc(50% - 500px); animation-delay: 2500ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(20, 184, 166, 1), rgba(0, 200, 180, 0));
+            filter: drop-shadow(0 0 10px rgba(20, 184, 166, 1));
+        }
+        .shooting_star:nth-child(6)::before, .shooting_star:nth-child(6)::after { 
+            animation-delay: 2500ms;
+            background: linear-gradient(-45deg, rgba(0, 200, 180, 0), rgba(20, 184, 166, 1), rgba(0, 200, 180, 0));
+        }
+        
+        .shooting_star:nth-child(7) { 
+            top: calc(50% - 300px); left: calc(50% + 350px); animation-delay: 800ms; z-index: 100;
+            background: linear-gradient(-45deg, rgba(139, 92, 246, 1), rgba(100, 0, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(139, 92, 246, 1));
+        }
+        .shooting_star:nth-child(7)::before, .shooting_star:nth-child(7)::after { 
+            animation-delay: 800ms;
+            background: linear-gradient(-45deg, rgba(100, 0, 255, 0), rgba(139, 92, 246, 1), rgba(100, 0, 255, 0));
+        }
+        
+        .shooting_star:nth-child(8) { 
+            top: calc(50% + 380px); left: calc(50% - 380px); animation-delay: 3000ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(109, 40, 217, 1), rgba(90, 20, 200, 0));
+            filter: drop-shadow(0 0 10px rgba(109, 40, 217, 1));
+        }
+        .shooting_star:nth-child(8)::before, .shooting_star:nth-child(8)::after { 
+            animation-delay: 3000ms;
+            background: linear-gradient(-45deg, rgba(90, 20, 200, 0), rgba(109, 40, 217, 1), rgba(90, 20, 200, 0));
+        }
+        
+        .shooting_star:nth-child(9) { 
+            top: calc(50% - 150px); left: calc(50% + 480px); animation-delay: 1200ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(14, 165, 233, 1), rgba(0, 150, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(14, 165, 233, 1));
+        }
+        .shooting_star:nth-child(9)::before, .shooting_star:nth-child(9)::after { animation-delay: 1200ms; }
+        
+        .shooting_star:nth-child(10) { 
+            top: calc(50% + 300px); left: calc(50% + 300px); animation-delay: 4000ms; z-index: 100;
+            background: linear-gradient(-45deg, rgba(99, 102, 241, 1), rgba(80, 80, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(99, 102, 241, 1));
+        }
+        .shooting_star:nth-child(10)::before, .shooting_star:nth-child(10)::after { 
+            animation-delay: 4000ms;
+            background: linear-gradient(-45deg, rgba(80, 80, 255, 0), rgba(99, 102, 241, 1), rgba(80, 80, 255, 0));
+        }
+        
+        .shooting_star:nth-child(11) { 
+            top: calc(50% - 380px); left: calc(50% - 350px); animation-delay: 600ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(56, 189, 248, 1), rgba(0, 180, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 1));
+        }
+        .shooting_star:nth-child(11)::before, .shooting_star:nth-child(11)::after { animation-delay: 600ms; }
+        
+        .shooting_star:nth-child(12) { 
+            top: calc(50% + 220px); left: calc(50% - 420px); animation-delay: 2200ms; z-index: 100;
+            background: linear-gradient(-45deg, rgba(167, 139, 250, 1), rgba(120, 100, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(167, 139, 250, 1));
+        }
+        .shooting_star:nth-child(12)::before, .shooting_star:nth-child(12)::after { 
+            animation-delay: 2200ms;
+            background: linear-gradient(-45deg, rgba(120, 100, 255, 0), rgba(167, 139, 250, 1), rgba(120, 100, 255, 0));
+        }
+        
+        .shooting_star:nth-child(13) { 
+            top: calc(50% - 280px); left: calc(50% + 320px); animation-delay: 1800ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(45, 212, 191, 1), rgba(0, 220, 200, 0));
+            filter: drop-shadow(0 0 10px rgba(45, 212, 191, 1));
+        }
+        .shooting_star:nth-child(13)::before, .shooting_star:nth-child(13)::after { 
+            animation-delay: 1800ms;
+            background: linear-gradient(-45deg, rgba(0, 220, 200, 0), rgba(45, 212, 191, 1), rgba(0, 220, 200, 0));
+        }
+        
+        .shooting_star:nth-child(14) { 
+            top: calc(50% + 340px); left: calc(50% - 250px); animation-delay: 3200ms; z-index: 100;
+            background: linear-gradient(-45deg, rgba(13, 148, 136, 1), rgba(0, 160, 140, 0));
+            filter: drop-shadow(0 0 10px rgba(13, 148, 136, 1));
+        }
+        .shooting_star:nth-child(14)::before, .shooting_star:nth-child(14)::after { 
+            animation-delay: 3200ms;
+            background: linear-gradient(-45deg, rgba(0, 160, 140, 0), rgba(13, 148, 136, 1), rgba(0, 160, 140, 0));
+        }
+        
+        .shooting_star:nth-child(15) { 
+            top: calc(50% - 360px); left: calc(50% + 420px); animation-delay: 900ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(79, 70, 229, 1), rgba(60, 50, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(79, 70, 229, 1));
+        }
+        .shooting_star:nth-child(15)::before, .shooting_star:nth-child(15)::after { animation-delay: 900ms; }
+        
+        .shooting_star:nth-child(16) { 
+            top: calc(50% + 260px); left: calc(50% - 460px); animation-delay: 2800ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(6, 182, 212, 1), rgba(0, 200, 230, 0));
+            filter: drop-shadow(0 0 10px rgba(6, 182, 212, 1));
+        }
+        .shooting_star:nth-child(16)::before, .shooting_star:nth-child(16)::after { 
+            animation-delay: 2800ms;
+            background: linear-gradient(-45deg, rgba(0, 200, 230, 0), rgba(6, 182, 212, 1), rgba(0, 200, 230, 0));
+        }
+        
+        .shooting_star:nth-child(17) { 
+            top: calc(50% - 200px); left: calc(50% + 280px); animation-delay: 1400ms; z-index: 100;
+            background: linear-gradient(-45deg, rgba(124, 58, 237, 1), rgba(100, 40, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(124, 58, 237, 1));
+        }
+        .shooting_star:nth-child(17)::before, .shooting_star:nth-child(17)::after { 
+            animation-delay: 1400ms;
+            background: linear-gradient(-45deg, rgba(100, 40, 255, 0), rgba(124, 58, 237, 1), rgba(100, 40, 255, 0));
+        }
+        
+        .shooting_star:nth-child(18) { 
+            top: calc(50% + 360px); left: calc(50% - 320px); animation-delay: 3600ms; z-index: 1;
+            background: linear-gradient(-45deg, rgba(147, 51, 234, 1), rgba(130, 30, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(147, 51, 234, 1));
+        }
+        .shooting_star:nth-child(18)::before, .shooting_star:nth-child(18)::after { 
+            animation-delay: 3600ms;
+            background: linear-gradient(-45deg, rgba(130, 30, 255, 0), rgba(147, 51, 234, 1), rgba(130, 30, 255, 0));
+        }
+        
+        .shooting_star:nth-child(19) { 
+            top: calc(50% - 320px); left: calc(50% + 380px); animation-delay: 700ms; z-index: 100;
+            background: linear-gradient(-45deg, rgba(16, 185, 129, 1), rgba(0, 200, 150, 0));
+            filter: drop-shadow(0 0 10px rgba(16, 185, 129, 1));
+        }
+        .shooting_star:nth-child(19)::before, .shooting_star:nth-child(19)::after { 
+            animation-delay: 700ms;
+            background: linear-gradient(-45deg, rgba(0, 200, 150, 0), rgba(16, 185, 129, 1), rgba(0, 200, 150, 0));
+        }
+        
+        .shooting_star:nth-child(20) { 
+            top: calc(50% + 240px); left: calc(50% - 280px); animation-delay: 2600ms; z-index: 100;
+            background: linear-gradient(-45deg, rgba(129, 140, 248, 1), rgba(100, 120, 255, 0));
+            filter: drop-shadow(0 0 10px rgba(129, 140, 248, 1));
+        }
+        .shooting_star:nth-child(20)::before, .shooting_star:nth-child(20)::after { 
+            animation-delay: 2600ms;
+            background: linear-gradient(-45deg, rgba(100, 120, 255, 0), rgba(129, 140, 248, 1), rgba(100, 120, 255, 0));
+        }
+
+        @@keyframes tail {
+            0% { width: 0; }
+            30% { width: 200px; }
+            100% { width: 0; }
+        }
+
+        @@keyframes shining {
+            0% { width: 0; }
+            50% { width: 50px; }
+            100% { width: 0; }
+        }
+
+        @@keyframes shooting {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(500px); }
         }
 
         .login-card {
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -272,11 +666,31 @@
 </head>
 <body>
 
+    <!-- Gradient Orbs -->
+    <div class="gradient-orb-1"></div>
+    <div class="gradient-orb-2"></div>
+    <div class="gradient-orb-3"></div>
+
+    <!-- Parallax Pixel Stars -->
+    <div id='stars'></div>
+    <div id='stars2'></div>
+    <div id='stars3'></div>
+
+    <!-- Shooting Stars Background (Reduced to 3) -->
+    <div class="night">
+        <!-- Star 1 -->
+        <div class="shooting_star"></div>
+        <!-- Star 2 -->
+        <div class="shooting_star"></div>
+        <!-- Star 4 (now 3) - Keeping the one that passes over card -->
+        <div class="shooting_star"></div>
+    </div>
+
     <div class="login-card">
         <div class="brand-logo">
             <div class="logo-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
-                    <path d="M440-82q-76-8-141.5-41.5t-114-87Q136-264 108-333T80-480q0-91 36.5-168T216-780h-96v-80h240v240h-80v-109q-55 44-87.5 108.5T160-480q0 123 80.5 212.5T440-163v81Zm-17-214L254-466l56-56 113 113 227-227 56 57-283 283Zm177 196v-240h80v109q55-45 87.5-109T800-480q0-123-80.5-212.5T520-797v-81q152 15 256 128t104 270q0 91-36.5 168T744-180h96v80H600Z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
+                    <path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q53 0 100-15.5t86-44.5q-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160Zm0-360q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0-60Zm0 360Z"/>
                 </svg>
             </div>
             <h2>LOGIN</h2>

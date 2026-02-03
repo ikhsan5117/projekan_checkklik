@@ -81,10 +81,7 @@
                     </button>
                     
                     <!-- Global Adaptive Search -->
-                    <div class="search-wrapper-nav">
-                        <i class="ph-magnifying-glass"></i>
-                        <input type="text" placeholder="Search machine, inspector or logs..." id="globalSearch">
-                    </div>
+                    <!-- Global Search Removed -->
 
                     <div class="nav-divider-v"></div>
 
@@ -110,29 +107,50 @@
                         <i class="ph-corners-out"></i>
                     </button>
 
-                    <div class="nav-user-deck">
-                        <div class="user-avatar-hex">
-                            <div class="avatar-inner">@((User.Identity?.Name ?? "OP").Substring(0, 2).ToUpper())</div>
-                        </div>
-                        <div class="user-meta-vision">
-                            <span class="u-name">@(User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Guest")</span>
-                            <div class="u-role-tag">
-                                <span class="dot"></span>
-                                @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "VISITOR")
+                    <div class="nav-user-deck-wrapper" onclick="toggleUserDropdown()">
+                        <div class="nav-user-deck">
+                            <div class="user-avatar-hex">
+                                <div class="avatar-inner">@((User.Identity?.Name ?? "OP").Substring(0, 2).ToUpper())</div>
                             </div>
-                        </div>
-                        <div class="user-dropdown-wrapper">
-                             <button class="user-dropdown-btn" onclick="toggleUserDropdown()">
+                            <div class="user-meta-vision">
+                                <span class="u-name">@(User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Guest")</span>
+                                <div class="u-role-tag">
+                                    <span class="dot"></span>
+                                    @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "VISITOR")
+                                </div>
+                            </div>
+                            <div class="dropdown-caret">
                                 <i class="ph-caret-down-bold"></i>
-                            </button>
-                            <div class="user-menu-dropdown" id="userDropdown">
-                                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
-                                    <button type="submit" class="user-menu-item logout">
-                                        <i class="ph-sign-out"></i>
-                                        <span>Logout Sequence</span>
-                                    </button>
-                                </form>
                             </div>
+                        </div>
+
+                        <!-- Enhanced Dropdown Menu -->
+                        <div class="user-menu-dropdown" id="userDropdown">
+                            <!-- User Info Card -->
+                            <div class="dropdown-user-info">
+                                <div class="info-header">User Profile</div>
+                                <div class="info-row">
+                                    <i class="ph-identification-card"></i>
+                                    <span>ID: @(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "N/A")</span>
+                                </div>
+                                <div class="info-row">
+                                    <i class="ph-envelope-simple"></i>
+                                    <span>@(User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "No Email")</span>
+                                </div>
+                                <div class="info-row">
+                                    <i class="ph-buildings"></i>
+                                    <span>Dep: @(User.FindFirst("Department")?.Value ?? "General")</span>
+                                </div>
+                            </div>
+                            
+                            <div class="dropdown-divider"></div>
+
+                            <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                <button type="submit" class="user-menu-item logout">
+                                    <i class="ph-sign-out"></i>
+                                    <span>Logout System</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -393,15 +411,24 @@
         });
 
         function toggleUserDropdown() {
-            document.querySelector('.user-menu-dropdown').classList.toggle('active');
+            const wrapper = document.querySelector('.nav-user-deck-wrapper');
+            const dropdown = document.getElementById('userDropdown');
+            wrapper.classList.toggle('active');
+            dropdown.classList.toggle('active');
         }
         
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
-             const dropdown = document.querySelector('.user-menu-dropdown');
-             const btn = document.querySelector('.user-dropdown-btn');
-             if (dropdown && dropdown.classList.contains('active') && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+             const wrapper = document.querySelector('.nav-user-deck-wrapper');
+             const dropdown = document.getElementById('userDropdown');
+             
+             if (wrapper && wrapper.contains(e.target)) {
+                 return; // Click inside wrapper, ignore
+             }
+
+             if (dropdown && dropdown.classList.contains('active')) {
                  dropdown.classList.remove('active');
+                 wrapper.classList.remove('active'); // Reset arrow rotation
              }
         });
     </script>
