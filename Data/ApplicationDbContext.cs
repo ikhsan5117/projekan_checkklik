@@ -233,7 +233,7 @@ namespace AMRVI.Data
                     Username = "admin",
                     FullName = "Administrator",
                     Email = "admin@amrvi.com",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                    Password = "admin123", // Plain text (DEV ONLY)
                     Role = "Admin",
                     Department = "IT",
                     IsActive = true,
@@ -245,7 +245,7 @@ namespace AMRVI.Data
                     Username = "supervisor",
                     FullName = "Supervisor Production",
                     Email = "supervisor@amrvi.com",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("super123"),
+                    Password = "super123", // Plain text (DEV ONLY)
                     Role = "Supervisor",
                     Department = "Production",
                     IsActive = true,
@@ -257,7 +257,7 @@ namespace AMRVI.Data
                     Username = "operator1",
                     FullName = "Operator Mesin 1",
                     Email = "operator1@amrvi.com",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("user123"),
+                    Password = "user123", // Plain text (DEV ONLY)
                     Role = "User",
                     Department = "Production",
                     IsActive = true,

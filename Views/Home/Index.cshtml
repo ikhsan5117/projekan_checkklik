@@ -35,133 +35,6 @@
 
     <!-- Main Grid -->
     <div class="quantum-grid">
-        <!-- Analytics (Span 3x1) -->
-        <div class="bento-card analytics-card">
-            <!-- Breadcrumb Navigation -->
-            <div id="breadcrumb" style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; padding: 0.75rem 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
-                <!-- Back Button (Hidden by default) -->
-                <button id="btnBack" onclick="goUpLevel()" style="display: none; align-items: center; gap: 0.5rem; background: rgba(129, 140, 248, 0.2); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: 'Sora', sans-serif; transition: all 0.2s ease;">
-                    <i class="ph-arrow-u-up-left-bold"></i> Back
-                </button>
-                
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="ph-house-fill" style="color: #64748b; font-size: 1.1rem;"></i>
-                    <span id="breadcrumbPath" style="color: #94a3b8; font-weight: 600; font-size: 0.95rem;"></span>
-                </div>
-            </div>
-            
-            <div class="card-top">
-                <div class="card-identity">
-                    <div class="card-orb secondary"></div>
-                    <h3>Performance Analytics</h3>
-                </div>
-                <div class="trend-pill @(Model.OkPercentage >= Model.NgPercentage ? "positive" : "negative")">
-                    OK: @Model.OkPercentage.ToString("F1")% | NG: @Model.NgPercentage.ToString("F1")%
-                </div>
-            </div>
-            <div class="chart-wrapper" style="max-height: 220px; height: 220px;">
-                <canvas id="quantumChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Live Feed (Span 1x2) -->
-        <div class="bento-card feed-card">
-            <div class="card-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0; font-weight: 700; color: #f8fafc;">Neural Stream</h3>
-                <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.8rem; background: rgba(34, 211, 238, 0.15); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #22d3ee; animation: pulse 2s infinite;">
-                    <span style="width: 6px; height: 6px; background: #22d3ee; border-radius: 50%; box-shadow: 0 0 8px #22d3ee;"></span>
-                    LIVE
-                </span>
-            </div>
-            <div id="neuralStreamContainer" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
-                @foreach(var item in Model.RecentInspections.Take(6))
-                {
-                    <div style="display: flex; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(129,140,248,0.3)'; this.style.transform='translateX(5px)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.borderColor='rgba(255,255,255,0.05)'; this.style.transform='translateX(0)';">
-                        <!-- Icon -->
-                        <div style="flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, rgba(129, 140, 248, 0.2), rgba(129, 140, 248, 0.1)); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                            <i class="ph-gear-fill" style="font-size: 1.5rem; color: #818cf8;"></i>
-                        </div>
-                        
-                        <!-- Content -->
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                                <span style="font-weight: 600; color: #cbd5e1; font-size: 0.9rem;">@item.InspectorName</span>
-                                <span style="padding: 0.2rem 0.6rem; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: 12px; font-size: 0.7rem; font-weight: 600; color: #818cf8;">@item.InspectionDate.ToString("HH:mm")</span>
-                            </div>
-                            <p style="margin: 0; color: #64748b; font-size: 0.85rem; line-height: 1.4;">
-                                Verified machine <strong style="color: #94a3b8;">@item.MachineNumber?.Number</strong>
-                            </p>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-        
-        <style>
-            /* Default Grid (Desktop > 1400px) */
-            .quantum-grid {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 2rem;
-            }
-            .analytics-card {
-                grid-column: span 3;
-                grid-row: span 1;
-            }
-            .feed-card {
-                grid-column: span 1; /* Explicitly set */
-                grid-row: span 2;
-            }
-            .stats-card {
-                grid-column: span 1;
-            }
-
-            /* Pulse Animation */
-            @@keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.7; }
-            }
-            
-            /* Custom Scrollbar */
-            .feed-card div::-webkit-scrollbar { width: 6px; }
-            .feed-card div::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
-            .feed-card div::-webkit-scrollbar-thumb { background: rgba(129, 140, 248, 0.3); border-radius: 10px; }
-            .feed-card div::-webkit-scrollbar-thumb:hover { background: rgba(129, 140, 248, 0.5); }
-
-            /* --- RESPONSIVE MEDIA QUERIES --- */
-
-            /* Laptop Standard (Max 1400px) */
-            @@media (max-width: 1400px) {
-                .quantum-grid {
-                    grid-template-columns: repeat(3, 1fr); /* Switch to 3 columns */
-                    gap: 1.5rem;
-                }
-                .analytics-card {
-                    grid-column: span 3; /* Full width chart */
-                }
-                .feed-card {
-                    grid-column: span 3; /* Feed moves to bottom, full width */
-                    grid-row: auto; /* Remove row span constraint */
-                    height: 350px; /* Fixed height for feed */
-                }
-                .stats-card, .bento-card:not(.analytics-card):not(.feed-card) {
-                    /* Stats cards take 1 column each */
-                    grid-column: span 1; 
-                }
-            }
-
-            /* Tablet/Small Laptop (Max 992px) */
-            @@media (max-width: 992px) {
-                .quantum-grid {
-                    grid-template-columns: 1fr; /* Single column stack */
-                }
-                .analytics-card, .feed-card, .stats-card, .bento-card {
-                    grid-column: span 1;
-                    grid-row: auto;
-                }
-            }
-        </style>
-
         <!-- Total OK Card -->
         <div id="cardOk" class="bento-card" onclick="toggleFilter('ok')" style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.05)); border: 1px solid rgba(52, 211, 153, 0.3); cursor: pointer; transition: all 0.3s ease; padding: 1.25rem;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -197,6 +70,144 @@
                 <i class="ph-clipboard-text-fill" style="font-size: 2.8rem; color: #818cf8; opacity: 0.5;"></i>
             </div>
         </div>
+
+        <!-- Live Feed (Span 1x2 - Sidebar Mode) -->
+        <div class="bento-card feed-card" style="display: flex; flex-direction: column;">
+            <div class="card-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-shrink: 0;">
+                <h3 style="margin: 0; font-weight: 700; color: #f8fafc;">Neural Stream</h3>
+                <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.8rem; background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #22d3ee; box-shadow: 0 0 10px rgba(34, 211, 238, 0.1);">
+                    <span style="width: 6px; height: 6px; background: #22d3ee; border-radius: 50%; box-shadow: 0 0 8px #22d3ee; animation: pulse 1.5s infinite;"></span>
+                    LIVE
+                </span>
+            </div>
+            <div id="neuralStreamContainer" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 0.2rem;">
+                @foreach(var item in Model.RecentInspections.Take(10))
+                {
+                    <div style="display: flex; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; transition: all 0.3s ease; cursor: pointer; align-items: center;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(129,140,248,0.3)'; this.style.transform='translateX(5px)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.borderColor='rgba(255,255,255,0.05)'; this.style.transform='translateX(0)';">
+                        <!-- Icon -->
+                        <div style="flex-shrink: 0; width: 42px; height: 42px; background: linear-gradient(135deg, rgba(129, 140, 248, 0.2), rgba(129, 140, 248, 0.05)); border: 1px solid rgba(129, 140, 248, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="ph-gear-fill" style="font-size: 1.4rem; color: #818cf8;"></i>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                                <span style="font-weight: 600; color: #f1f5f9; font-size: 0.95rem;">@item.InspectorName</span>
+                                <span style="padding: 0.2rem 0.6rem; background: rgba(129, 140, 248, 0.1); border: 1px solid rgba(129, 140, 248, 0.2); border-radius: 20px; font-size: 0.7rem; font-weight: 600; color: #818cf8;">@item.InspectionDate.ToString("HH:mm")</span>
+                            </div>
+                            <p style="margin: 0; color: #94a3b8; font-size: 0.8rem;">
+                                Verified machine <strong style="color: #cbd5e1;">@item.MachineNumber?.Number</strong>
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Analytics (Span 3x1) -->
+        <div class="bento-card analytics-card">
+            <!-- Breadcrumb Navigation -->
+            <div id="breadcrumb" style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; padding: 0.75rem 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
+                <!-- Back Button (Hidden by default) -->
+                <button id="btnBack" onclick="goUpLevel()" style="display: none; align-items: center; gap: 0.5rem; background: rgba(129, 140, 248, 0.2); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: 'Sora', sans-serif; transition: all 0.2s ease;">
+                    <i class="ph-arrow-u-up-left-bold"></i> Back
+                </button>
+                
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="ph-house-fill" style="color: #64748b; font-size: 1.1rem;"></i>
+                    <span id="breadcrumbPath" style="color: #94a3b8; font-weight: 600; font-size: 0.95rem;"></span>
+                </div>
+            </div>
+            
+            <div class="card-top">
+                <div class="card-identity">
+                    <div class="card-orb secondary"></div>
+                    <h3>Performance Analytics</h3>
+                </div>
+                <div class="trend-pill @(Model.OkPercentage >= Model.NgPercentage ? "positive" : "negative")">
+                    OK: @Model.OkPercentage.ToString("F1")% | NG: @Model.NgPercentage.ToString("F1")%
+                </div>
+            </div>
+            <div class="chart-wrapper" style="max-height: 220px; height: 220px;">
+                <canvas id="quantumChart"></canvas>
+            </div>
+        </div>
+
+
+        
+        <style>
+            /* Default Grid (Desktop > 1400px) */
+            .quantum-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1.5rem;
+            }
+            .analytics-card {
+                grid-column: span 3;
+                grid-row: span 1;
+            }
+            .feed-card {
+                grid-column: span 1; 
+                grid-row: span 2; /* Full sidebar height */
+                display: flex; flex-direction: column;
+            }
+            #cardTotal {
+                grid-column: span 1; /* Normal 1-col width */
+            }
+            .stats-card {
+                grid-column: span 1;
+            }
+
+            /* Pulse Animation */
+            @@keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+            }
+            
+            /* Custom Scrollbar */
+            .feed-card div::-webkit-scrollbar { width: 6px; }
+            .feed-card div::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+            .feed-card div::-webkit-scrollbar-thumb { background: rgba(129, 140, 248, 0.3); border-radius: 10px; }
+            .feed-card div::-webkit-scrollbar-thumb:hover { background: rgba(129, 140, 248, 0.5); }
+
+            /* --- RESPONSIVE MEDIA QUERIES --- */
+
+            /* Laptop Standard (Max 1400px) */
+            @@media (max-width: 1400px) {
+                .quantum-grid {
+                    grid-template-columns: repeat(3, 1fr); /* Switch to 3 columns */
+                    gap: 1.5rem;
+                }
+                .analytics-card {
+                    grid-column: span 3; /* Full width chart */
+                }
+                .feed-card {
+                    grid-column: span 3; /* Feed moves to bottom, full width */
+                    grid-row: auto; /* Remove row span constraint */
+                    height: 350px; /* Fixed height for feed */
+                }
+                #cardTotal {
+                    grid-column: span 1; /* Reset to normal width */
+                }
+                .stats-card, .bento-card:not(.analytics-card):not(.feed-card):not(#cardTotal) {
+                    /* Stats cards take 1 column each */
+                    grid-column: span 1; 
+                }
+            }
+
+            /* Tablet/Small Laptop (Max 992px) */
+            @@media (max-width: 992px) {
+                .quantum-grid {
+                    grid-template-columns: 1fr; /* Single column stack */
+                }
+                .analytics-card, .feed-card, .stats-card, .bento-card {
+                    grid-column: span 1;
+                    grid-row: auto;
+                }
+            }
+        </style>
+
+
         
     </div>
 </div>
@@ -220,7 +231,7 @@
             },
             
             // Store raw data for client-side filtering
-            recentInspections: @Html.Raw(Json.Serialize(Model.RecentInspections.Take(6).Select(s => new { inspectorName = s.InspectorName, inspectionDate = s.InspectionDate, machineNumber = s.MachineNumber != null ? s.MachineNumber.Number : "N/A" })))
+            recentInspections: @Html.Raw(Json.Serialize(Model.RecentInspections.Take(10).Select(s => new { inspectorName = s.InspectorName, inspectionDate = s.InspectionDate, machineNumber = s.MachineNumber != null ? s.MachineNumber.Number : "N/A" })))
         };
 
         // --- Chart Context & Gradients ---
@@ -237,7 +248,7 @@
                 labels: @Html.Raw(Json.Serialize(Model.ChartLabels)),
                 datasets: [
                     { label: 'OK', data: [@string.Join(", ", Model.OkCountsPerDay)], borderColor: '#34d399', borderWidth: 3, pointRadius: 5, pointHoverRadius: 10, pointBackgroundColor: '#34d399', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: '#34d399', pointHoverBorderWidth: 4, tension: 0.4, fill: true, backgroundColor: gradientOk },
-                    { label: 'NG', data: [@string.Join(", ", Model.NgCountsPerDay)], borderColor: '#fb7185', borderWidth: 3, pointRadius: 5, pointHoverRadius: 10, pointBackgroundColor: '#fb7185', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: '#fb7185', pointHoverBorderWidth: 4, tension: 0.4, fill: true, backgroundColor: gradientNg }
+                    { label: 'NG', data: [@string.Join(", ", Model.NgCountsPerDay)], borderColor: '#fb7185', borderDash: [6, 6], borderWidth: 3, pointRadius: 5, pointHoverRadius: 10, pointBackgroundColor: '#fb7185', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: '#fb7185', pointHoverBorderWidth: 4, tension: 0.4, fill: true, backgroundColor: gradientNg }
                 ]
             },
             options: {
@@ -362,15 +373,18 @@
                 const date = new Date(item.inspectionDate);
                 const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 container.innerHTML += `
-                    <div style="display:flex;gap:1rem;padding:1rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;cursor:pointer;transition:all 0.3s ease;" 
+                    <div style="display:flex;gap:1rem;padding:1rem;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;cursor:pointer;transition:all 0.3s ease;align-items:center;" 
                          onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(129,140,248,0.3)';this.style.transform='translateX(5px)'" 
                          onmouseout="this.style.background='rgba(255,255,255,0.02)';this.style.borderColor='rgba(255,255,255,0.05)';this.style.transform='translateX(0)'">
-                        <div style="width:40px;height:40px;background:rgba(129,140,248,0.2);border-radius:10px;display:flex;justify-content:center;align-items:center;">
-                            <i class="ph-gear-fill" style="color:#818cf8;font-size:1.5rem;"></i>
+                        <div style="flex-shrink:0;width:42px;height:42px;background:linear-gradient(135deg,rgba(129,140,248,0.2),rgba(129,140,248,0.05));border:1px solid rgba(129,140,248,0.2);border-radius:12px;display:flex;justify-content:center;align-items:center;">
+                            <i class="ph-gear-fill" style="color:#818cf8;font-size:1.4rem;"></i>
                         </div>
-                        <div>
-                            <div style="font-weight:600;color:#cbd5e1;">${item.inspectorName || 'Operator'}</div>
-                            <div style="color:#64748b;font-size:0.85rem;">Verified <strong style="color:#94a3b8;">${item.machineNumber}</strong> at <span style="background:rgba(129,140,248,0.15);padding:0 5px;border-radius:4px;color:#818cf8;">${timeStr}</span></div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;">
+                                <div style="font-weight:600;color:#f1f5f9;font-size:0.95rem;">${item.inspectorName || 'Operator'}</div>
+                                <div style="background:rgba(129,140,248,0.1);padding:0.2rem 0.6rem;border:1px solid rgba(129,140,248,0.2);border-radius:20px;color:#818cf8;font-size:0.7rem;font-weight:600;">${timeStr}</div>
+                            </div>
+                            <div style="color:#94a3b8;font-size:0.8rem;">Verified machine <strong style="color:#cbd5e1;">${item.machineNumber}</strong></div>
                         </div>
                     </div>`;
             });

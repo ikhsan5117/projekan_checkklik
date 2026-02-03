@@ -4,8 +4,11 @@ using AMRVI.Data;
 using AMRVI.Models;
 using OfficeOpenXml;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace AMRVI.Controllers
 {
+    [Authorize]
     public class UserManagementController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -97,7 +100,7 @@ namespace AMRVI.Controllers
                     Username = username,
                     FullName = fullName,
                     Email = email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                    Password = password, // Plain text (DEV ONLY)
                     Role = role,
                     Department = department,
                     IsActive = true,
@@ -144,7 +147,7 @@ namespace AMRVI.Controllers
                 // Only update password if provided
                 if (!string.IsNullOrWhiteSpace(password))
                 {
-                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+                    user.Password = password; // Plain text (DEV ONLY)
                 }
 
                 await _context.SaveChangesAsync();
@@ -283,7 +286,7 @@ namespace AMRVI.Controllers
                                     Username = username,
                                     FullName = fullName ?? username,
                                     Email = email,
-                                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                                    Password = password, // Plain text (DEV ONLY)
                                     Role = role ?? "User",
                                     Department = department,
                                     IsActive = true,

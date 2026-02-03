@@ -112,18 +112,28 @@
 
                     <div class="nav-user-deck">
                         <div class="user-avatar-hex">
-                            <div class="avatar-inner">OP</div>
+                            <div class="avatar-inner">@((User.Identity?.Name ?? "OP").Substring(0, 2).ToUpper())</div>
                         </div>
                         <div class="user-meta-vision">
-                            <span class="u-name">Operator A1</span>
+                            <span class="u-name">@(User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Guest")</span>
                             <div class="u-role-tag">
                                 <span class="dot"></span>
-                                ADMIN COMMAND
+                                @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "VISITOR")
                             </div>
                         </div>
-                        <button class="user-dropdown-btn">
-                            <i class="ph-caret-down-bold"></i>
-                        </button>
+                        <div class="user-dropdown-wrapper">
+                             <button class="user-dropdown-btn" onclick="toggleUserDropdown()">
+                                <i class="ph-caret-down-bold"></i>
+                            </button>
+                            <div class="user-menu-dropdown" id="userDropdown">
+                                <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                    <button type="submit" class="user-menu-item logout">
+                                        <i class="ph-sign-out"></i>
+                                        <span>Logout Sequence</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -260,6 +270,46 @@
             from { opacity: 0; transform: translate(-50%, -15px); }
             to { opacity: 1; transform: translate(-50%, 0); }
         }
+
+        /* User Dropdown */
+        .user-dropdown-wrapper { position: relative; }
+        .user-menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 180px;
+            box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .user-menu-dropdown.active { display: block; animation: slideIn 0.2s ease-out; }
+        .user-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.8rem 1rem;
+            color: #94a3b8;
+            border-radius: 8px;
+            transition: all 0.2s;
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .user-menu-item:hover { background: rgba(255, 255, 255, 0.05); color: #f1f5f9; }
+        .user-menu-item.logout:hover { background: rgba(251, 113, 133, 0.1); color: #fb7185; }
+        
+        @@keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -340,6 +390,19 @@
                     card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
                 });
             });
+        });
+
+        function toggleUserDropdown() {
+            document.querySelector('.user-menu-dropdown').classList.toggle('active');
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+             const dropdown = document.querySelector('.user-menu-dropdown');
+             const btn = document.querySelector('.user-dropdown-btn');
+             if (dropdown && dropdown.classList.contains('active') && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+                 dropdown.classList.remove('active');
+             }
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)

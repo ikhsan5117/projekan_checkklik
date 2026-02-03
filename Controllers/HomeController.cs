@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using AMRVI.Models;
 using Microsoft.EntityFrameworkCore;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace AMRVI.Controllers;
 
+[Authorize]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
