@@ -1,0 +1,223 @@
+/* ========================================
+   NEW: DASHBOARD ANALYTICS SECTIONS
+   ======================================== */
+
+/* Analytics Section Container */
+.analytics-section {
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(129, 140, 248, 0.15);
+    border-radius: 12px;
+    padding: 1.5rem;
+    /* Reduced from 2rem */
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(129, 140, 248, 0.3);
+    padding-bottom: 0.5rem;
+}
+
+/* Split Layout Side-by-Side */
+.analytics-split-view {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    /* Fixed width left, flexible right */
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    margin-top: 1.5rem;
+    /* Adjusted spacing */
+    align-items: start;
+}
+
+@media (max-width: 1200px) {
+    .analytics-split-view {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Machine Update Grid */
+.update-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .update-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Summary Cards - Adjusted for compact side bar */
+.summary-cards {
+    display: flex;
+    /* Stack vertically for the sidebar layout */
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.summary-card {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid rgba(129, 140, 248, 0.2);
+    transition: all 0.3s ease;
+}
+
+.summary-card.red {
+    border-color: #fb7185;
+    background: rgba(251, 113, 133, 0.15);
+}
+
+.summary-card.green {
+    border-color: #34d399;
+    background: rgba(52, 211, 153, 0.15);
+}
+
+.summary-card.horizontal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    height: auto;
+    /* Let content define height */
+}
+
+.summary-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Specific text tweaks */
+.summary-label {
+    font-size: 0.7rem;
+    margin-bottom: 0;
+}
+
+.summary-value {
+    font-size: 1.8rem;
+}
+
+/* Machine Status Table */
+/* Machine List - Dual Table Layout */
+.machine-dual-list {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid rgba(129, 140, 248, 0.15);
+    background: rgba(15, 23, 42, 0.3);
+    border-radius: 6px;
+    padding: 0.5rem;
+}
+
+.machine-status-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.machine-status-table th {
+    background: rgba(15, 23, 42, 0.8);
+    color: #94a3b8;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 2px solid rgba(129, 140, 248, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.machine-status-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid rgba(129, 140, 248, 0.1);
+    color: #fff;
+    font-size: 0.8rem;
+}
+
+.machine-status-table tr.updated {
+    background: rgba(52, 211, 153, 0.05);
+}
+
+.machine-status-table tr.updated td:last-child {
+    color: #34d399;
+    font-weight: 700;
+}
+
+.machine-status-table tr.not-updated {
+    background: rgba(251, 113, 133, 0.05);
+}
+
+.machine-status-table tr.not-updated td:last-child {
+    color: #fb7185;
+    font-weight: 700;
+}
+
+/* NG Trend Chart */
+.ng-trend-chart {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    height: 300px;
+    border: 1px solid rgba(129, 140, 248, 0.1);
+}
+
+/* NG Detail Table */
+.ng-detail-table {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid rgba(129, 140, 248, 0.15);
+    background: rgba(15, 23, 42, 0.3);
+}
+
+.ng-detail-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ng-detail-table th {
+    background: rgba(15, 23, 42, 0.8);
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid rgba(129, 140, 248, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.ng-detail-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(129, 140, 248, 0.1);
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.ng-detail-table tr:hover {
+    background: rgba(129, 140, 248, 0.05);
+}
+
+.ng-detail-table tr:nth-child(even) {
+    background: rgba(15, 23, 42, 0.2);
+}

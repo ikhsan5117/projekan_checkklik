@@ -101,6 +101,86 @@ public class HomeController : Controller
         var totalOkCount = _plantService.GetInspectionResults().Count(r => r.Judgement == "OK");
         var totalNgCount = _plantService.GetInspectionResults().Count(r => r.Judgement == "NG");
 
+        // NEW: Machine Update Status
+        var allMachineNumbers = _plantService.GetMachineNumbers()
+            .Where(mn => mn.IsActive)
+            .ToList();
+
+        var machineUpdateList = new List<AMRVI.ViewModels.MachineUpdateStatus>();
+        
+        foreach (var machineNumber in allMachineNumbers)
+        {
+            var lastInspection = _plantService.GetInspectionSessions()
+                .Where(s => s.MachineNumberId == machineNumber.Id)
+                .OrderByDescending(s => s.InspectionDate)
+                .FirstOrDefault();
+
+            var isUpdatedToday = lastInspection != null && lastInspection.InspectionDate >= today;
+
+            machineUpdateList.Add(new AMRVI.ViewModels.MachineUpdateStatus
+            {
+                MachineNumberId = machineNumber.Id,
+                MachineNumber = machineNumber.Number ?? "",
+                MachineName = "", // Interface doesn't have Machine navigation property
+                IsUpdatedToday = isUpdatedToday,
+                LastInspectionDate = lastInspection?.InspectionDate
+            });
+        }
+
+        var updatedMachinesCount = machineUpdateList.Count(m => m.IsUpdatedToday);
+        var notUpdatedMachinesCount = machineUpdateList.Count(m => !m.IsUpdatedToday);
+
+        // NEW: NG Trend Data (Last 30 days)
+        var last30Days = today.AddDays(-29);
+        var ngTrendDaily = new List<AMRVI.ViewModels.NgTrendData>();
+
+        for (int i = 0; i < 30; i++)
+        {
+            var date = last30Days.AddDays(i);
+            var ngCount = _plantService.GetInspectionResults()
+                .Count(r => r.CreatedAt.Date == date && r.Judgement == "NG");
+
+            ngTrendDaily.Add(new AMRVI.ViewModels.NgTrendData
+            {
+                Date = date,
+                NgCount = ngCount
+            });
+        }
+
+        // NEW: NG Detail Records (Last 20 NG findings)
+        var ngResults = _plantService.GetInspectionResults()
+            .Where(r => r.Judgement == "NG")
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(20)
+            .ToList();
+
+        var ngDetailRecords = new List<AMRVI.ViewModels.NgDetailRecord>();
+        
+        foreach (var result in ngResults)
+        {
+            // Get related data separately
+            var session = _plantService.GetInspectionSessions()
+                .FirstOrDefault(s => s.Id == result.InspectionSessionId);
+            
+            var machineNumber = session != null 
+                ? _plantService.GetMachineNumbers().FirstOrDefault(m => m.Id == session.MachineNumberId)
+                : null;
+            
+            var checklistItem = _plantService.GetChecklistItems()
+                .FirstOrDefault(c => c.Id == result.ChecklistItemId);
+
+            ngDetailRecords.Add(new AMRVI.ViewModels.NgDetailRecord
+            {
+                Date = result.CreatedAt,
+                MachineNumberId = session?.MachineNumberId ?? 0,
+                MachineNumber = machineNumber?.Number ?? "-",
+                NgCount = 1,
+                ChecklistItem = checklistItem?.DetailName ?? "-",
+                Standard = checklistItem?.StandardDescription ?? "-",
+                Problem = result.Remarks ?? "-"
+            });
+        }
+
         var viewModel = new AMRVI.ViewModels.DashboardViewModel
         {
             TotalMachines = totalMachines,
@@ -119,7 +199,14 @@ public class HomeController : Controller
             TotalOkCount = totalOkCount,
             TotalNgCount = totalNgCount,
             ViewLevel = "monthly",
-            CurrentYear = currentYear
+            CurrentYear = currentYear,
+            // NEW: Machine Update Status
+            MachineUpdateList = machineUpdateList,
+            UpdatedMachinesCount = updatedMachinesCount,
+            NotUpdatedMachinesCount = notUpdatedMachinesCount,
+            // NEW: NG Trend Data
+            NgTrendDaily = ngTrendDaily,
+            NgDetailRecords = ngDetailRecords
         };
 
         return View(viewModel);
