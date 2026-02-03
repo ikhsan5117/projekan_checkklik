@@ -31,15 +31,15 @@
             <nav class="sidebar-nav">
                 <a href="@Url.Action("Index", "Home")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")">
                     <i class="ph-house-line"></i>
-                    <span class="link-text">Dashboard</span>
+                    <span class="link-text">DASHBOARD</span>
                 </a>
                 <a href="@Url.Action("Index", "Inspection")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Inspection" ? "active" : "")">
                     <i class="ph-magnifying-glass"></i>
-                    <span class="link-text">AM INPUT</span>
+                    <span class="link-text">CHECKLIST</span>
                 </a>
                 <a href="@Url.Action("Index", "History")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "History" ? "active" : "")">
                     <i class="ph-clock-counter-clockwise"></i>
-                    <span class="link-text">History</span>
+                    <span class="link-text">HISTORY</span>
                 </a>
                 <div class="nav-divider"></div>
                 
