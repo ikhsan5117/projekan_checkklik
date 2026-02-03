@@ -6,9 +6,15 @@
 
 <div class="container fade-in" style="padding-top: 1rem;">
     <!-- Page Header -->
-    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-        <div style="width: 4px; height: 32px; background: #3b82f6; border-radius: 2px; box-shadow: 0 0 10px #3b82f6;"></div>
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; margin: 0;">Inspection History</h1>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 4px; height: 32px; background: #3b82f6; border-radius: 2px; box-shadow: 0 0 10px #3b82f6;"></div>
+            <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; margin: 0;">Inspection History</h1>
+        </div>
+
+        <a href="@Url.Action("Index", "Inspection")" class="neural-btn" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.9rem;">
+            <i class="ph-plus-bold"></i> NEW INSPECTION
+        </a>
     </div>
 
     <!-- Main Card -->
@@ -104,6 +110,7 @@
         text-transform: uppercase;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         text-align: left;
+        white-space: nowrap; /* Prevent headers from wrapping */
     }
     
     .td-style {
@@ -112,6 +119,28 @@
         vertical-align: middle;
         font-size: 0.9rem;
         color: #e2e8f0;
+    }
+    
+    /* Table Responsiveness for Tablet/Mobile */
+    @@media (max-width: 1024px) {
+        .th-style, .td-style {
+            padding: 1rem 0.75rem; /* Reduced horizontal padding */
+            font-size: 0.85rem;
+        }
+
+        .th-style {
+            font-size: 0.7rem;
+        }
+
+        /* Prevent wrapping on critical columns */
+        .td-style {
+            white-space: nowrap;
+        }
+        
+        /* Allow wrapping on Inspector name if really needed, but generally keep table scrollable */
+        .history-table {
+            min-width: 800px; /* Ensure table keeps its structure and triggers scroll if needed */
+        }
     }
     
     .tr-hover:last-child .td-style {
@@ -142,6 +171,7 @@
         font-size: 0.75rem;
         font-weight: 600;
         border: 1px solid transparent;
+        white-space: nowrap; /* Important prevent cut-off */
     }
     
     .status-badge.success {
@@ -171,6 +201,7 @@
         text-decoration: none;
         transition: all 0.2s ease;
         border: 1px solid rgba(129, 140, 248, 0.2);
+        white-space: nowrap;
     }
     
     .action-btn:hover {
@@ -187,5 +218,57 @@
         border-radius: 16px; 
         border: 1px solid rgba(255, 255, 255, 0.08); 
         box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Scrollable Container */
+    .table-responsive {
+        overflow: auto;
+        max-height: 70vh; /* Batas tinggi untuk scroll vertikal */
+        width: 100%;
+        position: relative;
+        border-radius: 16px;
+    }
+
+    .history-table {
+        min-width: 1200px; /* Lebar minimum untuk memicu scroll horizontal */
+        width: 100%;
+        border-collapse: separate; /* Required for sticky header border */
+        border-spacing: 0;
+    }
+
+    /* Sticky Header */
+    .th-style {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(30, 41, 59, 0.98); /* Lebih solid agar tidak transparan */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Modern Custom Scrollbar */
+    .table-responsive::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.4);
+        border-radius: 0;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.2);
+        border-radius: 5px;
+        border: 2px solid rgba(15, 23, 42, 0.6); /* Memberi efek padding */
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: rgba(129, 140, 248, 0.5); /* Warna primary saat hover */
+    }
+    
+    .table-responsive::-webkit-scrollbar-corner {
+        background: rgba(15, 23, 42, 0.4);
     }
 </style>

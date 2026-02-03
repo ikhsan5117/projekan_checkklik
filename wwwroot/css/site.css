@@ -1033,13 +1033,17 @@ body::after {
 
 @media (max-width: 640px) {
 
-    .nav-breadcrumb,
-    .nav-user .user-meta {
+    .nav-breadcrumb {
         display: none;
     }
 
+    /* Ensure user meta is visible if generated with show-always class */
+    .user-meta-vision.show-always {
+        display: flex !important;
+    }
+
     .nav-right {
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .nav-user {

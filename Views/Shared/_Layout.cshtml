@@ -76,9 +76,12 @@
             <!-- Navbar: The Command Deck -->
             <header class="app-navbar">
                 <div class="nav-left">
-                    <button class="nav-btn" id="sidebarToggle" title="Toggle Navigation">
-                        <i class="ph-list-bold"></i>
-                    </button>
+                    @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                    {
+                        <button class="nav-btn" id="sidebarToggle" title="Toggle Navigation">
+                            <i class="ph-list-bold"></i>
+                        </button>
+                    }
                     
                     <!-- Global Adaptive Search -->
                     <!-- Global Search Removed -->
@@ -90,29 +93,29 @@
                         <div class="status-dot-pulse"></div>
                         <span class="status-label-nav">System Online</span>
                     </div>
-                </div>
-
-                <div class="nav-right">
-                    <!-- Real-time Command Clock -->
-                    <div class="nav-clock">
-                        <div class="clock-time">
-                            <i class="ph-clock-bold"></i>
-                            <span id="navTime">--:--:--</span>
-                        </div>
-                        <div class="clock-date" id="navDate">--------</div>
-                    </div>
 
                     <!-- Fullscreen Command -->
                     <button class="fullscreen-btn" id="fullscreenToggle" title="Toggle Fullscreen">
                         <i class="ph-corners-out"></i>
                     </button>
 
+                    <!-- Real-time Command Clock (Moved Here) -->
+                    <div class="nav-clock" style="margin-left: 1.5rem;">
+                        <div class="clock-time" style="flex-direction: row-reverse; gap: 0.5rem;">
+                            <i class="ph-clock-bold"></i>
+                            <span id="navTime">--:--:--</span>
+                        </div>
+                        <div class="clock-date" id="navDate" style="text-align: right;">--------</div>
+                    </div>
+                </div>
+
+                <div class="nav-right">
                     <div class="nav-user-deck-wrapper" onclick="toggleUserDropdown()">
                         <div class="nav-user-deck">
                             <div class="user-avatar-hex">
                                 <div class="avatar-inner">@((User.Identity?.Name ?? "OP").Substring(0, 2).ToUpper())</div>
                             </div>
-                            <div class="user-meta-vision">
+                            <div class="user-meta-vision show-always">
                                 <span class="u-name">@(User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Guest")</span>
                                 <div class="u-role-tag">
                                     <span class="dot"></span>
@@ -131,7 +134,7 @@
                                 <div class="info-header">User Profile</div>
                                 <div class="info-row">
                                     <i class="ph-identification-card"></i>
-                                    <span>ID: @(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "N/A")</span>
+                                    <span>ID: @(User.FindFirst("NIK")?.Value ?? "N/A")</span>
                                 </div>
                                 <div class="info-row">
                                     <i class="ph-envelope-simple"></i>

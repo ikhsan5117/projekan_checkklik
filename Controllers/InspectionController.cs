@@ -60,7 +60,7 @@ namespace AMRVI.Controllers
                 var session = new InspectionSession
                 {
                     MachineNumberId = machineNumberId,
-                    InspectorName = "Inspector", // TODO: Get from user authentication
+                    InspectorName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Guest",
                     InspectionDate = DateTime.Now,
                     IsCompleted = false,
                     CreatedAt = DateTime.Now

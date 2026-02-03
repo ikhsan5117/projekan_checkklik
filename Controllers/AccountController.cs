@@ -41,7 +41,9 @@ namespace AMRVI.Controllers
                         new Claim(ClaimTypes.Name, user.Username),
                         new Claim(ClaimTypes.Role, user.Role),
                         new Claim("FullName", user.FullName),
-                        new Claim("Department", user.Department ?? "N/A")
+                        new Claim("Department", user.Department ?? "N/A"),
+                        new Claim(ClaimTypes.Email, user.Email ?? "No Email"),
+                        new Claim("NIK", user.Id.ToString()) // Using ID as NIK for now
                     };
 
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -61,11 +63,26 @@ namespace AMRVI.Controllers
 
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     {
+                        // Safe check: If returnUrl prevents Operator from entering Dashboard
+                        if ((returnUrl == "/" || returnUrl.ToLower().Contains("/home")) && 
+                            user.Role != "Administrator" && user.Role != "Admin" && user.Role != "Supervisor")
+                        {
+                             return RedirectToAction("Index", "Inspection");
+                        }
                         return Redirect(returnUrl);
                     }
                     else
                     {
-                        return RedirectToAction("Index", "Home");
+                        // Role-based Redirect
+                        if (user.Role == "Administrator" || user.Role == "Admin" || user.Role == "Supervisor")
+                        {
+                            return RedirectToAction("Index", "Home");
+                        }
+                        else
+                        {
+                            // Operator / User: Direct to Inspection, Skip Dashboard
+                            return RedirectToAction("Index", "Inspection");
+                        }
                     }
                 }
 

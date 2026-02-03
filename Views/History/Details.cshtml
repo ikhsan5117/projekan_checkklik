@@ -4,117 +4,139 @@
     ViewData["Title"] = "Inspection Details";
 }
 
-<div class="container fade-in">
-    <div class="glass-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <h1 style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                📋 Inspection Details #@Model.Id
-            </h1>
-            <a href="@Url.Action("ExportToExcel", "History", new { id = Model.Id })" 
-               class="btn btn-primary" 
-               style="padding: 0.75rem 2rem; font-size: 1rem; text-decoration: none; display: inline-block;">
-                📥 Export CSV
-            </a>
+<div class="container fade-in" style="padding-top: 1rem; padding-bottom: 5rem;">
+    <!-- Modern Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 4px; height: 40px; background: #3b82f6; border-radius: 2px; box-shadow: 0 0 15px #3b82f6;"></div>
+            <div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px;">INSPECTION DETAILS</div>
+                <h1 style="font-size: 2rem; font-weight: 800; color: #fff; margin: 0; line-height: 1;">
+                    #@Model.Id
+                </h1>
+            </div>
         </div>
 
-        <!-- Session Info -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-            <div class="detail-section">
-                <div class="detail-title">Machine</div>
-                <div class="detail-content">@Model.MachineNumber.Machine.Name</div>
+        <a href="@Url.Action("ExportToExcel", "History", new { id = Model.Id })" 
+           class="neural-btn" 
+           style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.9rem;">
+            <i class="ph-download-simple-bold"></i> EXPORT CSV
+        </a>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="glass-card mb-4" style="padding: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+            <div class="info-item">
+                <div class="info-label">MACHINE</div>
+                <div class="info-value text-white">@Model.MachineNumber.Machine.Name</div>
+                <div class="info-sub">No. @Model.MachineNumber.Number</div>
             </div>
-            <div class="detail-section">
-                <div class="detail-title">Machine Number</div>
-                <div class="detail-content">@Model.MachineNumber.Number</div>
-            </div>
-            <div class="detail-section">
-                <div class="detail-title">Inspector</div>
-                <div class="detail-content">@Model.InspectorName</div>
-            </div>
-            <div class="detail-section">
-                <div class="detail-title">Inspection Date</div>
-                <div class="detail-content">@Model.InspectionDate.ToString("dd/MM/yyyy HH:mm:ss")</div>
-            </div>
-            <div class="detail-section">
-                <div class="detail-title">Status</div>
-                <div class="detail-content">
-                    @if (Model.IsCompleted)
-                    {
-                        <span class="badge badge-success">Completed</span>
-                    }
-                    else
-                    {
-                        <span class="badge badge-warning">In Progress</span>
-                    }
+            
+            <div class="info-item">
+                <div class="info-label">INSPECTOR</div>
+                <div class="info-value text-white">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 24px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                            <i class="ph-user"></i>
+                        </div>
+                        @Model.InspectorName
+                    </div>
                 </div>
             </div>
-            @if (Model.CompletedAt.HasValue)
-            {
-                <div class="detail-section">
-                    <div class="detail-title">Completed At</div>
-                    <div class="detail-content">@Model.CompletedAt.Value.ToString("dd/MM/yyyy HH:mm:ss")</div>
-                </div>
-            }
-        </div>
 
-        <!-- Results Summary -->
-        @{
-            var okCount = Model.InspectionResults.Count(r => r.Judgement == "OK");
-            var ngCount = Model.InspectionResults.Count(r => r.Judgement == "NG");
-            var totalCount = Model.InspectionResults.Count;
-        }
+            <div class="info-item">
+                <div class="info-label">DATE</div>
+                <div class="info-value font-mono">@Model.InspectionDate.ToString("dd MMM yyyy")</div>
+                <div class="info-sub font-mono">@Model.InspectionDate.ToString("HH:mm:ss")</div>
+            </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-            <div class="detail-section" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); border-color: rgba(16, 185, 129, 0.3);">
-                <div class="detail-title" style="color: #10b981;">OK Items</div>
-                <div class="detail-content" style="font-size: 2rem; font-weight: 800; color: #10b981;">@okCount</div>
-            </div>
-            <div class="detail-section" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%); border-color: rgba(239, 68, 68, 0.3);">
-                <div class="detail-title" style="color: #ef4444;">NG Items</div>
-                <div class="detail-content" style="font-size: 2rem; font-weight: 800; color: #ef4444;">@ngCount</div>
-            </div>
-            <div class="detail-section" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%); border-color: rgba(59, 130, 246, 0.3);">
-                <div class="detail-title" style="color: #3b82f6;">Total Items</div>
-                <div class="detail-content" style="font-size: 2rem; font-weight: 800; color: #3b82f6;">@totalCount</div>
+            <div class="info-item">
+                <div class="info-label">STATUS</div>
+                @if (Model.IsCompleted)
+                {
+                    <span class="status-badge success">
+                        <i class="ph-check-circle-fill"></i> COMPLETED
+                    </span>
+                }
+                else
+                {
+                    <span class="status-badge warning">
+                        <i class="ph-clock-fill"></i> IN PROGRESS
+                    </span>
+                }
             </div>
         </div>
+    </div>
 
-        <!-- Detailed Results -->
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary);">
-            Checklist Results
-        </h2>
+    <!-- Summary Stats -->
+    @{
+        var okCount = Model.InspectionResults.Count(r => r.Judgement == "OK");
+        var ngCount = Model.InspectionResults.Count(r => r.Judgement == "NG");
+        var totalCount = Model.InspectionResults.Count;
+    }
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="stat-card ok">
+            <div class="stat-label">OK ITEMS</div>
+            <div class="stat-value">@okCount</div>
+        </div>
+        <div class="stat-card ng">
+            <div class="stat-label">NG ITEMS</div>
+            <div class="stat-value">@ngCount</div>
+        </div>
+        <div class="stat-card total">
+            <div class="stat-label">TOTAL CHECKS</div>
+            <div class="stat-value">@totalCount</div>
+        </div>
+    </div>
+
+    <!-- Detailed Results Table -->
+    <div class="glass-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Checklist Results</h3>
+        </div>
 
         @if (Model.InspectionResults.Any())
         {
-            <div class="table-container">
-                <table class="data-table">
+            <div class="table-responsive">
+                <table class="detail-table">
                     <thead>
                         <tr>
-                            <th>No</th>
-                            <th>Detail</th>
-                            <th>Standard</th>
-                            <th>Judgement</th>
-                            <th>Remarks</th>
+                            <th class="th-style" style="width: 50px; text-align: center;">NO</th>
+                            <th class="th-style" style="width: 20%;">DETAIL</th>
+                            <th class="th-style" style="width: 40%;">STANDARD</th>
+                            <th class="th-style" style="text-align: center; width: 100px;">JUDGEMENT</th>
+                            <th class="th-style" style="width: 20%;">REMARKS</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var result in Model.InspectionResults.OrderBy(r => r.ChecklistItem.OrderNumber))
                         {
-                            <tr>
-                                <td><strong>@result.ChecklistItem.OrderNumber</strong></td>
-                                <td>@result.ChecklistItem.DetailName</td>
-                                <td>@result.ChecklistItem.StandardDescription</td>
-                                <td>
+                            <tr class="tr-row">
+                                <td class="td-style font-mono text-center" style="color: #64748b; font-weight: bold;">@result.ChecklistItem.OrderNumber</td>
+                                <td class="td-style font-bold text-white">@result.ChecklistItem.DetailName</td>
+                                <td class="td-style" style="color: #cbd5e1; line-height: 1.6;">@result.ChecklistItem.StandardDescription</td>
+                                <td class="td-style text-center">
                                     @if (result.Judgement == "OK")
                                     {
-                                        <span class="badge badge-success">OK</span>
+                                        <span class="result-badge ok">OK</span>
                                     }
                                     else
                                     {
-                                        <span class="badge badge-danger">NG</span>
+                                        <span class="result-badge ng">NG</span>
                                     }
                                 </td>
-                                <td>@(result.Remarks ?? "-")</td>
+                                <td class="td-style text-secondary">
+                                    @if(string.IsNullOrEmpty(result.Remarks))
+                                    {
+                                        <span style="opacity: 0.3;">-</span>
+                                    }
+                                    else
+                                    {
+                                        @result.Remarks
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -123,22 +145,187 @@
         }
         else
         {
-            <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            <div style="text-align: center; padding: 4rem; color: #64748b;">
                 <p>No results recorded yet</p>
             </div>
         }
+    </div>
 
-        <div style="margin-top: 2rem; text-align: center;">
-            <a href="@Url.Action("Index", "History")" class="btn btn-primary" style="text-decoration: none; display: inline-block;">
-                ← Back to History
-            </a>
-        </div>
+    <div style="margin-top: 3rem; text-align: center;">
+        <a href="@Url.Action("Index", "History")" class="action-link">
+            <i class="ph-arrow-left"></i> Back to History
+        </a>
     </div>
 </div>
 
-<!-- Floating Action Button -->
+<!-- Floating Action Buttons -->
 <div class="fab-container">
-    <button class="fab secondary" onclick="window.location.href='@Url.Action("Index", "Home")'" title="Home">
-        🏠
-    </button>
+    @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+    {
+        <button class="fab secondary" onclick="window.location.href='@Url.Action("Index", "Home")'" title="Home" style="background: rgba(6, 182, 212, 0.8); backdrop-filter: blur(20px);">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                <path d="M160-120v-375l-72 55-48-64 120-92v-124h80v63l240-183 440 336-48 63-72-54v375H160Zm80-80h200v-160h80v160h200v-356L480-739 240-556v356Zm-80-560q0-50 35-85t85-35q17 0 28.5-11.5T320-920h80q0 50-35 85t-85 35q-17 0-28.5 11.5T240-760h-80Zm80 560h480-480Z"/>
+            </svg>
+        </button>
+    }
 </div>
+
+<style>
+    /* Info Styles */
+    .info-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+        letter-spacing: 1px;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .info-sub {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+
+    /* Stat Cards */
+    .stat-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-card.ok { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border-color: rgba(16, 185, 129, 0.2); }
+    .stat-card.ng { background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); border-color: rgba(239, 68, 68, 0.2); }
+    .stat-card.total { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); border-color: rgba(59, 130, 246, 0.2); }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-top: 0.5rem;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stat-card.ok .stat-value { color: #34d399; text-shadow: 0 0 20px rgba(52, 211, 153, 0.3); }
+    .stat-card.ng .stat-value { color: #f87171; text-shadow: 0 0 20px rgba(248, 113, 113, 0.3); }
+    .stat-card.total .stat-value { color: #60a5fa; text-shadow: 0 0 20px rgba(96, 165, 250, 0.3); }
+
+    /* Table Styles */
+    .table-responsive {
+        overflow: auto;
+        max-height: 600px;
+        width: 100%;
+    }
+
+    .detail-table {
+        width: 100%;
+        min-width: 800px; /* Force overflow on mobile */
+        border-collapse: collapse;
+    }
+
+    .th-style {
+        padding: 1rem 1.5rem;
+        background: rgba(30, 41, 59, 0.95);
+        color: #94a3b8;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        text-align: left;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .td-style {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        vertical-align: top; /* Align top for long text */
+        font-size: 0.9rem;
+        color: #cbd5e1;
+    }
+
+    .tr-row:hover {
+        background: rgba(255,255,255,0.02);
+    }
+    
+    .tr-row:last-child .td-style {
+        border-bottom: none;
+    }
+
+    /* Result Badges */
+    .result-badge {
+        display: inline-block;
+        padding: 0.35rem 1rem;
+        border-radius: 6px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        min-width: 60px;
+        text-align: center;
+    }
+    
+    .result-badge.ok {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+    }
+    
+    .result-badge.ng {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+    }
+
+    /* Action Link */
+    .action-link {
+        color: #94a3b8;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: color 0.2s;
+    }
+    
+    .action-link:hover {
+        color: #fff;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex; 
+        align-items: center; 
+        gap: 0.5rem; 
+        padding: 0.5rem 1rem; 
+        border-radius: 8px; 
+        font-size: 0.8rem; 
+        font-weight: 700;
+    }
+    .status-badge.success { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .status-badge.warning { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
+
+    /* Custom Scrollbar */
+    .table-responsive::-webkit-scrollbar { width: 8px; height: 8px; }
+    .table-responsive::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
+    .table-responsive::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 4px; }
+    .table-responsive::-webkit-scrollbar-thumb:hover { background: rgba(129, 140, 248, 0.5); }
+    
+    /* Font Mono */
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .th-style, .td-style { padding: 1rem; font-size: 0.85rem; }
+        .stat-value { font-size: 2rem; }
+    }
+</style>

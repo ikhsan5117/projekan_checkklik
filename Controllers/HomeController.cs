@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AMRVI.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Administrator,Admin,Supervisor")]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;

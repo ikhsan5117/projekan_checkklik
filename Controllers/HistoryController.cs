@@ -16,10 +16,23 @@ namespace AMRVI.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var sessions = await _context.InspectionSessions
+            var query = _context.InspectionSessions
                 .Include(s => s.MachineNumber)
                 .ThenInclude(mn => mn.Machine)
                 .Include(s => s.InspectionResults)
+                .AsQueryable();
+
+            // Role-based filtering: Only Admins/Supervisors see all data
+            if (!User.IsInRole("Administrator") && !User.IsInRole("Admin") && !User.IsInRole("Supervisor"))
+            {
+                var username = User.Identity?.Name;
+                var fullName = User.FindFirst("FullName")?.Value;
+                
+                // Show records where InspectorName matches either username or Full Name
+                query = query.Where(s => s.InspectorName == username || (fullName != null && s.InspectorName == fullName));
+            }
+
+            var sessions = await query
                 .OrderByDescending(s => s.InspectionDate)
                 .Take(100)
                 .ToListAsync();
