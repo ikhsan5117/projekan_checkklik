@@ -12,9 +12,19 @@
             <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; margin: 0;">Inspection History</h1>
         </div>
 
-        <a href="@Url.Action("Index", "Inspection")" class="neural-btn" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.9rem;">
-            <i class="ph-plus-bold"></i> NEW INSPECTION
-        </a>
+        <div style="display: flex; gap: 1rem;">
+            <a href="@Url.Action("Index", "Inspection")" class="neural-btn secondary" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.9rem; background: rgba(34, 211, 238, 0.1); border-color: rgba(34, 211, 238, 0.3); color: #22d3ee; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="ph-arrow-left-bold"></i> KEMBALI KE INPUTAN
+            </a>
+
+            <a href="@Url.Action("ExportHistory", "History")" class="neural-btn" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.9rem; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="ph-file-xls-bold"></i> EXPORT ALL
+            </a>
+
+            <a href="@Url.Action("Index", "Inspection")" class="neural-btn" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.9rem;">
+                <i class="ph-plus-bold"></i> NEW INSPECTION
+            </a>
+        </div>
     </div>
 
     <!-- Main Card -->
@@ -72,9 +82,21 @@
                                     </span>
                                 </td>
                                 <td class="td-style" style="text-align: right;">
-                                    <a href="@Url.Action("Details", "History", new { id = session.Id })" class="action-btn">
-                                        Details <i class="ph-arrow-right"></i>
-                                    </a>
+                                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                                        <a href="@Url.Action("Details", "History", new { id = session.Id })" class="action-btn">
+                                            Details <i class="ph-arrow-right"></i>
+                                        </a>
+
+                                        @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                                        {
+                                            <form asp-action="Delete" asp-route-id="@session.Id" method="post" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data inspeksi ini? Tindakan ini tidak dapat dibatalkan.');" style="display: inline;">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="action-btn delete-btn">
+                                                    <i class="ph-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -114,11 +136,12 @@
     }
     
     .td-style {
-        padding: 1.25rem 1.5rem;
+        padding: 1.5rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         vertical-align: middle;
-        font-size: 0.9rem;
-        color: #e2e8f0;
+        font-size: 0.95rem;
+        color: #cbd5e1;
+        transition: all 0.2s ease;
     }
     
     /* Table Responsiveness for Tablet/Mobile */
@@ -148,11 +171,12 @@
     }
 
     .tr-hover:hover {
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(129, 140, 248, 0.03);
     }
     
     .tr-hover:hover .td-style {
         color: #fff;
+        border-bottom-color: rgba(129, 140, 248, 0.2);
     }
     
     /* Font Mono for ID & Date */
@@ -209,6 +233,18 @@
         color: #fff;
         border-color: rgba(129, 140, 248, 0.4);
         transform: translateY(-1px);
+    }
+
+    .delete-btn {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .delete-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+        color: #fff;
+        border-color: rgba(239, 68, 68, 0.4);
     }
 
     /* Glass Card override */

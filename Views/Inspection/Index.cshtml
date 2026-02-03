@@ -12,6 +12,17 @@
         <div id="inspectionDate" class="text-secondary small" style="text-align: center; color: rgba(255, 255, 255, 0.7);">@DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</div>
     </div>
 
+    <!-- Active Session Banner -->
+    <div id="activeSessionBanner" class="alert-glass mb-4" style="display: none; animation: slideDown 0.4s ease-out;">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="ph-pulse-fill" style="color: #22d3ee; animation: pulse 1s infinite;"></i>
+                <span style="font-size: 0.8rem; font-weight: 700; color: #f1f5f9;">SESI AKTIF DITEMUKAN</span>
+            </div>
+            <button onclick="abandonCurrentSession()" class="btn-ghost-cyan" style="font-size: 0.7rem; font-weight: 800;">BUAT BARU / RESET</button>
+        </div>
+    </div>
+
     <!-- Selection Section -->
     <div id="selectionSection">
         <div class="glass-card-simple" style="margin-bottom: 1.5rem;">
@@ -72,13 +83,23 @@
                 <div style="display: flex; gap: 15px;">
                     <label class="judgement-option">
                         <input type="radio" name="currentJudgement" value="OK" disabled>
-                        <span class="j-btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">OK</span>
+                        <span class="j-btn ok-v2">OK</span>
                     </label>
                     <label class="judgement-option">
                         <input type="radio" name="currentJudgement" value="NG" disabled>
-                        <span class="j-btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">NG</span>
+                        <span class="j-btn ng-v2">NG</span>
                     </label>
                 </div>
+            </div>
+
+            <!-- Remarks Container (Premium Glass Redesign) -->
+            <div id="remarksContainer" class="remarks-glass-container" style="display: none; margin-top: 1.5rem;">
+                <div class="remarks-header">
+                    <i class="ph-warning-octagon-fill"></i>
+                    <span>KETERANGAN DEFECT / NG</span>
+                </div>
+                <textarea id="ngRemarks" class="remarks-textarea" placeholder="Deskripsikan detail kerusakan atau alasan NG di sini..."></textarea>
+                <div class="remarks-footer">Wajib diisi untuk inspeksi status NG</div>
             </div>
         </div>
 
@@ -130,6 +151,113 @@
             0% { transform: scale(0.8); opacity: 0.8; }
             100% { transform: scale(1.5); opacity: 0; }
         }
+
+        @@keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Premium Remarks Styling --- */
+        .remarks-glass-container {
+            background: rgba(251, 113, 133, 0.03);
+            border: 1px solid rgba(251, 113, 133, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .remarks-glass-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(251, 113, 133, 0.3), transparent);
+        }
+
+        .remarks-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0.75rem;
+            color: #fb7185;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .remarks-header i { font-size: 1rem; }
+
+        .remarks-textarea {
+            width: 100%;
+            min-height: 80px;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: #f1f5f9;
+            font-size: 0.9rem;
+            font-family: 'Sora', sans-serif;
+            resize: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .remarks-textarea:focus {
+            outline: none;
+            border-color: rgba(251, 113, 133, 0.4);
+            background: rgba(15, 23, 42, 0.6);
+            box-shadow: 0 0 20px rgba(251, 113, 133, 0.1);
+        }
+
+        .remarks-textarea::placeholder {
+            color: rgba(148, 163, 184, 0.4);
+            font-size: 0.85rem;
+        }
+
+        .remarks-footer {
+            margin-top: 0.5rem;
+            font-size: 0.65rem;
+            color: #94a3b8;
+            opacity: 0.6;
+            text-align: right;
+            font-style: italic;
+        }
+
+        .remarks-textarea.invalid-blink {
+            border-color: #fb7185 !important;
+            animation: blinkRed 0.5s ease 2;
+        }
+
+        @@keyframes blinkRed {
+            0%, 100% { box-shadow: 0 0 0 rgba(251, 113, 133, 0); }
+            50% { box-shadow: 0 0 15px rgba(251, 113, 133, 0.4); }
+        }
+
+        /* Session Persistence UI */
+        .alert-glass {
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.2);
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-ghost-cyan {
+            background: none;
+            border: 1px solid rgba(34, 211, 238, 0.4);
+            color: #22d3ee;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-ghost-cyan:hover {
+            background: rgba(34, 211, 238, 0.1);
+            border-color: #22d3ee;
+        }
     </style>
 </div>
 
@@ -167,6 +295,12 @@
         setInterval(updateDate, 1000);
         updateDate();
 
+        // Safe Image Fallback Function
+        window.handleImageError = function(el) {
+            $(el).hide();
+            $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>');
+        };
+
         // Initial State
         function setInitialState() {
              $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>');
@@ -182,6 +316,62 @@
              $('#inspectionSection').show();
         }
         setInitialState();
+
+        // --- SESSION PERSISTENCE (AUTO-RESUME) ---
+        const activeSessionId = @Model.InspectionSessionId;
+        if (activeSessionId > 0) {
+            resumeActiveSession(activeSessionId);
+        }
+
+        function resumeActiveSession(sessionId) {
+            $('#detailText').text('Resuming session...');
+            $('#activeSessionBanner').fadeIn();
+            $.get('@Url.Action("ResumeInspection", "Inspection")', { sessionId: sessionId }, function(response) {
+                if (response.success) {
+                    currentState.sessionId = response.sessionId;
+                    currentState.items = response.checklistItems;
+                    currentState.currentIndex = response.currentIndex;
+                    currentState.judgements = response.judgements;
+                    
+                    // Pre-select machine & number (optional but good for consistency)
+                    $('#machineSelect').val(response.machineId);
+                    
+                    // Force load machine numbers then select
+                    $.get('@Url.Action("GetMachineNumbers", "Inspection")', { machineId: response.machineId }, function(data) {
+                        let options = '<option value="">- Pilih No Mesin -</option>';
+                        data.forEach(item => options += `<option value="${item.id}">${item.number}</option>`);
+                        $('#machineNumberSelect').html(options).prop('disabled', false).val(response.machineNumberId);
+                    });
+
+                    $('input[name="currentJudgement"]').prop('disabled', false);
+                    renderCurrentItem();
+                } else {
+                    console.log("No valid session to resume.");
+                    $('#activeSessionBanner').hide();
+                    setInitialState();
+                }
+            });
+        }
+
+        function abandonCurrentSession() {
+            if (confirm("Anda yakin ingin membatalkan inspeksi ini dan mulai baru? Data yang belum disimpan akan hilang.")) {
+                $.post('@Url.Action("AbandonSession", "Inspection")', { sessionId: currentState.sessionId }, function(response) {
+                    if (response.success) {
+                        currentState.sessionId = 0;
+                        currentState.items = [];
+                        currentState.currentIndex = 0;
+                        currentState.judgements = {};
+                        $('#activeSessionBanner').fadeOut();
+                        setInitialState();
+                        // Reset dropdowns
+                        $('#machineSelect').val('');
+                        $('#machineNumberSelect').prop('disabled', true).html('<option value="">- Pilih No Mesin -</option>');
+                    } else {
+                        alert("Gagal mereset sesi: " + response.message);
+                    }
+                });
+            }
+        }
 
         // Machine Selection Logic
         $('#machineSelect').change(function() {
@@ -241,6 +431,14 @@
         });
 
         $('input[name="currentJudgement"]').change(function() {
+            const val = $(this).val();
+            if (val === 'NG') {
+                $('#remarksContainer').fadeIn(300);
+                $('#ngRemarks').focus();
+            } else {
+                $('#remarksContainer').fadeOut(200);
+                $('#ngRemarks').val('');
+            }
             $('#nextBtn').prop('disabled', false);
         });
 
@@ -254,14 +452,22 @@
             $('#standardText').text(item.standardDescription);
             
             if (item.imagePath) {
-                $('#imageContainer').html(`<img src="${item.imagePath}" onclick="window.open(this.src, '_blank')">`);
+                $('#imageContainer').html(`<img src="${item.imagePath}" onerror="handleImageError(this)" onclick="window.open(this.src, '_blank')">`);
             } else {
                 $('#imageContainer').html('<i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>');
             }
 
             $('input[name="currentJudgement"]').prop('checked', false);
+            $('#remarksContainer').hide();
+            $('#ngRemarks').val('');
+
             if (currentState.judgements[item.id]) {
-                 $(`input[name="currentJudgement"][value="${currentState.judgements[item.id]}"]`).prop('checked', true);
+                 const stored = currentState.judgements[item.id];
+                 $(`input[name="currentJudgement"][value="${stored.result}"]`).prop('checked', true);
+                 if (stored.result === 'NG') {
+                     $('#remarksContainer').show();
+                     $('#ngRemarks').val(stored.remarks);
+                 }
                  $('#nextBtn').prop('disabled', false);
             } else {
                  $('#nextBtn').prop('disabled', true);
@@ -280,9 +486,25 @@
         function saveCurrentJudgementAndNext() {
             const item = currentState.items[currentState.currentIndex];
             const result = $('input[name="currentJudgement"]:checked').val();
+            const remarks = $('#ngRemarks').val() || '';
+            const btn = $('#nextBtn');
+            const isLast = currentState.currentIndex === currentState.items.length - 1;
             
             if (!result) return;
-            currentState.judgements[item.id] = result;
+            
+            // Validation: Remarks required for NG
+            if (result === 'NG' && !remarks.trim()) {
+                $('#ngRemarks').addClass('invalid-blink');
+                setTimeout(() => $('#ngRemarks').removeClass('invalid-blink'), 1500);
+                alert('Silakan tulis keterangan alasan NG terlebih dahulu!');
+                return;
+            }
+
+            // Disable button and show loading
+            const originalText = btn.text();
+            btn.prop('disabled', true).html('<i class="ph-circle-notch ph-spin"></i> SAVING...');
+
+            currentState.judgements[item.id] = { result: result, remarks: remarks };
 
              $.ajax({
                 url: '@Url.Action("SubmitJudgement", "Inspection")',
@@ -292,19 +514,27 @@
                     inspectionSessionId: currentState.sessionId,
                     checklistItemId: item.id,
                     judgement: result,
-                    remarks: ''
+                    remarks: remarks
                 }),
                 success: function(response) {
-                    if (!response.success) console.error('Failed to save background judgement', response.message);
+                    if (response.success) {
+                        if (isLast) {
+                            showCompletion();
+                        } else {
+                            currentState.currentIndex++;
+                            renderCurrentItem();
+                            btn.prop('disabled', false).text(originalText);
+                        }
+                    } else {
+                        alert("Gagal menyimpan data: " + response.message);
+                        btn.prop('disabled', false).text(originalText);
+                    }
+                },
+                error: function() {
+                    alert("Koneksi terputus. Silakan coba lagi.");
+                    btn.prop('disabled', false).text(originalText);
                 }
             });
-
-            if (currentState.currentIndex < currentState.items.length - 1) {
-                currentState.currentIndex++;
-                renderCurrentItem();
-            } else {
-                showCompletion();
-            }
         }
 
         function showCompletion() {

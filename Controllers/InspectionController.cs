@@ -24,6 +24,16 @@ namespace AMRVI.Controllers
 
         public async Task<IActionResult> Index()
         {
+            var inspectorName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Guest";
+
+            var oneDayAgo = DateTime.Now.AddDays(-1);
+            var activeSession = await _context.InspectionSessions
+                .Include(s => s.MachineNumber)
+                .ThenInclude(mn => mn.Machine)
+                .Where(s => s.InspectorName == inspectorName && !s.IsCompleted && s.CreatedAt > oneDayAgo)
+                .OrderByDescending(s => s.CreatedAt)
+                .FirstOrDefaultAsync();
+
             var viewModel = new InspectionViewModel
             {
                 Machines = await _context.Machines
@@ -33,7 +43,13 @@ namespace AMRVI.Controllers
                         Id = m.Id,
                         Name = m.Name
                     })
-                    .ToListAsync()
+                    .ToListAsync(),
+                
+                InspectionSessionId = activeSession?.Id ?? 0,
+                SelectedMachineId = activeSession?.MachineNumber?.MachineId,
+                SelectedMachineNumberId = activeSession?.MachineNumberId,
+                MachineName = activeSession?.MachineNumber?.Machine?.Name ?? "",
+                MachineNumber = activeSession?.MachineNumber?.Number ?? ""
             };
 
             return View(viewModel);
@@ -54,6 +70,93 @@ namespace AMRVI.Controllers
                 .ToListAsync();
 
             return Json(machineNumbers);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResumeInspection(int sessionId)
+        {
+            try
+            {
+                var session = await _context.InspectionSessions
+                    .Include(s => s.MachineNumber)
+                    .ThenInclude(mn => mn.Machine)
+                    .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+                if (session == null || session.IsCompleted)
+                {
+                    return Json(new { success = false, message = "Active session not found" });
+                }
+
+                // Get checklist items
+                var checklistItems = await _context.ChecklistItems
+                    .Where(ci => ci.MachineId == session.MachineNumber.MachineId && ci.IsActive)
+                    .OrderBy(ci => ci.OrderNumber)
+                    .Select(ci => new
+                    {
+                        id = ci.Id,
+                        orderNumber = ci.OrderNumber,
+                        detailName = ci.DetailName,
+                        standardDescription = ci.StandardDescription,
+                        imagePath = ci.ImagePath ?? ""
+                    })
+                    .ToListAsync();
+
+                // Get current results
+                var results = await _context.InspectionResults
+                    .Where(ir => ir.InspectionSessionId == sessionId)
+                    .ToDictionaryAsync(ir => ir.ChecklistItemId, ir => new { result = ir.Judgement, remarks = ir.Remarks });
+
+                // Find where we left off (first item without a result)
+                int resumeIndex = 0;
+                for (int i = 0; i < checklistItems.Count; i++)
+                {
+                    if (!results.ContainsKey(checklistItems[i].id))
+                    {
+                        resumeIndex = i;
+                        break;
+                    }
+                    // If all items have results, stay on last item or show completion
+                    if (i == checklistItems.Count - 1) resumeIndex = i;
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    sessionId = session.Id,
+                    checklistItems = checklistItems,
+                    judgements = results,
+                    currentIndex = resumeIndex,
+                    machineId = session.MachineNumber.MachineId,
+                    machineNumberId = session.MachineNumberId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resuming inspection");
+                return Json(new { success = false, message = "Error resuming inspection" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AbandonSession(int sessionId)
+        {
+            try
+            {
+                var session = await _context.InspectionSessions.FindAsync(sessionId);
+                if (session != null)
+                {
+                    // Instead of deleting, we mark it as completed/abandoned
+                    session.IsCompleted = true; 
+                    session.CompletedAt = DateTime.Now;
+                    await _context.SaveChangesAsync();
+                }
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error abandoning session");
+                return Json(new { success = false, message = "Error abandoning session" });
+            }
         }
 
         [HttpPost]
