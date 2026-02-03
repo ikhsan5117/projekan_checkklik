@@ -21,7 +21,9 @@
                 <div class="logo-wrapper">
                     <i class="ph-atom-bold logo-icon"></i>
                     <span class="sidebar-logo-text">
-                        AM <span style="background: linear-gradient(90deg, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">@(User.FindFirst("Plant")?.Value ?? "RVI")</span>
+                        <span style="background: linear-gradient(90deg, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">
+                            AM @(User.FindFirst("Plant")?.Value ?? "RVI")
+                        </span>
                     </span>
                 </div>
             </div>
