@@ -36,38 +36,59 @@
     <!-- Main Grid -->
     <div class="quantum-grid">
         <!-- Total OK Card -->
-        <div id="cardOk" class="bento-card" onclick="toggleFilter('ok')" style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.05)); border: 1px solid rgba(52, 211, 153, 0.3); cursor: pointer; transition: all 0.3s ease; padding: 1.25rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <p style="color: #94a3b8; margin: 0 0 0.25rem 0; font-weight: 600; font-size: 0.85rem;">Total OK</p>
-                    <h2 id="totalOkCount" style="font-size: 2.2rem; font-weight: 800; color: #34d399; margin: 0; line-height: 1;">@Model.TotalOkCount</h2>
-                    <p id="filterBadgeOk" style="display:none; color: #34d399; font-size: 0.7rem; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content;">Filtered</p>
+        <div id="cardOk" class="bento-card dashboard-stat-card" onclick="toggleFilter('ok')" style="--card-color: #34d399; --card-color-rgb: 52, 211, 153;">
+            <div class="stat-card-inner">
+                <div class="stat-bg-orb"></div>
+                <div class="stat-content">
+                    <div class="stat-meta">
+                        <span class="stat-label">TOTAL OK</span>
+                        <div class="stat-badge" id="filterBadgeOk" style="display:none;">FILTERED</div>
+                    </div>
+                    <div class="stat-main">
+                        <h2 class="stat-number" id="totalOkCount">@Model.TotalOkCount</h2>
+                        <div class="stat-icon-wrapper">
+                            <i class="ph-check-circle-bold"></i>
+                        </div>
+                    </div>
                 </div>
-                <i class="ph-check-circle-fill" style="font-size: 2.8rem; color: #34d399; opacity: 0.5;"></i>
             </div>
         </div>
 
         <!-- Total NG Card -->
-        <div id="cardNg" class="bento-card" onclick="toggleFilter('ng')" style="background: linear-gradient(135deg, rgba(251, 113, 133, 0.1), rgba(251, 113, 133, 0.05)); border: 1px solid rgba(251, 113, 133, 0.3); cursor: pointer; transition: all 0.3s ease; padding: 1.25rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <p style="color: #94a3b8; margin: 0 0 0.25rem 0; font-weight: 600; font-size: 0.85rem;">Total NG</p>
-                    <h2 id="totalNgCount" style="font-size: 2.2rem; font-weight: 800; color: #fb7185; margin: 0; line-height: 1;">@Model.TotalNgCount</h2>
-                    <p id="filterBadgeNg" style="display:none; color: #fb7185; font-size: 0.7rem; background: rgba(251, 113, 133, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content;">Filtered</p>
+        <div id="cardNg" class="bento-card dashboard-stat-card" onclick="toggleFilter('ng')" style="--card-color: #fb7185; --card-color-rgb: 251, 113, 133;">
+            <div class="stat-card-inner">
+                <div class="stat-bg-orb"></div>
+                <div class="stat-content">
+                    <div class="stat-meta">
+                        <span class="stat-label">TOTAL NG</span>
+                        <div class="stat-badge" id="filterBadgeNg" style="display:none;">FILTERED</div>
+                    </div>
+                    <div class="stat-main">
+                        <h2 class="stat-number" id="totalNgCount">@Model.TotalNgCount</h2>
+                        <div class="stat-icon-wrapper">
+                            <i class="ph-warning-octagon-bold"></i>
+                        </div>
+                    </div>
                 </div>
-                <i class="ph-warning-octagon-fill" style="font-size: 2.8rem; color: #fb7185; opacity: 0.5;"></i>
             </div>
         </div>
 
         <!-- Total Inspections Card -->
-        <div id="cardTotal" class="bento-card" onclick="toggleFilter('all')" style="background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(129, 140, 248, 0.05)); border: 1px solid rgba(129, 140, 248, 0.3); cursor: pointer; transition: all 0.3s ease; padding: 1.25rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <p style="color: #94a3b8; margin: 0 0 0.25rem 0; font-weight: 600; font-size: 0.85rem;">Total Inspections</p>
-                    <h2 id="totalInspectionsCount" style="font-size: 2.2rem; font-weight: 800; color: #818cf8; margin: 0; line-height: 1;">@(Model.TotalOkCount + Model.TotalNgCount)</h2>
-                    <p id="filterBadgeTotal" style="display:none; color: #818cf8; font-size: 0.7rem; background: rgba(129, 140, 248, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content;">Filtered</p>
+        <div id="cardTotal" class="bento-card dashboard-stat-card active-state" onclick="toggleFilter('all')" style="--card-color: #818cf8; --card-color-rgb: 129, 140, 248;">
+            <div class="stat-card-inner">
+                <div class="stat-bg-orb"></div>
+                <div class="stat-content">
+                    <div class="stat-meta">
+                        <span class="stat-label">TOTAL SESSIONS</span>
+                        <div class="stat-badge" id="filterBadgeTotal" style="display:none;">FILTERED</div>
+                    </div>
+                    <div class="stat-main">
+                        <h2 class="stat-number" id="totalInspectionsCount">@(Model.TotalOkCount + Model.TotalNgCount)</h2>
+                        <div class="stat-icon-wrapper">
+                            <i class="ph-clipboard-text-bold"></i>
+                        </div>
+                    </div>
                 </div>
-                <i class="ph-clipboard-text-fill" style="font-size: 2.8rem; color: #818cf8; opacity: 0.5;"></i>
             </div>
         </div>
 
@@ -170,48 +191,143 @@
             .feed-card div::-webkit-scrollbar-thumb { background: rgba(129, 140, 248, 0.3); border-radius: 10px; }
             .feed-card div::-webkit-scrollbar-thumb:hover { background: rgba(129, 140, 248, 0.5); }
 
-            /* --- RESPONSIVE MEDIA QUERIES --- */
+/* --- Dashboard Stat Cards (Cyber-Industrial) --- */
+.dashboard-stat-card {
+    position: relative;
+    padding: 0 !important;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(var(--card-color-rgb), 0.1);
+    backdrop-filter: blur(20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border-radius: 20px;
+    height: 110px; /* Force consistent height */
+    box-sizing: border-box;
+}
 
-            /* Laptop Standard (Max 1400px) */
-            @@media (max-width: 1400px) {
-                .quantum-grid {
-                    grid-template-columns: repeat(3, 1fr); /* Switch to 3 columns */
-                    gap: 1.5rem;
-                }
-                .analytics-card {
-                    grid-column: span 3; /* Full width chart */
-                }
-                .feed-card {
-                    grid-column: span 3; /* Feed moves to bottom, full width */
-                    grid-row: auto; /* Remove row span constraint */
-                    height: 350px; /* Fixed height for feed */
-                }
-                #cardTotal {
-                    grid-column: span 1; /* Reset to normal width */
-                }
-                .stats-card, .bento-card:not(.analytics-card):not(.feed-card):not(#cardTotal) {
-                    /* Stats cards take 1 column each */
-                    grid-column: span 1; 
-                }
-            }
+.dashboard-stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(var(--card-color-rgb), 0.08), transparent);
+    z-index: 0;
+}
 
-            /* Tablet/Small Laptop (Max 992px) */
-            @@media (max-width: 992px) {
-                .quantum-grid {
-                    grid-template-columns: 1fr; /* Single column stack */
-                }
-                .analytics-card, .feed-card, .stats-card, .bento-card {
-                    grid-column: span 1;
-                    grid-row: auto;
-                }
-            }
-        </style>
+.stat-card-inner {
+    position: relative;
+    padding: 1rem 1.25rem;
+    height: 100%;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+}
 
+.stat-bg-orb {
+    position: absolute;
+    top: -40%;
+    right: -20%;
+    width: 120px;
+    height: 120px;
+    background: var(--card-color);
+    filter: blur(50px);
+    opacity: 0.1;
+    z-index: 1;
+    transition: opacity 0.5s ease;
+}
 
-        
-    </div>
-</div>
+/* Card States via Classes */
+.dashboard-stat-card.active-state {
+    border-color: rgba(var(--card-color-rgb), 0.6);
+    background: rgba(var(--card-color-rgb), 0.05);
+    box-shadow: 0 0 25px rgba(var(--card-color-rgb), 0.1);
+}
 
+.dashboard-stat-card.active-state .stat-bg-orb {
+    opacity: 0.3;
+}
+
+.dashboard-stat-card.filtered-state {
+    opacity: 0.2;
+    filter: grayscale(0.5) blur(1px);
+    pointer-events: auto;
+}
+
+.stat-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.15rem;
+    height: 24px; /* Fixed height to prevent jumps when badge appears */
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.stat-badge {
+    font-size: 0.6rem;
+    font-weight: 900;
+    color: var(--card-color);
+    background: rgba(var(--card-color-rgb), 0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(var(--card-color-rgb), 0.3);
+}
+
+.stat-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-number {
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: #fff;
+    margin: 0;
+    line-height: 1;
+    font-family: 'Outfit', sans-serif;
+    text-shadow: 0 0 20px rgba(var(--card-color-rgb), 0.3);
+}
+
+.stat-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(var(--card-color-rgb), 0.1);
+    border: 1px solid rgba(var(--card-color-rgb), 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--card-color);
+    font-size: 1.25rem;
+    box-shadow: inset 0 0 10px rgba(var(--card-color-rgb), 0.1);
+}
+
+@@keyframes statusPulse {
+    0% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(3); opacity: 0; }
+    100% { transform: scale(1); opacity: 0; }
+}
+
+/* --- RESPONSIVE MEDIA QUERIES --- */
+@@media (max-width: 1400px) {
+    .quantum-grid { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .analytics-card { grid-column: span 3; }
+    .feed-card { grid-column: span 3; grid-row: auto; height: 350px; }
+}
+
+/* Tablet/Small Laptop (Max 992px) */
+@@media (max-width: 992px) {
+    .quantum-grid { grid-template-columns: 1fr; }
+    .analytics-card, .feed-card, .stats-card, .bento-card { grid-column: span 1; grid-row: auto; }
+}
+</style>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -233,6 +349,9 @@
             // Store raw data for client-side filtering
             recentInspections: @Html.Raw(Json.Serialize(Model.RecentInspections.Take(10).Select(s => new { inspectorName = s.InspectorName, inspectionDate = s.InspectionDate, machineNumber = s.MachineNumber != null ? s.MachineNumber.Number : "N/A" })))
         };
+
+        // --- Chart Context & Gradients ---
+        // ... (rest of chart setup)
 
         // --- Chart Context & Gradients ---
         const ctx = document.getElementById('quantumChart').getContext('2d');
@@ -287,38 +406,32 @@
         }
 
         function updateCardVisuals() {
-            const cardOk = document.getElementById('cardOk');
-            const cardNg = document.getElementById('cardNg');
-            const cardTotal = document.getElementById('cardTotal');
+            const cards = {
+                ok: document.getElementById('cardOk'),
+                ng: document.getElementById('cardNg'),
+                all: document.getElementById('cardTotal')
+            };
             
-            // Perbaikan: Gunakan border tetap (2px) agar ukuran tidak berubah saat aktif
-            const setActive = (el, color) => { 
-                el.style.borderColor = color; 
-                el.style.boxShadow = `0 0 20px ${color}44`; 
-                el.style.opacity = '1'; 
-                el.style.transform = 'none'; // Hapus scale agar tidak membesar
-            };
-            const setInactive = (el) => { 
-                el.style.borderColor = 'rgba(255,255,255,0.05)'; 
-                el.style.boxShadow = 'none'; 
-                el.style.opacity = '0.3'; 
-                el.style.transform = 'none'; 
-            };
-            const setNormal = (el, bc) => { 
-                el.style.borderColor = bc; 
-                el.style.boxShadow = 'none'; 
-                el.style.opacity = '1'; 
-                el.style.transform = 'none'; 
+            // Helper to clean classes
+            const clean = (el) => {
+                el.classList.remove('active-state', 'filtered-state');
+                el.style.opacity = ""; // Clear any leftover JS styles
+                el.style.borderColor = "";
+                el.style.background = "";
             };
 
+            Object.values(cards).forEach(clean);
+
             if (state.filterType === 'all') {
-                setNormal(cardOk, 'rgba(52, 211, 153, 0.3)');
-                setNormal(cardNg, 'rgba(251, 113, 133, 0.3)');
-                setActive(cardTotal, 'rgba(129, 140, 248, 0.5)'); 
+                cards.all.classList.add('active-state');
             } else if (state.filterType === 'ok') {
-                setActive(cardOk, '#34d399'); setInactive(cardNg); setInactive(cardTotal);
+                cards.ok.classList.add('active-state');
+                cards.ng.classList.add('filtered-state');
+                cards.all.classList.add('filtered-state');
             } else if (state.filterType === 'ng') {
-                setInactive(cardOk); setActive(cardNg, '#fb7185'); setInactive(cardTotal);
+                cards.ng.classList.add('active-state');
+                cards.ok.classList.add('filtered-state');
+                cards.all.classList.add('filtered-state');
             }
         }
 
@@ -367,7 +480,13 @@
                 const updateStat = (id, bid, val) => {
                     const el = document.getElementById(id); const bel = document.getElementById(bid);
                     animateValue(el, parseInt(el.innerText), val, 500);
-                    if (isFiltered) { bel.style.display = 'inline-block'; bel.innerText = filterLabel; } else { bel.style.display = 'none'; }
+                    if (isFiltered) { 
+                        bel.style.display = 'inline-block'; 
+                        bel.style.visibility = 'visible';
+                        bel.innerText = filterLabel; 
+                    } else { 
+                        bel.style.display = 'none'; 
+                    }
                 };
                 updateStat('totalOkCount', 'filterBadgeOk', data.totalOk);
                 updateStat('totalNgCount', 'filterBadgeNg', data.totalNg);
