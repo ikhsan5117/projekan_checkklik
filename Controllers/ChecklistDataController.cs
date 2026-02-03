@@ -23,7 +23,7 @@ namespace AMRVI.Controllers
         public async Task<IActionResult> Index()
         {
             var plant = _plantService.GetPlantName();
-            object machines = null;
+            object? machines = null;
 
             switch(plant)
             {

@@ -237,7 +237,7 @@ namespace AMRVI.Controllers
         public async Task<IActionResult> GetMachineNumbers(int machineId)
         {
             var plant = _plantService.GetPlantName();
-            object data = null;
+            object? data = null;
 
             switch (plant)
             {

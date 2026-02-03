@@ -398,9 +398,6 @@ namespace AMRVI.Controllers
         [HttpGet]
         public IActionResult DownloadTemplate()
         {
-             // Template logic remains mostly same
-             return base.File(System.IO.File.ReadAllBytes("wwwroot/templates/Template_Users.xlsx"), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Template_Users.xlsx");
-             // Or recreate it
              ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
              using (var package = new ExcelPackage())
              {
