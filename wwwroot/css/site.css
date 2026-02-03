@@ -1456,26 +1456,78 @@ body:has(.inspection-portal-v2) .mesh-bg {
         radial-gradient(circle at 100% 100%, rgba(34, 211, 238, 0.15) 0%, transparent 40%),
         radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.5) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 3rem 5rem;
-    /* Dikurangi padding atas-bawah (dari 5rem ke 3rem) */
+    padding: 2.5rem 4rem;
     border-radius: 4px;
-    /* Sharp technical edges */
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
     overflow: hidden;
-    box-shadow:
-        0 40px 120px -20px rgba(0, 0, 0, 0.8),
-        inset 0 0 80px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 0.8);
 }
 
-.quantum-hero::before {
+/* Luxury Tech Grid */
+.quantum-hero::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(129, 140, 248, 0.05) 0%, transparent 100%);
+    background-image:
+        linear-gradient(rgba(129, 140, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(129, 140, 248, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    mask-image: radial-gradient(circle at 70% 50%, black, transparent 80%);
+    z-index: 1;
     pointer-events: none;
+}
+
+/* Ambient Glow Orbs */
+.hero-glow-1 {
+    position: absolute;
+    top: -20%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.15), transparent 70%);
+    filter: blur(60px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.hero-glow-2 {
+    position: absolute;
+    bottom: -20%;
+    right: -5%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(34, 211, 238, 0.1), transparent 70%);
+    filter: blur(50px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Scanning Line Effect */
+.hero-scanline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, rgba(34, 211, 238, 0.03) 50%, transparent);
+    background-size: 100% 4px;
+    z-index: 2;
+    pointer-events: none;
+    animation: heroScan 10s linear infinite;
+    opacity: 0.5;
+}
+
+@keyframes heroScan {
+    from {
+        transform: translateY(-100%);
+    }
+
+    to {
+        transform: translateY(100%);
+    }
 }
 
 .hero-chip {
@@ -1490,7 +1542,7 @@ body:has(.inspection-portal-v2) .mesh-bg {
     font-weight: 800;
     color: var(--secondary);
     letter-spacing: 2px;
-    margin-bottom: 2.5rem;
+    margin-bottom: 1rem;
     text-transform: uppercase;
     box-shadow: 0 0 20px rgba(34, 211, 238, 0.1);
 }
@@ -1505,20 +1557,18 @@ body:has(.inspection-portal-v2) .mesh-bg {
 }
 
 .hero-title {
-    font-size: 4.5rem;
+    font-size: 3.2rem;
     font-weight: 900;
-    letter-spacing: -4px;
-    line-height: 0.9;
-    margin-bottom: 2rem;
-    background: linear-gradient(135deg,
-            #fff 0%,
-            #f8fafc 40%,
-            var(--primary) 70%,
-            var(--secondary) 100%);
+    letter-spacing: -2.5px;
+    line-height: 1;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #fff 30%, var(--primary) 70%, var(--secondary) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 10px 30px rgba(129, 140, 248, 0.2));
+    position: relative;
+    z-index: 3;
 }
 
 .glow-text {
@@ -1529,11 +1579,11 @@ body:has(.inspection-portal-v2) .mesh-bg {
 }
 
 .hero-subtitle {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: var(--text-secondary);
     max-width: 600px;
-    line-height: 1.6;
-    margin-bottom: 3.5rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
     font-weight: 400;
     opacity: 0.9;
 }
@@ -1614,31 +1664,25 @@ body:has(.inspection-portal-v2) .mesh-bg {
 }
 
 .mini-gauge-card {
-    background: rgba(15, 23, 42, 0.3);
-    border: 1px solid rgba(129, 140, 248, 0.15);
-    padding: 1rem;
-    /* Padding lebih tipis */
-    border-radius: 12px;
+    background: transparent;
+    border: none;
+    padding: 0;
     position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(20px);
-    box-shadow:
-        0 20px 40px rgba(0, 0, 0, 0.4),
-        inset 0 0 20px rgba(129, 140, 248, 0.05);
+    box-shadow: none;
+    backdrop-filter: none;
     transition: var(--transition-smooth);
 }
 
 .mini-gauge-card:hover {
-    border-color: var(--secondary);
-    box-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
+    transform: scale(1.05);
 }
 
 .gauge-ring {
     position: relative;
-    width: 220px;
-    /* Diperbesar dari 140px */
-    height: 220px;
-    margin: 0 auto 1.5rem;
+    width: 160px;
+    /* Diperkecil dari 220px */
+    height: 160px;
+    margin: 0 auto 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1656,8 +1700,8 @@ body:has(.inspection-portal-v2) .mesh-bg {
     stroke-width: 18;
     /* Lebih tebal */
     stroke: rgba(255, 255, 255, 0.03);
-    stroke-dasharray: 628;
-    /* Keliling untuk r=100 */
+    stroke-dasharray: 440;
+    /* Keliling untuk r=70 */
     stroke-linecap: round;
 }
 
@@ -1665,7 +1709,7 @@ body:has(.inspection-portal-v2) .mesh-bg {
     stroke: var(--secondary);
     stroke-width: 24;
     /* Lebih tebal */
-    stroke-dashoffset: calc(628 * (1 - var(--percent) / 100));
+    stroke-dashoffset: calc(440 * (1 - var(--percent) / 100));
     filter: drop-shadow(0 0 20px var(--secondary));
     animation: gaugePulse 3s ease-in-out infinite;
 }
@@ -1692,8 +1736,8 @@ body:has(.inspection-portal-v2) .mesh-bg {
 }
 
 .g-num {
-    font-size: 4.5rem;
-    /* Diperbesar dari 2.75rem */
+    font-size: 3rem;
+    /* Diperkecil dari 4.5rem */
     font-weight: 900;
     line-height: 1;
     color: #fff;
@@ -1718,6 +1762,7 @@ body:has(.inspection-portal-v2) .mesh-bg {
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-top: 0.5rem;
+    text-align: center;
 }
 
 /* Indicators */

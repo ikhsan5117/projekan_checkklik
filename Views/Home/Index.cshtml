@@ -9,6 +9,9 @@
 <div class="dashboard-viewport fade-in">
     <!-- Hero Section: Atmospheric Command -->
     <div class="quantum-hero" style="margin-bottom: 3rem;">
+        <div class="hero-glow-1"></div>
+        <div class="hero-glow-2"></div>
+        <div class="hero-scanline"></div>
         <div class="hero-main">
             <div class="hero-chip">SYSTEM STATUS: NOMINAL</div>
             <h1 class="hero-title">@User.FindFirst("Plant")?.Value <span class="glow-text">Dashboard</span></h1>
@@ -22,7 +25,7 @@
             }
              <div class="mini-gauge-card">
                  <div class="gauge-ring" style="--percent: @auditPercent;">
-                     <svg><circle cx="110" cy="110" r="100"></circle><circle cx="110" cy="110" r="100"></circle></svg>
+                     <svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70"></circle><circle cx="80" cy="80" r="70"></circle></svg>
                      <div class="gauge-data">
                          <span class="g-num">@Model.TotalMachines</span>
                          <span class="g-unit">UNITS</span>

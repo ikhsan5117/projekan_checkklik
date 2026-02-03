@@ -146,7 +146,7 @@ namespace AMRVI.Controllers
             try
             {
                 var plant = _plantService.GetPlantName();
-                object resultDto = null;
+                object? resultDto = null;
 
                 // Shared logic encapsulated in generic/dynamic way is hard, so explicit repetition
                 switch(plant)
@@ -246,7 +246,7 @@ namespace AMRVI.Controllers
             {
                 var plant = _plantService.GetPlantName();
                 var inspectorName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Guest";
-                object result = null;
+                object? result = null;
 
                 switch (plant)
                 {
@@ -302,7 +302,6 @@ namespace AMRVI.Controllers
             try
             {
                 var plant = _plantService.GetPlantName();
-                bool hasNext = false;
                 int nextId = 0;
                 bool completed = false;
 
@@ -315,9 +314,12 @@ namespace AMRVI.Controllers
                          await _context.SaveChangesAsync();
                          
                          var currBTR = await _context.ChecklistItems_BTR.FindAsync(model.ChecklistItemId);
-                         var nextBTR = await _context.ChecklistItems_BTR.Where(c => c.MachineId == currBTR.MachineId && c.IsActive && c.OrderNumber > currBTR.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
-                         if(nextBTR!=null) { hasNext=true; nextId=nextBTR.Id; } 
-                         else { completed=true; var sess = await _context.InspectionSessions_BTR.FindAsync(model.InspectionSessionId); sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New BTR inspection completed: {sess.InspectorName}"); }
+                         if (currBTR != null)
+                         {
+                             var nextBTR = await _context.ChecklistItems_BTR.Where(c => c.MachineId == currBTR.MachineId && c.IsActive && c.OrderNumber > currBTR.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
+                             if(nextBTR!=null) { nextId=nextBTR.Id; } 
+                             else { completed=true; var sess = await _context.InspectionSessions_BTR.FindAsync(model.InspectionSessionId); if(sess!=null) { sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New BTR inspection completed: {sess.InspectorName}"); } }
+                         }
                          await _context.SaveChangesAsync();
                          break;
                      case "HOSE":
@@ -327,9 +329,12 @@ namespace AMRVI.Controllers
                          await _context.SaveChangesAsync();
                          
                          var currHOSE = await _context.ChecklistItems_HOSE.FindAsync(model.ChecklistItemId);
-                         var nextHOSE = await _context.ChecklistItems_HOSE.Where(c => c.MachineId == currHOSE.MachineId && c.IsActive && c.OrderNumber > currHOSE.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
-                         if(nextHOSE!=null) { hasNext=true; nextId=nextHOSE.Id; } 
-                         else { completed=true; var sess = await _context.InspectionSessions_HOSE.FindAsync(model.InspectionSessionId); sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New HOSE inspection completed: {sess.InspectorName}"); }
+                         if (currHOSE != null)
+                         {
+                             var nextHOSE = await _context.ChecklistItems_HOSE.Where(c => c.MachineId == currHOSE.MachineId && c.IsActive && c.OrderNumber > currHOSE.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
+                             if(nextHOSE!=null) { nextId=nextHOSE.Id; } 
+                             else { completed=true; var sess = await _context.InspectionSessions_HOSE.FindAsync(model.InspectionSessionId); if(sess!=null) { sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New HOSE inspection completed: {sess.InspectorName}"); } }
+                         }
                          await _context.SaveChangesAsync();
                          break;
                      case "MOLDED":
@@ -339,9 +344,12 @@ namespace AMRVI.Controllers
                          await _context.SaveChangesAsync();
                          
                          var currMOLDED = await _context.ChecklistItems_MOLDED.FindAsync(model.ChecklistItemId);
-                         var nextMOLDED = await _context.ChecklistItems_MOLDED.Where(c => c.MachineId == currMOLDED.MachineId && c.IsActive && c.OrderNumber > currMOLDED.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
-                         if(nextMOLDED!=null) { hasNext=true; nextId=nextMOLDED.Id; } 
-                         else { completed=true; var sess = await _context.InspectionSessions_MOLDED.FindAsync(model.InspectionSessionId); sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New MOLDED inspection completed: {sess.InspectorName}"); }
+                         if (currMOLDED != null)
+                         {
+                             var nextMOLDED = await _context.ChecklistItems_MOLDED.Where(c => c.MachineId == currMOLDED.MachineId && c.IsActive && c.OrderNumber > currMOLDED.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
+                             if(nextMOLDED!=null) { nextId=nextMOLDED.Id; } 
+                             else { completed=true; var sess = await _context.InspectionSessions_MOLDED.FindAsync(model.InspectionSessionId); if(sess!=null) { sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New MOLDED inspection completed: {sess.InspectorName}"); } }
+                         }
                          await _context.SaveChangesAsync();
                          break;
                      case "MIXING":
@@ -351,9 +359,12 @@ namespace AMRVI.Controllers
                          await _context.SaveChangesAsync();
                          
                          var currMIXING = await _context.ChecklistItems_MIXING.FindAsync(model.ChecklistItemId);
-                         var nextMIXING = await _context.ChecklistItems_MIXING.Where(c => c.MachineId == currMIXING.MachineId && c.IsActive && c.OrderNumber > currMIXING.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
-                         if(nextMIXING!=null) { hasNext=true; nextId=nextMIXING.Id; } 
-                         else { completed=true; var sess = await _context.InspectionSessions_MIXING.FindAsync(model.InspectionSessionId); sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New MIXING inspection completed: {sess.InspectorName}"); }
+                         if (currMIXING != null)
+                         {
+                             var nextMIXING = await _context.ChecklistItems_MIXING.Where(c => c.MachineId == currMIXING.MachineId && c.IsActive && c.OrderNumber > currMIXING.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
+                             if(nextMIXING!=null) { nextId=nextMIXING.Id; } 
+                             else { completed=true; var sess = await _context.InspectionSessions_MIXING.FindAsync(model.InspectionSessionId); if(sess!=null) { sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New MIXING inspection completed: {sess.InspectorName}"); } }
+                         }
                          await _context.SaveChangesAsync();
                          break;
                      default:
@@ -363,9 +374,12 @@ namespace AMRVI.Controllers
                          await _context.SaveChangesAsync();
                          
                          var currRVI = await _context.ChecklistItems.FindAsync(model.ChecklistItemId);
-                         var nextRVI = await _context.ChecklistItems.Where(c => c.MachineId == currRVI.MachineId && c.IsActive && c.OrderNumber > currRVI.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
-                         if(nextRVI!=null) { hasNext=true; nextId=nextRVI.Id; } 
-                         else { completed=true; var sess = await _context.InspectionSessions.FindAsync(model.InspectionSessionId); sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New RVI inspection completed: {sess.InspectorName}"); }
+                         if (currRVI != null)
+                         {
+                             var nextRVI = await _context.ChecklistItems.Where(c => c.MachineId == currRVI.MachineId && c.IsActive && c.OrderNumber > currRVI.OrderNumber).OrderBy(c => c.OrderNumber).FirstOrDefaultAsync();
+                             if(nextRVI!=null) { nextId=nextRVI.Id; } 
+                             else { completed=true; var sess = await _context.InspectionSessions.FindAsync(model.InspectionSessionId); if(sess!=null) { sess.IsCompleted=true; sess.CompletedAt=DateTime.Now; await _hubContext.Clients.All.SendAsync("RefreshData", $"New RVI inspection completed: {sess.InspectorName}"); } }
+                         }
                          await _context.SaveChangesAsync();
                          break;
                 }

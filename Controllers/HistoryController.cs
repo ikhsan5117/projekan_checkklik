@@ -100,7 +100,7 @@ namespace AMRVI.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var plant = _plantService.GetPlantName();
-            InspectionSession session = null;
+            InspectionSession? session = null;
 
             switch (plant)
             {
@@ -111,7 +111,7 @@ namespace AMRVI.Controllers
                     if(sBTR != null) {
                         session = new InspectionSession {
                             Id = sBTR.Id, InspectorName = sBTR.InspectorName, InspectionDate = sBTR.InspectionDate, IsCompleted = sBTR.IsCompleted, CompletedAt = sBTR.CompletedAt,
-                            MachineNumber = new MachineNumber { Number = sBTR.MachineNumber?.Number, Machine = new Machine { Name = sBTR.MachineNumber?.Machine?.Name } },
+                            MachineNumber = new MachineNumber { Number = sBTR.MachineNumber?.Number ?? "-", Machine = new Machine { Name = sBTR.MachineNumber?.Machine?.Name ?? "-" } },
                             InspectionResults = sBTR.InspectionResults.Select(r => new InspectionResult {
                                 Id = r.Id, Judgement = r.Judgement, Remarks = r.Remarks,
                                 ChecklistItem = new ChecklistItem { OrderNumber = r.ChecklistItem.OrderNumber, DetailName = r.ChecklistItem.DetailName, StandardDescription = r.ChecklistItem.StandardDescription }
@@ -124,7 +124,7 @@ namespace AMRVI.Controllers
                     if(sHOSE != null) {
                         session = new InspectionSession {
                             Id = sHOSE.Id, InspectorName = sHOSE.InspectorName, InspectionDate = sHOSE.InspectionDate, IsCompleted = sHOSE.IsCompleted, CompletedAt = sHOSE.CompletedAt,
-                            MachineNumber = new MachineNumber { Number = sHOSE.MachineNumber?.Number, Machine = new Machine { Name = sHOSE.MachineNumber?.Machine?.Name } },
+                            MachineNumber = new MachineNumber { Number = sHOSE.MachineNumber?.Number ?? "-", Machine = new Machine { Name = sHOSE.MachineNumber?.Machine?.Name ?? "-" } },
                             InspectionResults = sHOSE.InspectionResults.Select(r => new InspectionResult {
                                 Id = r.Id, Judgement = r.Judgement, Remarks = r.Remarks,
                                 ChecklistItem = new ChecklistItem { OrderNumber = r.ChecklistItem.OrderNumber, DetailName = r.ChecklistItem.DetailName, StandardDescription = r.ChecklistItem.StandardDescription }
@@ -137,7 +137,7 @@ namespace AMRVI.Controllers
                     if(sMOLDED != null) {
                         session = new InspectionSession {
                             Id = sMOLDED.Id, InspectorName = sMOLDED.InspectorName, InspectionDate = sMOLDED.InspectionDate, IsCompleted = sMOLDED.IsCompleted, CompletedAt = sMOLDED.CompletedAt,
-                            MachineNumber = new MachineNumber { Number = sMOLDED.MachineNumber?.Number, Machine = new Machine { Name = sMOLDED.MachineNumber?.Machine?.Name } },
+                            MachineNumber = new MachineNumber { Number = sMOLDED.MachineNumber?.Number ?? "-", Machine = new Machine { Name = sMOLDED.MachineNumber?.Machine?.Name ?? "-" } },
                             InspectionResults = sMOLDED.InspectionResults.Select(r => new InspectionResult {
                                 Id = r.Id, Judgement = r.Judgement, Remarks = r.Remarks,
                                 ChecklistItem = new ChecklistItem { OrderNumber = r.ChecklistItem.OrderNumber, DetailName = r.ChecklistItem.DetailName, StandardDescription = r.ChecklistItem.StandardDescription }
@@ -150,7 +150,7 @@ namespace AMRVI.Controllers
                     if(sMIXING != null) {
                         session = new InspectionSession {
                             Id = sMIXING.Id, InspectorName = sMIXING.InspectorName, InspectionDate = sMIXING.InspectionDate, IsCompleted = sMIXING.IsCompleted, CompletedAt = sMIXING.CompletedAt,
-                            MachineNumber = new MachineNumber { Number = sMIXING.MachineNumber?.Number, Machine = new Machine { Name = sMIXING.MachineNumber?.Machine?.Name } },
+                            MachineNumber = new MachineNumber { Number = sMIXING.MachineNumber?.Number ?? "-", Machine = new Machine { Name = sMIXING.MachineNumber?.Machine?.Name ?? "-" } },
                             InspectionResults = sMIXING.InspectionResults.Select(r => new InspectionResult {
                                 Id = r.Id, Judgement = r.Judgement, Remarks = r.Remarks,
                                 ChecklistItem = new ChecklistItem { OrderNumber = r.ChecklistItem.OrderNumber, DetailName = r.ChecklistItem.DetailName, StandardDescription = r.ChecklistItem.StandardDescription }
@@ -178,7 +178,8 @@ namespace AMRVI.Controllers
             var viewResult = actionResult as ViewResult;
             if (viewResult == null || viewResult.Model == null) return NotFound();
 
-            var session = viewResult.Model as InspectionSession; // Already mapped
+            var session = viewResult.Model as InspectionSession;
+            if (session == null) return NotFound();
 
             using (var package = new ExcelPackage())
             {
@@ -194,12 +195,12 @@ namespace AMRVI.Controllers
                     range.Style.Font.Color.SetColor(Color.White);
                 }
 
-                var results = session.InspectionResults.OrderBy(r => r.ChecklistItem.OrderNumber).ToList();
+                var results = session.InspectionResults.OrderBy(r => r.ChecklistItem?.OrderNumber ?? 0).ToList();
                 for (int i = 0; i < results.Count; i++)
                 {
-                    sheet.Cells[i + 2, 1].Value = results[i].ChecklistItem.OrderNumber;
-                    sheet.Cells[i + 2, 2].Value = results[i].ChecklistItem.DetailName;
-                    sheet.Cells[i + 2, 3].Value = results[i].ChecklistItem.StandardDescription;
+                    sheet.Cells[i + 2, 1].Value = results[i].ChecklistItem?.OrderNumber;
+                    sheet.Cells[i + 2, 2].Value = results[i].ChecklistItem?.DetailName;
+                    sheet.Cells[i + 2, 3].Value = results[i].ChecklistItem?.StandardDescription;
                     sheet.Cells[i + 2, 4].Value = results[i].Judgement;
                     sheet.Cells[i + 2, 5].Value = results[i].Remarks;
 
