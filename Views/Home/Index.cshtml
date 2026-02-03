@@ -291,15 +291,30 @@
             const cardNg = document.getElementById('cardNg');
             const cardTotal = document.getElementById('cardTotal');
             
-            const setActive = (el, color) => { el.style.border = `2px solid ${color}`; el.style.boxShadow = `0 0 15px ${color}`; el.style.opacity = '1'; el.style.transform = 'scale(1.02)'; };
-            const setInactive = (el) => { el.style.border = '1px solid rgba(255,255,255,0.1)'; el.style.boxShadow = 'none'; el.style.opacity = '0.5'; el.style.transform = 'scale(0.98)'; };
-            const setNormal = (el, bc) => { el.style.border = `1px solid ${bc}`; el.style.boxShadow = 'none'; el.style.opacity = '1'; el.style.transform = 'scale(1)'; };
+            // Perbaikan: Gunakan border tetap (2px) agar ukuran tidak berubah saat aktif
+            const setActive = (el, color) => { 
+                el.style.borderColor = color; 
+                el.style.boxShadow = `0 0 20px ${color}44`; 
+                el.style.opacity = '1'; 
+                el.style.transform = 'none'; // Hapus scale agar tidak membesar
+            };
+            const setInactive = (el) => { 
+                el.style.borderColor = 'rgba(255,255,255,0.05)'; 
+                el.style.boxShadow = 'none'; 
+                el.style.opacity = '0.3'; 
+                el.style.transform = 'none'; 
+            };
+            const setNormal = (el, bc) => { 
+                el.style.borderColor = bc; 
+                el.style.boxShadow = 'none'; 
+                el.style.opacity = '1'; 
+                el.style.transform = 'none'; 
+            };
 
             if (state.filterType === 'all') {
                 setNormal(cardOk, 'rgba(52, 211, 153, 0.3)');
                 setNormal(cardNg, 'rgba(251, 113, 133, 0.3)');
-                setNormal(cardTotal, 'rgba(129, 140, 248, 0.3)');
-                setActive(cardTotal, 'rgba(129, 140, 248, 0.5)');
+                setActive(cardTotal, 'rgba(129, 140, 248, 0.5)'); 
             } else if (state.filterType === 'ok') {
                 setActive(cardOk, '#34d399'); setInactive(cardNg); setInactive(cardTotal);
             } else if (state.filterType === 'ng') {
@@ -429,10 +444,18 @@
             window.requestAnimationFrame(step);
         }
 
+        function refreshDashboard() {
+            let url = `/api/dashboard/monthly?year=${state.year}`;
+            if (state.viewLevel === 'weekly') url = `/api/dashboard/weekly?year=${state.year}&month=${state.month}`;
+            else if (state.viewLevel === 'daily') url = `/api/dashboard/daily?year=${state.year}&month=${state.month}&week=${state.week}`;
+            fetchDataAndRefresh(url);
+        }
+
         window.resetToMonthly = resetToMonthly;
         window.drillDownToWeekly = drillDownToWeekly;
         window.goUpLevel = goUpLevel;
         window.toggleFilter = toggleFilter;
+        window.refreshDashboard = refreshDashboard;
         
         updateBreadcrumb();
         updateCardVisuals();

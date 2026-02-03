@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using AMRVI.Data;
 using AMRVI.Models;
 using AMRVI.ViewModels;
+using Microsoft.AspNetCore.SignalR;
+using AMRVI.Hubs;
+
 
 namespace AMRVI.Controllers
 {
@@ -10,11 +13,13 @@ namespace AMRVI.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<InspectionController> _logger;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public InspectionController(ApplicationDbContext context, ILogger<InspectionController> logger)
+        public InspectionController(ApplicationDbContext context, ILogger<InspectionController> logger, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
         public async Task<IActionResult> Index()
@@ -225,6 +230,9 @@ namespace AMRVI.Controllers
                     session.IsCompleted = true;
                     session.CompletedAt = DateTime.Now;
                     await _context.SaveChangesAsync();
+
+                    // Notify all clients via SignalR that new data is available
+                    await _hubContext.Clients.All.SendAsync("RefreshData", $"New inspection completed: {session.InspectorName}");
 
                     return Json(new
                     {

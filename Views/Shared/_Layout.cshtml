@@ -31,7 +31,7 @@
                 </a>
                 <a href="@Url.Action("Index", "Inspection")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Inspection" ? "active" : "")">
                     <i class="ph-magnifying-glass"></i>
-                    <span class="link-text">Inspection</span>
+                    <span class="link-text">AM INPUT</span>
                 </a>
                 <a href="@Url.Action("Index", "History")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "History" ? "active" : "")">
                     <i class="ph-clock-counter-clockwise"></i>
@@ -89,9 +89,9 @@
                     <div class="nav-divider-v"></div>
 
                     <!-- System Health Indicator -->
-                    <div class="system-status-nav">
-                        <div class="status-dot-pulse"></div>
-                        <span class="status-label-nav">System Online</span>
+                    <div class="system-status-nav" id="systemStatusContainer">
+                        <div class="status-dot-pulse" id="systemStatusDot"></div>
+                        <span class="status-label-nav" id="systemStatusText">System Online</span>
                     </div>
 
                     <!-- Fullscreen Command -->
@@ -370,38 +370,42 @@
             
             // 3. Fullscreen
             const fsBtn = document.getElementById('fullscreenToggle');
-            const fsIcon = fsBtn.querySelector('i');
-            fsBtn.addEventListener('click', () => {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(e => console.error(e));
-                    fsIcon.classList.replace('ph-corners-out', 'ph-corners-in');
-                } else {
-                    document.exitFullscreen();
-                    fsIcon.classList.replace('ph-corners-in', 'ph-corners-out');
-                }
-            });
-            document.addEventListener('fullscreenchange', () => {
-                if (!document.fullscreenElement) fsIcon.classList.replace('ph-corners-in', 'ph-corners-out');
-            });
+            if (fsBtn) {
+                const fsIcon = fsBtn.querySelector('i');
+                fsBtn.addEventListener('click', () => {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(e => console.error(e));
+                        if (fsIcon) fsIcon.classList.replace('ph-corners-out', 'ph-corners-in');
+                    } else {
+                        document.exitFullscreen();
+                        if (fsIcon) fsIcon.classList.replace('ph-corners-in', 'ph-corners-out');
+                    }
+                });
+                document.addEventListener('fullscreenchange', () => {
+                    if (!document.fullscreenElement && fsIcon) fsIcon.classList.replace('ph-corners-in', 'ph-corners-out');
+                });
+            }
 
             // 4. Sidebar Toggle
-            toggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (window.innerWidth > 1024) {
-                    sidebar.classList.toggle('collapsed');
-                    localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
-                    
-                    // Logic reset dihapus agar status dropdown tetap tersimpan (persist)
-                } else {
-                    sidebar.classList.toggle('mobile-active');
-                }
-            });
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (window.innerWidth > 1024) {
+                        sidebar.classList.toggle('collapsed');
+                        localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+                        
+                        // Logic reset dihapus agar status dropdown tetap tersimpan (persist)
+                    } else {
+                        sidebar.classList.toggle('mobile-active');
+                    }
+                });
 
-            document.addEventListener('click', (e) => {
-                if (window.innerWidth <= 1024 && !sidebar.contains(e.target) && !toggleBtn.contains(e.target) && sidebar.classList.contains('mobile-active')) {
-                    sidebar.classList.remove('mobile-active');
-                }
-            });
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth <= 1024 && !sidebar.contains(e.target) && !toggleBtn.contains(e.target) && sidebar.classList.contains('mobile-active')) {
+                        sidebar.classList.remove('mobile-active');
+                    }
+                });
+            }
 
             // 5. Card Spotlight
             document.addEventListener('mousemove', (e) => {
@@ -436,5 +440,158 @@
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
+    <!-- SignalR Client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        // SignalR Connection Setup
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub")
+            .withAutomaticReconnect()
+            .build();
+
+        // UI Update Helper
+        function updateStatus(state) {
+            const statusDot = document.getElementById("systemStatusDot");
+            const statusText = document.getElementById("systemStatusText");
+            const statusContainer = document.getElementById("systemStatusContainer");
+
+            if (!statusDot || !statusText || !statusContainer) return;
+
+            let color, rgb;
+            if (state === "Connected") {
+                color = "#10b981"; // Emerald-500
+                rgb = "16, 185, 129";
+                statusText.innerText = "SYSTEM ONLINE";
+            } 
+            else if (state === "Reconnecting") {
+                color = "#f59e0b"; // Amber-500
+                rgb = "245, 158, 11";
+                statusText.innerText = "RECONNECTING...";
+            } 
+            else { // Disconnected
+                color = "#ef4444"; // Red-500
+                rgb = "239, 68, 68";
+                statusText.innerText = "DISCONNECTED";
+            }
+
+            // Set CSS Variables for global styling update
+            statusContainer.style.setProperty('--status-color', color);
+            statusContainer.style.setProperty('--status-color-rgb', rgb);
+            statusText.style.color = color;
+        }
+
+        // Heartbeat Effect (Light up on receiving data)
+        function flashStatus() {
+            const container = document.getElementById("systemStatusContainer");
+            if (!container) return;
+            container.style.transition = "all 0.3s ease";
+            container.style.filter = "brightness(1.5)";
+            container.style.background = "rgba(var(--status-color-rgb), 0.4)";
+            setTimeout(() => {
+                container.style.filter = "brightness(1)";
+                container.style.background = "rgba(var(--status-color-rgb), 0.1)";
+            }, 300);
+        }
+
+        // Listen for Server Activity
+        connection.on("ReceiveSystemStatus", (msg) => {
+            console.log("SignalR Message:", msg);
+            flashStatus(); // Visual feedback
+        });
+
+        // Connection Events
+        connection.onreconnecting(error => {
+            console.warn("SignalR Reconnecting:", error);
+            updateStatus("Reconnecting");
+        });
+
+        connection.onreconnected(connectionId => {
+            console.log("SignalR Reconnected:", connectionId);
+            updateStatus("Connected");
+        });
+
+        connection.onclose(error => {
+            console.error("SignalR Closed:", error);
+            updateStatus("Disconnected");
+        });
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById("toastContainer");
+            if (!container) return;
+
+            const toast = document.createElement("div");
+            toast.className = "fade-in";
+            toast.style.cssText = `
+                background: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(12px);
+                border: 1px solid ${type === 'success' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(129, 140, 248, 0.4)'};
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+                min-width: 250px;
+                animation: slideUp 0.4s ease forwards;
+            `;
+
+            const icon = type === 'success' ? 'ph-check-circle-bold' : 'ph-info-bold';
+            const iconColor = type === 'success' ? '#10b981' : '#818cf8';
+
+            toast.innerHTML = `
+                <i class="${icon}" style="font-size: 1.25rem; color: ${iconColor};"></i>
+                <div style="font-size: 0.9rem; font-weight: 500;">${message}</div>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = "slideDown 0.4s ease forwards";
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        // Global Refresh Signal Listener
+        connection.on("RefreshData", (msg) => {
+            console.log("Real-time Update Signal:", msg);
+            flashStatus(); // Trigger heartbeat
+            
+            // Identify Current Controller
+            const path = window.location.pathname.toLowerCase();
+            
+            if (path.includes("/home") || path === "/") {
+                if (window.refreshDashboard) {
+                    showToast("Dashboard ter-update otomatis!", "success");
+                    window.refreshDashboard();
+                }
+            } 
+            else if (path.includes("/history")) {
+                showToast("Data baru masuk! Memperbarui tabel...", "info");
+                setTimeout(() => location.reload(), 1500);
+            }
+        });
+
+        // Start Connection
+        async function startSignalR() {
+            try {
+                await connection.start();
+                console.log("SignalR Connection Protocol: " + connection.connection.protocol);
+                updateStatus("Connected");
+            } catch (err) {
+                console.error("SignalR Connection Error:", err);
+                updateStatus("Disconnected");
+                setTimeout(startSignalR, 5000); // Retry after 5s
+            }
+        }
+
+        // Initialize on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus("Disconnected"); 
+            startSignalR();
+        });
+    </script>
+    <div id="toastContainer" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem;"></div>
 </body>
 </html>
