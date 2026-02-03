@@ -1,7 +1,5 @@
-@model IEnumerable<AMRVI.Models.Machine>
-
 @{
-    ViewData["Title"] = "Kelola Data Checklist";
+    ViewData["Title"] = "Manajemen User";
 }
 
 <div class="container-fluid" style="padding: 2rem 3rem;">
@@ -10,11 +8,11 @@
         <div class="header-section">
             <div class="title-block">
                 <div class="icon-wrapper">
-                    <span style="font-size: 2rem;">📝</span>
+                    <span style="font-size: 2rem;">👥</span>
                 </div>
                 <div>
-                    <h1 class="page-title">Kelola Data Checklist</h1>
-                    <p class="subtitle">Manajemen item checklist inspeksi per mesin</p>
+                    <h1 class="page-title">Manajemen User</h1>
+                    <p class="subtitle">Kelola akun pengguna, role, dan hak akses sistem</p>
                 </div>
             </div>
             <div style="display: flex; gap: 0.75rem; align-items: center;">
@@ -25,7 +23,7 @@
                         <i class="ph-caret-down-bold" style="font-size: 0.8rem;"></i>
                     </button>
                     <div id="importExportMenu" class="dropdown-menu" style="display: none;">
-                        <a href="@Url.Action("DownloadTemplate", "ChecklistData")" class="dropdown-item">
+                        <a href="@Url.Action("DownloadTemplate", "UserManagement")" class="dropdown-item">
                             <i class="ph-file-arrow-down-bold"></i> Download Template
                         </a>
                         <button onclick="document.getElementById('importFile').click()" class="dropdown-item">
@@ -38,22 +36,31 @@
                 </div>
                 <input type="file" id="importFile" accept=".xlsx,.xls" style="display: none;" onchange="handleImport(this)">
                 
-                <button onclick="showCreateModal()" id="btnAdd" class="btn-primary" disabled>
-                    <i class="ph-plus-bold"></i> Tambah Item
+                <button onclick="showCreateModal()" class="btn-primary">
+                    <i class="ph-plus-bold"></i> Tambah User
                 </button>
             </div>
         </div>
 
         <!-- Filter Section -->
-        <div class="filter-section">
-            <div class="form-group" style="max-width: 350px;">
-                <label class="form-label">Filter Mesin</label>
-                <select id="machineFilter" class="form-select" onchange="loadChecklists()">
-                    <option value="">- Pilih Mesin -</option>
-                    @foreach (var m in Model)
-                    {
-                        <option value="@m.Id">@m.Name</option>
-                    }
+        <div class="filter-section" style="display: flex; gap: 1rem;">
+            <div class="form-group" style="min-width: 200px;">
+                <label class="form-label">Filter Role</label>
+                <select id="roleFilter" class="form-select" onchange="loadUsers()">
+                    <option value="">- Semua Role -</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Supervisor">Supervisor</option>
+                    <option value="User">User</option>
+                    <option value="Operator">Operator</option>
+                    <option value="Maintenance">Maintenance</option>
+                </select>
+            </div>
+             <div class="form-group" style="min-width: 200px;">
+                <label class="form-label">Status</label>
+                <select id="statusFilter" class="form-select" onchange="loadUsers()">
+                    <option value="">- Semua Status -</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
                 </select>
             </div>
         </div>
@@ -64,17 +71,18 @@
                 <thead>
                     <tr>
                         <th width="5%" class="text-center">NO</th>
-                        <th width="15%">MESIN</th>
-                        <th width="8%" class="text-center">URUTAN</th>
-                        <th width="22%">BAGIAN (DETAIL)</th>
-                        <th width="30%">STANDAR</th>
-                        <th width="10%" class="text-center">GAMBAR</th>
-                        <th width="10%" class="text-right">AKSI</th>
+                        <th width="15%">USERNAME</th>
+                        <th width="20%">FULL NAME</th>
+                        <th width="20%">EMAIL</th>
+                        <th width="10%">ROLE</th>
+                        <th width="15%">DEPARTMENT</th>
+                        <th width="10%" class="text-center">STATUS</th>
+                        <th width="5%" class="text-right">AKSI</th>
                     </tr>
                 </thead>
-                <tbody id="checklistTableBody">
+                <tbody id="userTableBody">
                     <tr>
-                        <td colspan="7" style="text-align:center; color: #64748b;">Pilih mesin untuk melihat data checklist</td>
+                        <td colspan="8" style="text-align:center;">Memuat data user...</td>
                     </tr>
                 </tbody>
             </table>
@@ -82,50 +90,67 @@
     </div>
 </div>
 
-<!-- Modal Create/Edit Item -->
-<div id="itemModal" class="modal-backdrop" style="display: none;">
+<!-- Modal Create/Edit User -->
+<div id="userModal" class="modal-backdrop" style="display: none;">
     <div class="modal-content">
         <div class="modal-header-row">
-            <h2 class="modal-title" id="modalTitle">Tambah Item Checklist</h2>
+            <h2 class="modal-title" id="modalTitle">Tambah User Baru</h2>
             <button type="button" class="btn-close-modal" onclick="closeModal()">
                 <i class="ph-x-bold"></i>
             </button>
         </div>
 
-        <form id="itemForm" class="modal-form">
-            <input type="hidden" id="itemId" name="id">
-            <input type="hidden" id="machineIdInput" name="machineId">
+        <form id="userForm" class="modal-form">
+            <input type="hidden" id="userId" name="id">
             
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Nomor Urut</label>
-                    <input type="number" id="orderNumber" name="orderNumber" class="form-input" required value="1">
+            <div class="form-row" style="display: flex; gap: 1rem;">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="username" name="username" class="form-input" required autocomplete="off">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" class="form-input" required autocomplete="off">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Nama Bagian (Detail)</label>
-                    <input type="text" id="detailName" name="detailName" class="form-input" required placeholder="Contoh: Tekanan Oli">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="email" name="email" class="form-input" required autocomplete="off">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Standar</label>
-                    <textarea id="standardDescription" name="standardDescription" class="form-input" rows="3" required placeholder="Contoh: Harus antara 3-5 Bar"></textarea>
+                    <label class="form-label">Password <span id="passwordHint" style="font-weight: normal; font-size: 0.8em; color: #94a3b8;"></span></label>
+                    <input type="password" id="password" name="password" class="form-input" autocomplete="new-password">
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Upload Gambar (Opsional)</label>
-                    <input type="file" id="imageFile" name="imageFile" class="form-input" accept="image/*">
-                    <div id="currentImagePreview" style="margin-top: 0.5rem; display: none;">
-                        <img id="currentImage" src="" style="max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-                        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem;">Gambar saat ini (upload file baru untuk mengganti)</p>
-                    </div>
+            <div class="form-row" style="display: flex; gap: 1rem;">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Role</label>
+                    <select id="role" name="role" class="form-select" required>
+                        <option value="User">User</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Supervisor">Supervisor</option>
+                        <option value="Operator">Operator</option>
+                        <option value="Maintenance">Maintenance</option>
+                    </select>
                 </div>
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Department</label>
+                    <input type="text" id="department" name="department" class="form-input" placeholder="e.g. Production">
+                </div>
+            </div>
+
+            <div class="form-group" id="statusGroup" style="display: none;">
+                <label class="form-label">Account Status</label>
+                <select id="isActive" name="isActive" class="form-select">
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
             </div>
 
             <div class="modal-actions">
@@ -137,9 +162,9 @@
 </div>
 
 <style>
-    /* --- Premium Page Layout --- */
+    /* --- Premium Page Layout (Indigo Theme) --- */
     .dark-card {
-        background: rgba(30, 41, 59, 0.6);
+        background: rgba(30, 32, 45, 0.6);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -166,8 +191,8 @@
     .icon-wrapper {
         width: 64px;
         height: 64px;
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.2);
         border-radius: 16px;
         display: flex;
         align-items: center;
@@ -220,14 +245,9 @@
 
     .form-select:focus, .form-input:focus {
         outline: none;
-        border-color: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         background: rgba(15, 23, 42, 0.8);
-    }
-
-    textarea.form-input {
-        resize: vertical;
-        min-height: 80px;
     }
 
     /* --- Table Styles --- */
@@ -249,11 +269,11 @@
         background: rgba(15, 23, 42, 0.5);
     }
     .table-responsive::-webkit-scrollbar-thumb {
-        background: rgba(16, 185, 129, 0.3);
+        background: rgba(99, 102, 241, 0.3);
         border-radius: 4px;
     }
     .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: rgba(16, 185, 129, 0.5);
+        background: rgba(99, 102, 241, 0.5);
     }
 
     .custom-table {
@@ -267,8 +287,7 @@
         position: sticky;
         top: 0;
         z-index: 20;
-        background: #047857;
-        background: linear-gradient(90deg, #047857 0%, #065f46 100%);
+        background: linear-gradient(90deg, #4338ca 0%, #3730a3 100%); /* Indigo gradient */
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
@@ -280,7 +299,7 @@
         text-transform: uppercase;
         letter-spacing: 0.1em;
         color: #e2e8f0;
-        border-bottom: 2px solid rgba(16, 185, 129, 0.4);
+        border-bottom: 2px solid rgba(99, 102, 241, 0.4);
         text-align: left;
         white-space: nowrap;
     }
@@ -296,7 +315,7 @@
     }
 
     .custom-table tbody tr:hover {
-        background: rgba(16, 185, 129, 0.15);
+        background: rgba(99, 102, 241, 0.15);
         transform: none;
         box-shadow: none;
     }
@@ -313,19 +332,33 @@
         border-right: none;
     }
 
-    .custom-table td:nth-child(4),
-    .custom-table td:nth-child(5) {
-        white-space: normal;
-        min-width: 200px;
-    }
-
     .text-center { text-align: center; }
     .text-right { text-align: right; }
+
+    /* Badge Styles */
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .badge-active {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-inactive {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
 
     /* --- Buttons --- */
     .btn-primary {
         padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -336,17 +369,12 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
 
-    .btn-primary:hover:not(:disabled) {
+    .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-    }
-
-    .btn-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
     }
 
     .btn-secondary {
@@ -386,7 +414,7 @@
         color: white;
     }
 
-    .btn-indigo:hover {
+     .btn-indigo:hover {
         background: #6366f1;
         border-color: #6366f1;
         box-shadow: 0 8px 15px -3px rgba(99, 102, 241, 0.5);
@@ -398,7 +426,7 @@
         box-shadow: 0 8px 15px -3px rgba(239, 68, 68, 0.5);
     }
 
-    /* --- Dropdown Menu --- */
+    /* --- Import/Export Dropdown --- */
     .import-export-dropdown {
         position: relative;
     }
@@ -436,12 +464,8 @@
     }
 
     .dropdown-item:hover {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-    }
-
-    .dropdown-item i {
-        font-size: 1.1rem;
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
     }
 
     /* --- Modal Styles --- */
@@ -461,14 +485,14 @@
     }
 
     .modal-content {
-        background: rgba(30, 41, 59, 0.95);
+        background: rgba(30, 32, 45, 0.95);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 24px;
         padding: 2rem;
         width: 90%;
-        max-width: 550px;
+        max-width: 600px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
 
@@ -507,12 +531,6 @@
         transform: rotate(90deg);
     }
 
-    .modal-form {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-    }
-
     .modal-actions {
         display: flex;
         gap: 1rem;
@@ -522,198 +540,132 @@
 
     /* --- RESPONSIVE MEDIA QUERIES --- */
     @@media (max-width: 768px) {
-        .container-fluid {
-            padding: 0 1rem !important;
-        }
-
-        .header-section {
-            flex-direction: column;
-            gap: 1.5rem;
-            align-items: flex-start;
-        }
-
-        .title-block {
-            width: 100%;
-        }
-
-        .header-section button {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .dark-card {
-            padding: 1.5rem 1rem;
-            border-radius: 16px;
-        }
-
-        .table-responsive {
-            margin: 0 -1rem;
-            padding: 0 1rem 1.5rem 1rem;
-            width: calc(100% + 2rem);
-        }
-
-        .page-title {
-            font-size: 1.5rem;
-        }
-
-        .subtitle {
-            font-size: 0.85rem;
-        }
-
-        .modal-content {
-            padding: 1.5rem;
-            width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-actions {
-            flex-direction: column;
-        }
-
-        .modal-actions button {
-            width: 100%;
-        }
+        .container-fluid { padding: 0 1rem !important; }
+        .header-section { flex-direction: column; gap: 1.5rem; align-items: flex-start; }
+        .title-block { width: 100%; }
+        .dark-card { padding: 1.5rem 1rem; border-radius: 16px; }
+        .table-responsive { margin: 0 -1rem; padding: 0 1rem 1.5rem 1rem; width: calc(100% + 2rem); }
+        .modal-content { padding: 1.5rem; width: 95%; max-height: 90vh; overflow-y: auto; }
+        .form-row { flex-direction: column; gap: 0 !important; }
+        .filter-section { flex-direction: column; gap: 0 !important; }
     }
 </style>
 
 @section Scripts {
     <script>
     $(document).ready(function() {
-        loadChecklists();
+        loadUsers();
     });
 
-    function loadChecklists() {
-        const machineId = $('#machineFilter').val();
-        
-        // Enable Add button ONLY if a specific machine is selected
-        if (machineId) {
-            $('#btnAdd').prop('disabled', false).attr('title', 'Tambah item baru');
-        } else {
-            $('#btnAdd').prop('disabled', true).attr('title', 'Pilih mesin untuk menambah item');
-        }
+    function loadUsers() {
+        const role = $('#roleFilter').val();
+        const status = $('#statusFilter').val();
 
-        $('#checklistTableBody').html('<tr><td colspan="7" style="text-align:center;">Memuat...</td></tr>');
+        $('#userTableBody').html('<tr><td colspan="8" style="text-align:center;">Memuat data...</td></tr>');
 
-        $.get('@Url.Action("GetChecklistItems", "ChecklistData")', { machineId: machineId }, function(response) {
+        $.get('@Url.Action("GetUsers", "UserManagement")', { role: role, isActive: status }, function(response) {
             if (response.success) {
-                const tbody = $('#checklistTableBody');
+                const tbody = $('#userTableBody');
                 tbody.empty();
                 
                 if (response.data.length === 0) {
-                     tbody.html('<tr><td colspan="7" style="text-align:center; color: #64748b;">Belum ada item checklist.</td></tr>');
+                     tbody.html('<tr><td colspan="8" style="text-align:center; color: #64748b;">Tidak ada data user.</td></tr>');
                      return;
                 }
 
-                // Auto-suggest next order number
-                let maxOrder = 0;
-                
                 response.data.forEach((item, index) => {
-                    if(item.orderNumber > maxOrder) maxOrder = item.orderNumber;
+                    const statusBadge = item.isActive 
+                        ? '<span class="badge badge-active">Active</span>' 
+                        : '<span class="badge badge-inactive">Inactive</span>';
 
-                    const imgDisplay = item.imagePath 
-                        ? `<img src="${item.imagePath}" style="width:50px; height:50px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);" onclick="window.open(this.src, '_blank')" title="Klik untuk memperbesar">` 
-                        : '<span style="color: #64748b;">-</span>';
-                    
                     tbody.append(`
                         <tr>
                             <td class="text-center" style="color: #64748b;">${index + 1}</td>
-                            <td style="color: #94a3b8; font-size: 0.9rem;">${item.machineName || '-'}</td>
-                            <td class="text-center" style="font-weight:bold; color: #10b981;">${item.orderNumber}</td>
-                            <td style="color: #e2e8f0;">${item.detailName}</td>
-                            <td style="color: #cbd5e1;">${item.standardDescription}</td>
-                            <td class="text-center">${imgDisplay}</td>
+                            <td style="font-weight:bold; color: #e2e8f0;">${item.username}</td>
+                            <td style="color: #cbd5e1;">${item.fullName}</td>
+                            <td style="color: #94a3b8;">${item.email}</td>
+                            <td style="color: #818cf8;">${item.role}</td>
+                            <td style="color: #94a3b8;">${item.department || '-'}</td>
+                            <td class="text-center">${statusBadge}</td>
                             <td class="text-right">
-                                <button onclick="editItem(${item.id})" class="btn-icon btn-indigo" title="Edit item" style="margin-right: 0.5rem;">✏️</button>
-                                <button onclick="deleteItem(${item.id})" class="btn-icon btn-red" title="Hapus item">🗑️</button>
+                                <button onclick="editUser(${item.id})" class="btn-icon btn-indigo" title="Edit user" style="margin-right: 0.5rem;">✏️</button>
+                                <button onclick="deleteUser(${item.id}, '${item.username}')" class="btn-icon btn-red" title="Hapus user">🗑️</button>
                             </td>
                         </tr>
                     `);
                 });
-
-                if(machineId) {
-                    $('#orderNumber').val(maxOrder + 1);
-                }
             }
         });
     }
 
     function showCreateModal() {
-        const machineId = $('#machineFilter').val();
-         if (!machineId) {
-             alert("Silakan pilih mesin terlebih dahulu dari filter di atas.");
-             return;
-         }
-
-        // Reset form for CREATE mode
-        $('#itemId').val('');
-        $('#machineIdInput').val(machineId);
-        $('#detailName').val('');
-        $('#standardDescription').val('');
-        $('#imageFile').val('');
-        $('#currentImagePreview').hide();
-        $('#modalTitle').text('Tambah Item Checklist');
+        $('#userId').val('');
+        $('#username').val('').prop('disabled', false);
+        $('#fullName').val('');
+        $('#email').val('');
+        $('#password').val('').prop('required', true);
+        $('#passwordHint').text('');
+        $('#role').val('User');
+        $('#department').val('');
+        $('#statusGroup').hide();
+        
+        $('#modalTitle').text('Tambah User Baru');
         $('#btnSubmit').text('Simpan');
         
-        $('#itemModal').fadeIn(200);
+        $('#userModal').fadeIn(200);
     }
 
-    function editItem(id) {
-        // Fetch item data
-        $.get('@Url.Action("GetChecklistItem", "ChecklistData")', { id: id }, function(response) {
+    function editUser(id) {
+        $.get('@Url.Action("GetUser", "UserManagement")', { id: id }, function(response) {
             if (response.success) {
                 const item = response.data;
                 
-                // Populate form for EDIT mode
-                $('#itemId').val(item.id);
-                $('#machineIdInput').val(item.machineId);
-                $('#orderNumber').val(item.orderNumber);
-                $('#detailName').val(item.detailName);
-                $('#standardDescription').val(item.standardDescription);
-                $('#imageFile').val('');
+                $('#userId').val(item.id);
+                $('#username').val(item.username);
+                $('#fullName').val(item.fullName);
+                $('#email').val(item.email);
+                $('#password').val('').prop('required', false); // Password not required on edit
+                $('#passwordHint').text('(Kosongkan jika tidak ingin mengubah password)');
+                $('#role').val(item.role);
+                $('#department').val(item.department);
                 
-                // Show existing image if available
-                if (item.imagePath) {
-                    $('#currentImage').attr('src', item.imagePath);
-                    $('#currentImagePreview').show();
-                } else {
-                    $('#currentImagePreview').hide();
-                }
+                $('#isActive').val(item.isActive.toString());
+                $('#statusGroup').show(); // Show status dropdown solely for edit
                 
-                $('#modalTitle').text('Edit Item Checklist');
+                $('#modalTitle').text('Edit User');
                 $('#btnSubmit').text('Update');
-                $('#itemModal').fadeIn(200);
+                $('#userModal').fadeIn(200);
             } else {
-                alert('Gagal memuat data item');
+                alert('Gagal memuat data user');
             }
         });
     }
 
     function closeModal() {
-        $('#itemModal').fadeOut(200);
+        $('#userModal').fadeOut(200);
     }
 
-    $('#itemForm').submit(function(e) {
+    $('#userForm').submit(function(e) {
         e.preventDefault();
         
         var formData = new FormData(this);
-        const itemId = $('#itemId').val();
-        const isEdit = itemId !== '';
+        const userId = $('#userId').val();
+        const isEdit = userId !== '';
         
         const url = isEdit 
-            ? '@Url.Action("UpdateChecklistItem", "ChecklistData")' 
-            : '@Url.Action("AddChecklistItem", "ChecklistData")';
+            ? '@Url.Action("UpdateUser", "UserManagement")' 
+            : '@Url.Action("CreateUser", "UserManagement")';
 
         $.ajax({
             url: url,
             type: 'POST',
             data: formData,
-            processData: false,
-            contentType: false,
+            processData: false, // Important for FormData
+            contentType: false, // Important for FormData
             success: function(response) {
                 if (response.success) {
                     closeModal();
-                    loadChecklists();
+                    loadUsers();
                 } else {
                     alert('Gagal menyimpan: ' + (response.message || 'Unknown error'));
                 }
@@ -724,41 +676,41 @@
         });
     });
 
-    function deleteItem(id) {
-        if(confirm('Hapus item checklist ini?')) {
-            $.post('@Url.Action("DeleteChecklistItem", "ChecklistData")', { id: id }, function(response) {
+    function deleteUser(id, username) {
+        if(confirm(`Yakin ingin menghapus user '${username}'?`)) {
+            $.post('@Url.Action("DeleteUser", "UserManagement")', { id: id }, function(response) {
                 if (response.success) {
-                    loadChecklists();
+                    loadUsers();
                 } else {
-                    alert('Gagal menghapus');
+                    alert('Gagal menghapus: ' + response.message);
                 }
             });
         }
     }
 
-    // Import/Export Dropdown toggle
+    // Import/Export Logic
     function toggleImportExportDropdown() {
-        const dropdown = $('#importExportMenu');
-        dropdown.fadeToggle(200);
+        $('#importExportMenu').fadeToggle(200);
     }
 
-    // Close dropdown when clicking outside
     $(document).click(function(e) {
         if (!$(e.target).closest('.import-export-dropdown').length) {
             $('#importExportMenu').fadeOut(200);
         }
     });
 
-    // Export data
     function exportData() {
-        const machineId = $('#machineFilter').val();
-        const url = '@Url.Action("ExportToExcel", "ChecklistData")' + (machineId ? '?machineId=' + machineId : '');
+        const role = $('#roleFilter').val();
+        const status = $('#statusFilter').val();
+        let url = '@Url.Action("ExportToExcel", "UserManagement")?';
+        if(role) url += `role=${role}&`;
+        if(status) url += `isActive=${status}`;
+        
         window.location.href = url;
         $('#importExportMenu').fadeOut(200);
     }
 
-    // Import handler
-    function handleImport(input) {
+     function handleImport(input) {
         const file = input.files[0];
         if (!file) return;
 
@@ -766,7 +718,7 @@
         formData.append('file', file);
 
         $.ajax({
-            url: '@Url.Action("ImportFromExcel", "ChecklistData")',
+            url: '@Url.Action("ImportFromExcel", "UserManagement")',
             type: 'POST',
             data: formData,
             processData: false,
@@ -774,11 +726,11 @@
             success: function(response) {
                 if (response.success) {
                     alert(response.message);
-                    loadChecklists();
+                    loadUsers();
                 } else {
                     alert('Import gagal: ' + response.message);
                 }
-                input.value = ''; // Reset file input
+                input.value = '';
             },
             error: function(xhr, status, error) {
                 alert('Error import: ' + error);

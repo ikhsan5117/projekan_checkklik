@@ -15,6 +15,7 @@ namespace AMRVI.Data
         public DbSet<ChecklistItem> ChecklistItems { get; set; }
         public DbSet<InspectionSession> InspectionSessions { get; set; }
         public DbSet<InspectionResult> InspectionResults { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +33,14 @@ namespace AMRVI.Data
 
             modelBuilder.Entity<InspectionSession>()
                 .HasIndex(i => i.InspectionDate);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
 
             // Configure DeleteBehavior to prevent cycles or multiple cascade paths
             modelBuilder.Entity<InspectionResult>()
@@ -54,19 +63,19 @@ namespace AMRVI.Data
         {
             // Seed Machines
             modelBuilder.Entity<Machine>().HasData(
-                new Machine { Id = 1, Name = "MESIN INJECTION", Description = "Injection Molding Machine", IsActive = true, CreatedAt = DateTime.Now },
-                new Machine { Id = 2, Name = "MESIN PRESS", Description = "Press Machine", IsActive = true, CreatedAt = DateTime.Now },
-                new Machine { Id = 3, Name = "MESIN CNC", Description = "CNC Machine", IsActive = true, CreatedAt = DateTime.Now }
+                new Machine { Id = 1, Name = "MESIN INJECTION", Description = "Injection Molding Machine", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new Machine { Id = 2, Name = "MESIN PRESS", Description = "Press Machine", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new Machine { Id = 3, Name = "MESIN CNC", Description = "CNC Machine", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) }
             );
 
             // Seed Machine Numbers
             modelBuilder.Entity<MachineNumber>().HasData(
-                new MachineNumber { Id = 1, MachineId = 1, Number = "1", Location = "Area A", IsActive = true, CreatedAt = DateTime.Now },
-                new MachineNumber { Id = 2, MachineId = 1, Number = "2", Location = "Area A", IsActive = true, CreatedAt = DateTime.Now },
-                new MachineNumber { Id = 3, MachineId = 1, Number = "3", Location = "Area B", IsActive = true, CreatedAt = DateTime.Now },
-                new MachineNumber { Id = 4, MachineId = 2, Number = "1", Location = "Area C", IsActive = true, CreatedAt = DateTime.Now },
-                new MachineNumber { Id = 5, MachineId = 2, Number = "2", Location = "Area C", IsActive = true, CreatedAt = DateTime.Now },
-                new MachineNumber { Id = 6, MachineId = 3, Number = "1", Location = "Area D", IsActive = true, CreatedAt = DateTime.Now }
+                new MachineNumber { Id = 1, MachineId = 1, Number = "1", Location = "Area A", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new MachineNumber { Id = 2, MachineId = 1, Number = "2", Location = "Area A", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new MachineNumber { Id = 3, MachineId = 1, Number = "3", Location = "Area B", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new MachineNumber { Id = 4, MachineId = 2, Number = "1", Location = "Area C", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new MachineNumber { Id = 5, MachineId = 2, Number = "2", Location = "Area C", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new MachineNumber { Id = 6, MachineId = 3, Number = "1", Location = "Area D", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) }
             );
 
             // Seed Checklist Items for MESIN INJECTION (13 items based on your screenshot)
@@ -80,7 +89,7 @@ namespace AMRVI.Data
                     StandardDescription = "Pastikan tombol emergency stop berfungsi dengan baik dan mudah dijangkau",
                     ImagePath = "/images/checklist/injection/emergency-stop.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -91,7 +100,7 @@ namespace AMRVI.Data
                     StandardDescription = "Pastikan pergerakan Ejector & Mold berhenti saat light curtain aktif",
                     ImagePath = "/images/checklist/injection/safety-light-curtain.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -102,7 +111,7 @@ namespace AMRVI.Data
                     StandardDescription = "Pastikan pintu safety tertutup rapat dan interlock berfungsi",
                     ImagePath = "/images/checklist/injection/safety-door.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -113,7 +122,7 @@ namespace AMRVI.Data
                     StandardDescription = "Cek tekanan hydraulic dalam range normal (150-200 bar)",
                     ImagePath = "/images/checklist/injection/hydraulic-pressure.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -124,7 +133,7 @@ namespace AMRVI.Data
                     StandardDescription = "Pastikan suhu barrel sesuai dengan setting point",
                     ImagePath = "/images/checklist/injection/heating-system.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -135,7 +144,7 @@ namespace AMRVI.Data
                     StandardDescription = "Cek aliran air cooling dan suhu",
                     ImagePath = "/images/checklist/injection/cooling-system.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -146,7 +155,7 @@ namespace AMRVI.Data
                     StandardDescription = "Pastikan mold bersih dan tidak ada kerusakan",
                     ImagePath = "/images/checklist/injection/mold-condition.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -157,7 +166,7 @@ namespace AMRVI.Data
                     StandardDescription = "Cek pergerakan ejector smooth dan tidak macet",
                     ImagePath = "/images/checklist/injection/ejector-system.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -168,7 +177,7 @@ namespace AMRVI.Data
                     StandardDescription = "Pastikan material kering dan suhu dryer sesuai",
                     ImagePath = "/images/checklist/injection/hopper-dryer.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -179,7 +188,7 @@ namespace AMRVI.Data
                     StandardDescription = "Cek pergerakan robot arm dan vacuum system",
                     ImagePath = "/images/checklist/injection/robot-arm.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -190,7 +199,7 @@ namespace AMRVI.Data
                     StandardDescription = "Pastikan level oli hydraulic dalam batas normal",
                     ImagePath = "/images/checklist/injection/oil-level.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -201,7 +210,7 @@ namespace AMRVI.Data
                     StandardDescription = "Area mesin bersih dari oli, material, dan kotoran",
                     ImagePath = "/images/checklist/injection/cleanliness.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
                 },
                 new ChecklistItem 
                 { 
@@ -212,7 +221,47 @@ namespace AMRVI.Data
                     StandardDescription = "Pastikan display dan tombol kontrol berfungsi normal",
                     ImagePath = "/images/checklist/injection/control-panel.jpg",
                     IsActive = true, 
-                    CreatedAt = DateTime.Now 
+                    CreatedAt = new DateTime(2025, 1, 1) 
+                }
+            );
+
+            // Seed Users (password is hashed "password123" for demo)
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    Id = 1,
+                    Username = "admin",
+                    FullName = "Administrator",
+                    Email = "admin@amrvi.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                    Role = "Admin",
+                    Department = "IT",
+                    IsActive = true,
+                    CreatedAt = new DateTime(2025, 1, 1)
+                },
+                new User
+                {
+                    Id = 2,
+                    Username = "supervisor",
+                    FullName = "Supervisor Production",
+                    Email = "supervisor@amrvi.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("super123"),
+                    Role = "Supervisor",
+                    Department = "Production",
+                    IsActive = true,
+                    CreatedAt = new DateTime(2025, 1, 1)
+                },
+                new User
+                {
+                    Id = 3,
+                    Username = "operator1",
+                    FullName = "Operator Mesin 1",
+                    Email = "operator1@amrvi.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("user123"),
+                    Role = "User",
+                    Department = "Production",
+                    IsActive = true,
+                    CreatedAt = new DateTime(2025, 1, 1)
                 }
             );
         }
