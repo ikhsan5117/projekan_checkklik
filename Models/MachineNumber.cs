@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AMRVI.Models.Interfaces;
 
 namespace AMRVI.Models
 {
-    public class MachineNumber
+    public class MachineNumber : IMachineNumber
     {
         [Key]
         public int Id { get; set; }

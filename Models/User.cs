@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using AMRVI.Models.Interfaces;
 
 namespace AMRVI.Models
 {
-    public class User
+    public class User : IUser
     {
         [Key]
         public int Id { get; set; }

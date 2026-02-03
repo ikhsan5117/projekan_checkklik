@@ -463,21 +463,47 @@
             100% { transform: translateX(500px); }
         }
 
+        /* --- PREMIUM LOGIN AESTHETICS --- */
         .login-card {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 24px;
-            padding: 3rem;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15); /* Top highlight */
+            border-radius: 32px;
+            padding: 3.5rem;
             width: 100%;
-            max-width: 440px;
+            max-width: 460px;
             box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.6),
-                0 0 0 1px rgba(255, 255, 255, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                0 40px 80px rgba(0, 0, 0, 0.7),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 0 20px rgba(255, 255, 255, 0.02);
             position: relative;
             z-index: 10;
+            overflow: hidden;
+            animation: cardEntry 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* Shine effect passing through card */
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+            transform: skewX(-25deg);
+            animation: shineCard 8s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @@keyframes shineCard {
+            0%, 80% { left: -100%; }
+            100% { left: 200%; }
+        }
+
+        @@keyframes cardEntry {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .brand-logo {
@@ -485,182 +511,195 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 1.2rem;
-            margin-bottom: 2.5rem;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            position: relative;
         }
 
         .logo-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, #818cf8, #22d3ee);
-            border-radius: 16px;
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.2), rgba(34, 211, 238, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 
-                0 0 30px rgba(129, 140, 248, 0.5),
-                0 8px 16px rgba(0, 0, 0, 0.3);
+                0 0 40px rgba(129, 140, 248, 0.2),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+            transition: all 0.5s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-card:hover .logo-icon {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.3), rgba(34, 211, 238, 0.2));
+            box-shadow: 0 0 50px rgba(129, 140, 248, 0.4);
         }
 
         .logo-icon svg {
-            width: 36px;
-            height: 36px;
-            fill: white;
+            width: 40px;
+            height: 40px;
+            fill: #f8fafc;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+            transition: all 0.5s ease;
+        }
+
+        .login-card:hover .logo-icon svg {
+            transform: rotateY(-180deg); /* Counter rotate content */
         }
 
         .brand-logo h2 {
             margin: 0;
-            font-weight: 700;
-            font-family: 'Sora', sans-serif;
-            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
             text-align: center;
-        }
-
-        .brand-logo h2 span {
-            font-weight: 300;
-            color: #94a3b8;
+            background: linear-gradient(to right, #fff 20%, #818cf8 50%, #22d3ee 80%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.8rem;
             position: relative;
         }
 
         .form-control {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            background: rgba(15, 23, 42, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
             color: #f8fafc !important;
-            border-radius: 12px;
-            padding: 1rem 1rem 1rem 3.2rem;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
+            border-radius: 16px;
+            padding: 1.1rem 1.1rem 1.1rem 3.5rem;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
             font-family: 'Outfit', sans-serif;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        .form-control::placeholder {
-            color: #94a3b8 !important;
-            opacity: 0.7;
+        .form-control:hover {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
         }
 
         .form-control:focus {
-            background: rgba(255, 255, 255, 0.08) !important;
+            background: rgba(15, 23, 42, 0.9) !important;
             border-color: #818cf8 !important;
-            box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.15);
-            outline: none;
+            box-shadow: 
+                0 0 0 4px rgba(129, 140, 248, 0.15),
+                0 0 30px rgba(129, 140, 248, 0.1);
+            transform: translateY(-2px);
         }
 
         .input-icon {
             position: absolute;
-            left: 1.1rem;
+            left: 1.2rem;
             top: 50%;
             transform: translateY(-50%);
             color: #64748b;
-            font-size: 1.3rem;
-            transition: color 0.3s ease;
+            font-size: 1.4rem;
+            transition: all 0.3s ease;
             pointer-events: none;
         }
 
         .form-control:focus ~ .input-icon {
-            color: #818cf8;
+            color: #22d3ee;
+            filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.5));
         }
 
-        /* Custom Checkbox */
-        .remember-me {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1.5rem;
+        /* Modern Select styling */
+        select.form-control {
+            appearance: none;
             cursor: pointer;
-            user-select: none;
         }
-
-        .remember-me input[type="checkbox"] {
-            display: none;
-        }
-
-        .checkbox-custom {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            margin-right: 0.7rem;
+        
+        .form-group:has(select) {
             position: relative;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.03);
         }
-
-        .remember-me input[type="checkbox"]:checked + .checkbox-custom {
-            background: linear-gradient(135deg, #818cf8, #6366f1);
-            border-color: #818cf8;
-        }
-
-        .remember-me input[type="checkbox"]:checked + .checkbox-custom::after {
-            content: '✓';
+        
+        .form-group:has(select)::after {
+            content: '▼';
+            font-size: 0.7rem;
+            color: #64748b;
             position: absolute;
+            right: 1.2rem;
             top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
+            transform: translateY(-50%);
+            pointer-events: none;
+            transition: color 0.3s;
         }
 
-        .remember-me label {
+        .form-group:has(select):hover::after {
             color: #94a3b8;
-            font-size: 0.9rem;
-            cursor: pointer;
         }
 
         .btn-login {
-            background: linear-gradient(135deg, #818cf8, #6366f1);
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
             border: none;
             color: white;
-            padding: 1rem;
+            padding: 1.1rem;
             width: 100%;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.05rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 20px rgba(79, 70, 229, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.6rem;
+            gap: 0.8rem;
             font-family: 'Outfit', sans-serif;
+            position: relative;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
         }
 
         .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 10px 30px rgba(79, 70, 229, 0.5),
+                0 0 50px rgba(6, 182, 212, 0.3);
+            background: linear-gradient(135deg, #4338ca, #0891b2);
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
         }
 
         .btn-login:active {
-            transform: translateY(0);
-        }
-
-        .text-danger {
-            color: #fb7185;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            display: block;
+            transform: translateY(1px) scale(0.98);
         }
 
         .login-footer {
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             text-align: center;
+            color: #475569;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .login-footer:hover {
+            opacity: 1;
             color: #64748b;
-            font-size: 0.85rem;
-            line-height: 1.6;
-        }
-
-        @@keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-card {
-            animation: fadeIn 0.6s ease-out;
         }
     </style>
 </head>
@@ -698,6 +737,18 @@
 
         <form asp-action="Login" method="post" asp-route-returnUrl="@ViewData["ReturnUrl"]">
             <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 1rem; text-align: center;"></div>
+
+            <div class="form-group">
+                <select asp-for="Plant" class="form-control" style="padding-left: 3.2rem;">
+                    <option value="RVI">RVI (Rubber Vibration Isolator)</option>
+                    <option value="BTR">BTR (Bridgestone)</option>
+                    <option value="HOSE">HOSE</option>
+                    <option value="MOLDED">MOLDED</option>
+                    <option value="MIXING">MIXING</option>
+                </select>
+                <i class="ph ph-factory input-icon"></i>
+                <span asp-validation-for="Plant" class="text-danger"></span>
+            </div>
 
             <div class="form-group">
                 <input asp-for="Username" class="form-control" placeholder="Username" autocomplete="username" />

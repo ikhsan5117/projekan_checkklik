@@ -12,14 +12,23 @@
         <div id="inspectionDate" class="text-secondary small" style="text-align: center; color: rgba(255, 255, 255, 0.7);">@DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</div>
     </div>
 
-    <!-- Active Session Banner -->
-    <div id="activeSessionBanner" class="alert-glass mb-4" style="display: none; animation: slideDown 0.4s ease-out;">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
-                <i class="ph-pulse-fill" style="color: #22d3ee; animation: pulse 1s infinite;"></i>
-                <span style="font-size: 0.8rem; font-weight: 700; color: #f1f5f9;">SESI AKTIF DITEMUKAN</span>
+    <!-- Session Action Modal -->
+    <div id="sessionModal" class="session-modal">
+        <div class="session-modal-content">
+            <div class="session-modal-icon">
+                <i class="ph-warning-circle-fill"></i>
             </div>
-            <button onclick="abandonCurrentSession()" class="btn-ghost-cyan" style="font-size: 0.7rem; font-weight: 800;">BUAT BARU / RESET</button>
+            <h3>Sesi Aktif Ditemukan</h3>
+            <p>Anda memiliki sesi inspeksi yang belum selesai. Apakah Anda ingin melanjutkan sesi tersebut atau memulai sesi baru?</p>
+            
+            <div class="session-modal-actions">
+                <button onclick="confirmResumeSession()" class="session-btn resume">
+                    <i class="ph-arrow-u-up-left-bold"></i> Lanjutkan Sesi
+                </button>
+                <button onclick="confirmAbandonSession()" class="session-btn new">
+                    <i class="ph-plus-circle-bold"></i> Buat Baru / Reset
+                </button>
+            </div>
         </div>
     </div>
 
@@ -235,29 +244,105 @@
             50% { box-shadow: 0 0 15px rgba(251, 113, 133, 0.4); }
         }
 
-        /* Session Persistence UI */
-        .alert-glass {
-            background: rgba(34, 211, 238, 0.1);
-            border: 1px solid rgba(34, 211, 238, 0.2);
-            border-radius: 12px;
-            padding: 0.75rem 1.25rem;
-            backdrop-filter: blur(10px);
-        }
+    /* Session Persistence UI */
+    .session-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
 
-        .btn-ghost-cyan {
-            background: none;
-            border: 1px solid rgba(34, 211, 238, 0.4);
-            color: #22d3ee;
-            padding: 4px 10px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
+    .session-modal-content {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        animation: slideUp 0.4s ease;
+    }
 
-        .btn-ghost-cyan:hover {
-            background: rgba(34, 211, 238, 0.1);
-            border-color: #22d3ee;
-        }
+    .session-modal-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(34, 211, 238, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: #22d3ee;
+        font-size: 2rem;
+        animation: pulse 2s infinite;
+    }
+
+    .session-modal h3 {
+        color: #fff;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .session-modal p {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+
+    .session-modal-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .session-btn {
+        width: 100%;
+        padding: 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .session-btn.resume {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .session-btn.resume:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(37, 99, 235, 0.4);
+    }
+
+    .session-btn.new {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #e2e8f0;
+    }
+
+    .session-btn.new:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+    }
     </style>
 </div>
 
@@ -320,12 +405,21 @@
         // --- SESSION PERSISTENCE (AUTO-RESUME) ---
         const activeSessionId = @Model.InspectionSessionId;
         if (activeSessionId > 0) {
+            $('#sessionModal').css('display', 'flex');
+        }
+
+        function confirmResumeSession() {
+            $('#sessionModal').fadeOut();
             resumeActiveSession(activeSessionId);
+        }
+
+        function confirmAbandonSession() {
+            $('#sessionModal').fadeOut();
+            abandonCurrentSession();
         }
 
         function resumeActiveSession(sessionId) {
             $('#detailText').text('Resuming session...');
-            $('#activeSessionBanner').fadeIn();
             $.get('@Url.Action("ResumeInspection", "Inspection")', { sessionId: sessionId }, function(response) {
                 if (response.success) {
                     currentState.sessionId = response.sessionId;
@@ -347,30 +441,26 @@
                     renderCurrentItem();
                 } else {
                     console.log("No valid session to resume.");
-                    $('#activeSessionBanner').hide();
                     setInitialState();
                 }
             });
         }
 
         function abandonCurrentSession() {
-            if (confirm("Anda yakin ingin membatalkan inspeksi ini dan mulai baru? Data yang belum disimpan akan hilang.")) {
-                $.post('@Url.Action("AbandonSession", "Inspection")', { sessionId: currentState.sessionId }, function(response) {
-                    if (response.success) {
-                        currentState.sessionId = 0;
-                        currentState.items = [];
-                        currentState.currentIndex = 0;
-                        currentState.judgements = {};
-                        $('#activeSessionBanner').fadeOut();
-                        setInitialState();
-                        // Reset dropdowns
-                        $('#machineSelect').val('');
-                        $('#machineNumberSelect').prop('disabled', true).html('<option value="">- Pilih No Mesin -</option>');
-                    } else {
-                        alert("Gagal mereset sesi: " + response.message);
-                    }
-                });
-            }
+            $.post('@Url.Action("AbandonSession", "Inspection")', { sessionId: activeSessionId }, function(response) {
+                if (response.success) {
+                    currentState.sessionId = 0;
+                    currentState.items = [];
+                    currentState.currentIndex = 0;
+                    currentState.judgements = {};
+                    setInitialState();
+                    // Reset dropdowns
+                    $('#machineSelect').val('');
+                    $('#machineNumberSelect').prop('disabled', true).html('<option value="">- Pilih No Mesin -</option>');
+                } else {
+                    alert("Gagal mereset sesi: " + response.message);
+                }
+            });
         }
 
         // Machine Selection Logic

@@ -136,9 +136,9 @@
                         <tr>
                             <th class="th-style" style="width: 50px; text-align: center;">NO</th>
                             <th class="th-style" style="width: 20%;">DETAIL</th>
-                            <th class="th-style" style="width: 40%;">STANDARD</th>
-                            <th class="th-style" style="text-align: center; width: 100px;">JUDGEMENT</th>
-                            <th class="th-style" style="width: 20%;">REMARKS</th>
+                            <th class="th-style" style="width: 35%;">STANDARD</th>
+                            <th class="th-style" style="text-align: center; width: 120px;">JUDGEMENT</th>
+                            <th class="th-style">REMARKS</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -159,12 +159,13 @@
                                     }
                                 </td>
                                 <td class="td-style">
-                                    @if(result.Judgement == "NG")
+                                    @if (result.Judgement == "NG")
                                     {
                                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                                             <div style="color: #fff; font-weight: 600; line-height: 1.4;">@(string.IsNullOrEmpty(result.Remarks) ? "-" : result.Remarks)</div>
-                                            @if(!string.IsNullOrEmpty(result.Remarks)) {
-                                                <div style="font-size: 0.65rem; color: #f87171; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            @if (!string.IsNullOrEmpty(result.Remarks))
+                                            {
+                                                <div style="font-size: 0.65rem; color: #f87171; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.25rem;">
                                                     <i class="ph-warning-octagon-fill"></i> Defect Reported
                                                 </div>
                                             }
@@ -270,25 +271,38 @@
 
     .th-style {
         padding: 1rem 1.5rem;
-        background: rgba(30, 41, 59, 0.95);
-        color: #94a3b8;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.9), rgba(30, 58, 138, 0.95)); /* Vivid Blue Gradient */
+        backdrop-filter: blur(12px);
+        color: #ffffff;
         font-size: 0.75rem;
-        font-weight: 700;
+        font-weight: 800;
         letter-spacing: 1px;
         text-transform: uppercase;
         position: sticky;
         top: 0;
         z-index: 10;
         text-align: left;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 2px solid #60a5fa; /* Neon Blue Border */
+        border-right: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4); /* Blue Glow */
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .th-style:last-child {
+        border-right: none;
     }
 
     .td-style {
         padding: 1.25rem 1.5rem;
         border-bottom: 1px solid rgba(255,255,255,0.03);
-        vertical-align: top; /* Align top for long text */
+        border-right: 1px solid rgba(255,255,255,0.05); /* Vertical Border */
+        vertical-align: top;
         font-size: 0.9rem;
         color: #cbd5e1;
+    }
+
+    .td-style:last-child {
+        border-right: none;
     }
 
     .tr-row:hover {
@@ -403,6 +417,55 @@
     @@keyframes pulseDanger {
         0%, 100% { border-color: rgba(239, 68, 68, 0.2); box-shadow: none; }
         50% { border-color: rgba(239, 68, 68, 0.5); box-shadow: 0 0 20px rgba(239, 68, 68, 0.1); }
+    }
+
+    /* New Badge Styles */
+    .badge-ok {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #34d399;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        min-width: 50px;
+    }
+
+    .badge-ng {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #f87171;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        min-width: 50px;
+        animation: pulseRed 2s infinite;
+    }
+
+    .remark-ng {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        color: #fca5a5;
+        font-size: 0.85rem;
+    }
+
+    .remark-ng i {
+        font-size: 1rem;
+        color: #f87171;
+    }
+    
+    @@keyframes pulseRed {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
     
     /* Responsive Adjustments */

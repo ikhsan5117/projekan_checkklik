@@ -4,6 +4,7 @@ using AMRVI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AMRVI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260203090924_InitialMultiPlantSetup")]
+    partial class InitialMultiPlantSetup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1258,20 +1261,6 @@ namespace AMRVI.Migrations
                         .IsUnique();
 
                     b.ToTable("Users_BTR");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Department = "IT",
-                            Email = "admin.btr@amrvi.com",
-                            FullName = "Admin BTR",
-                            IsActive = true,
-                            Password = "admin123",
-                            Role = "Admin",
-                            Username = "admin"
-                        });
                 });
 
             modelBuilder.Entity("AMRVI.Models.User_HOSE", b =>
@@ -1326,20 +1315,6 @@ namespace AMRVI.Migrations
                         .IsUnique();
 
                     b.ToTable("Users_HOSE");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Department = "IT",
-                            Email = "admin.hose@amrvi.com",
-                            FullName = "Admin HOSE",
-                            IsActive = true,
-                            Password = "admin123",
-                            Role = "Admin",
-                            Username = "admin"
-                        });
                 });
 
             modelBuilder.Entity("AMRVI.Models.User_MIXING", b =>
@@ -1394,20 +1369,6 @@ namespace AMRVI.Migrations
                         .IsUnique();
 
                     b.ToTable("Users_MIXING");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Department = "IT",
-                            Email = "admin.mixing@amrvi.com",
-                            FullName = "Admin MIXING",
-                            IsActive = true,
-                            Password = "admin123",
-                            Role = "Admin",
-                            Username = "admin"
-                        });
                 });
 
             modelBuilder.Entity("AMRVI.Models.User_MOLDED", b =>
@@ -1462,20 +1423,6 @@ namespace AMRVI.Migrations
                         .IsUnique();
 
                     b.ToTable("Users_MOLDED");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Department = "IT",
-                            Email = "admin.molded@amrvi.com",
-                            FullName = "Admin MOLDED",
-                            IsActive = true,
-                            Password = "admin123",
-                            Role = "Admin",
-                            Username = "admin"
-                        });
                 });
 
             modelBuilder.Entity("AMRVI.Models.ChecklistItem", b =>

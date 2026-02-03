@@ -17,9 +17,18 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
-// Add DbContext
+// Add DbContext with conditional provider
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    // Always use SQL Server (Local or Production)
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+// Add HttpContextAccessor (diperlukan untuk PlantService)
+builder.Services.AddHttpContextAccessor();
+
+// Add PlantService
+builder.Services.AddScoped<AMRVI.Services.PlantService>();
 
 var app = builder.Build();
 

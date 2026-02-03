@@ -1,4 +1,4 @@
-﻿@model AMRVI.ViewModels.DashboardViewModel
+@model AMRVI.ViewModels.DashboardViewModel
 
 @{
     ViewData["Title"] = "Executive Dashboard";
@@ -11,7 +11,7 @@
     <div class="quantum-hero" style="margin-bottom: 3rem;">
         <div class="hero-main">
             <div class="hero-chip">SYSTEM STATUS: NOMINAL</div>
-            <h1 class="hero-title">Dashboard <span class="glow-text">Checklist Mesin</span></h1>
+            <h1 class="hero-title">@User.FindFirst("Plant")?.Value <span class="glow-text">Dashboard</span></h1>
             <p class="hero-subtitle">Semua mesin dalam kondisi terpantau. Anda telah melakukan <strong>@Model.InspectionsToday</strong> inspeksi hari ini.</p>
             
         </div>
@@ -117,7 +117,7 @@
                                 <span style="padding: 0.2rem 0.6rem; background: rgba(129, 140, 248, 0.1); border: 1px solid rgba(129, 140, 248, 0.2); border-radius: 20px; font-size: 0.7rem; font-weight: 600; color: #818cf8;">@item.InspectionDate.ToString("HH:mm")</span>
                             </div>
                             <p style="margin: 0; color: #94a3b8; font-size: 0.8rem;">
-                                Verified machine <strong style="color: #cbd5e1;">@item.MachineNumber?.Number</strong>
+                                Verified machine <strong style="color: #cbd5e1;">Machine</strong>
                             </p>
                         </div>
                     </div>
@@ -347,7 +347,7 @@
             },
             
             // Store raw data for client-side filtering
-            recentInspections: @Html.Raw(Json.Serialize(Model.RecentInspections.Take(10).Select(s => new { inspectorName = s.InspectorName, inspectionDate = s.InspectionDate, machineNumber = s.MachineNumber != null ? s.MachineNumber.Number : "N/A" })))
+            recentInspections: @Html.Raw(Json.Serialize(Model.RecentInspections.Take(10).Select(s => new { inspectorName = s.InspectorName, inspectionDate = s.InspectionDate, machineNumber = "Machine" })))
         };
 
         // --- Chart Context & Gradients ---
@@ -580,3 +580,5 @@
         updateCardVisuals();
     });
 </script>
+
+

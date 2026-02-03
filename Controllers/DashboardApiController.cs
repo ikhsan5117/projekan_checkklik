@@ -12,10 +12,12 @@ namespace AMRVI.Controllers
     public class DashboardApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly AMRVI.Services.PlantService _plantService;
 
-        public DashboardApiController(ApplicationDbContext context)
+        public DashboardApiController(ApplicationDbContext context, AMRVI.Services.PlantService plantService)
         {
             _context = context;
+            _plantService = plantService;
         }
 
         // GET: api/dashboard/monthly?year=2026
@@ -35,10 +37,10 @@ namespace AMRVI.Controllers
                 var monthStart = new DateTime(year, month, 1);
                 var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
-                var okCount = _context.InspectionResults
+                var okCount = _plantService.GetInspectionResults()
                     .Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "OK");
 
-                var ngCount = _context.InspectionResults
+                var ngCount = _plantService.GetInspectionResults()
                     .Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "NG");
 
                 monthlyOk.Add(okCount);
@@ -47,14 +49,13 @@ namespace AMRVI.Controllers
             }
 
             // Get stats for the entire year
-            var totalOk = _context.InspectionResults
+            var totalOk = _plantService.GetInspectionResults()
                 .Count(r => r.CreatedAt >= startDate && r.CreatedAt <= endDate && r.Judgement == "OK");
 
-            var totalNg = _context.InspectionResults
+            var totalNg = _plantService.GetInspectionResults()
                 .Count(r => r.CreatedAt >= startDate && r.CreatedAt <= endDate && r.Judgement == "NG");
 
-            var recentInspections = _context.InspectionSessions
-                .Include(s => s.MachineNumber)
+            var recentInspections = _plantService.GetInspectionSessions()
                 .Where(s => s.InspectionDate >= startDate && s.InspectionDate <= endDate)
                 .OrderByDescending(s => s.InspectionDate)
                 .Take(6)
@@ -62,7 +63,7 @@ namespace AMRVI.Controllers
                 {
                     inspectorName = s.InspectorName,
                     inspectionDate = s.InspectionDate,
-                    machineNumber = s.MachineNumber != null ? s.MachineNumber.Number : "N/A"
+                    machineNumber = "N/A" // Simplified for multi-plant
                 })
                 .ToList();
 
@@ -99,10 +100,10 @@ namespace AMRVI.Controllers
                 var weekEnd = currentDate.AddDays(6);
                 if (weekEnd > monthEnd) weekEnd = monthEnd;
 
-                var okCount = _context.InspectionResults
+                var okCount = _plantService.GetInspectionResults()
                     .Count(r => r.CreatedAt >= weekStart && r.CreatedAt <= weekEnd && r.Judgement == "OK");
 
-                var ngCount = _context.InspectionResults
+                var ngCount = _plantService.GetInspectionResults()
                     .Count(r => r.CreatedAt >= weekStart && r.CreatedAt <= weekEnd && r.Judgement == "NG");
 
                 weeklyOk.Add(okCount);
@@ -114,14 +115,13 @@ namespace AMRVI.Controllers
             }
 
             // Get stats for the entire month
-            var totalOk = _context.InspectionResults
+            var totalOk = _plantService.GetInspectionResults()
                 .Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "OK");
 
-            var totalNg = _context.InspectionResults
+            var totalNg = _plantService.GetInspectionResults()
                 .Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "NG");
 
-            var recentInspections = _context.InspectionSessions
-                .Include(s => s.MachineNumber)
+            var recentInspections = _plantService.GetInspectionSessions()
                 .Where(s => s.InspectionDate >= monthStart && s.InspectionDate <= monthEnd)
                 .OrderByDescending(s => s.InspectionDate)
                 .Take(6)
@@ -129,7 +129,7 @@ namespace AMRVI.Controllers
                 {
                     inspectorName = s.InspectorName,
                     inspectionDate = s.InspectionDate,
-                    machineNumber = s.MachineNumber != null ? s.MachineNumber.Number : "N/A"
+                    machineNumber = "N/A" // Simplified for multi-plant
                 })
                 .ToList();
 
@@ -164,10 +164,10 @@ namespace AMRVI.Controllers
                 var currentDay = weekStart.AddDays(day);
                 var dayEnd = currentDay.AddDays(1).AddSeconds(-1);
 
-                var okCount = _context.InspectionResults
+                var okCount = _plantService.GetInspectionResults()
                     .Count(r => r.CreatedAt >= currentDay && r.CreatedAt <= dayEnd && r.Judgement == "OK");
 
-                var ngCount = _context.InspectionResults
+                var ngCount = _plantService.GetInspectionResults()
                     .Count(r => r.CreatedAt >= currentDay && r.CreatedAt <= dayEnd && r.Judgement == "NG");
 
                 dailyOk.Add(okCount);
@@ -175,14 +175,13 @@ namespace AMRVI.Controllers
             }
 
             // Get stats for the entire week
-            var totalOk = _context.InspectionResults
+            var totalOk = _plantService.GetInspectionResults()
                 .Count(r => r.CreatedAt >= weekStart && r.CreatedAt <= weekEnd && r.Judgement == "OK");
 
-            var totalNg = _context.InspectionResults
+            var totalNg = _plantService.GetInspectionResults()
                 .Count(r => r.CreatedAt >= weekStart && r.CreatedAt <= weekEnd && r.Judgement == "NG");
 
-            var recentInspections = _context.InspectionSessions
-                .Include(s => s.MachineNumber)
+            var recentInspections = _plantService.GetInspectionSessions()
                 .Where(s => s.InspectionDate >= weekStart && s.InspectionDate <= weekEnd)
                 .OrderByDescending(s => s.InspectionDate)
                 .Take(6)
@@ -190,7 +189,7 @@ namespace AMRVI.Controllers
                 {
                     inspectorName = s.InspectorName,
                     inspectionDate = s.InspectionDate,
-                    machineNumber = s.MachineNumber != null ? s.MachineNumber.Number : "N/A"
+                    machineNumber = "N/A" // Simplified for multi-plant
                 })
                 .ToList();
 

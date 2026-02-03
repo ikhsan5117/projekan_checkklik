@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AMRVI.Models.Interfaces;
 
 namespace AMRVI.Models
 {
-    public class ChecklistItem
+    public class ChecklistItem : IChecklistItem
     {
         [Key]
         public int Id { get; set; }

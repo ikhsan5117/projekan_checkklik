@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AMRVI.Models.Interfaces;
 
 namespace AMRVI.Models
 {
-    public class InspectionResult
+    public class InspectionResult : IInspectionResult
     {
         [Key]
         public int Id { get; set; }

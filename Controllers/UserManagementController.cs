@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AMRVI.Data;
 using AMRVI.Models;
+using AMRVI.Models.Interfaces; // Use interfaces
+using AMRVI.Services; // Use PlantService
 using OfficeOpenXml;
 
 using Microsoft.AspNetCore.Authorization;
@@ -12,10 +14,12 @@ namespace AMRVI.Controllers
     public class UserManagementController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly PlantService _plantService;
 
-        public UserManagementController(ApplicationDbContext context)
+        public UserManagementController(ApplicationDbContext context, PlantService plantService)
         {
             _context = context;
+            _plantService = plantService;
         }
 
         public IActionResult Index()
@@ -26,7 +30,8 @@ namespace AMRVI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUsers(string? role, bool? isActive)
         {
-            var query = _context.Users.AsQueryable();
+            // Use PlantService to get the correct users query
+            var query = _plantService.GetUsers();
 
             if (!string.IsNullOrEmpty(role))
             {
@@ -38,6 +43,8 @@ namespace AMRVI.Controllers
                 query = query.Where(u => u.IsActive == isActive.Value);
             }
 
+            // Must execute query and map to anonymous object
+            // Cannot rely on implicit casting for IQueryable<IUser> in complex scenarios
             var users = await query
                 .OrderBy(u => u.Username)
                 .Select(u => new
@@ -60,7 +67,7 @@ namespace AMRVI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUser(int id)
         {
-            var user = await _context.Users
+            var user = await _plantService.GetUsers()
                 .Where(u => u.Id == id)
                 .Select(u => new
                 {
@@ -83,31 +90,39 @@ namespace AMRVI.Controllers
         {
             try
             {
-                // Check if username already exists
-                if (await _context.Users.AnyAsync(u => u.Username == username))
+                var plant = _plantService.GetPlantName();
+                
+                // Check duplicates (using PlantService query)
+                if (await _plantService.GetUsers().AnyAsync(u => u.Username == username))
                 {
-                    return Json(new { success = false, message = "Username sudah digunakan" });
+                    return Json(new { success = false, message = "Username sudah digunakan di plant ini" });
                 }
 
-                // Check if email already exists
-                if (await _context.Users.AnyAsync(u => u.Email == email))
+                if (await _plantService.GetUsers().AnyAsync(u => u.Email == email))
                 {
-                    return Json(new { success = false, message = "Email sudah digunakan" });
+                    return Json(new { success = false, message = "Email sudah digunakan di plant ini" });
                 }
 
-                var user = new User
+                // Add to specific table based on plant
+                switch (plant)
                 {
-                    Username = username,
-                    FullName = fullName,
-                    Email = email,
-                    Password = password, // Plain text (DEV ONLY)
-                    Role = role,
-                    Department = department,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now
-                };
+                    case "BTR":
+                        _context.Users_BTR.Add(new User_BTR { Username = username, FullName = fullName, Email = email, Password = password, Role = role, Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                        break;
+                    case "HOSE":
+                        _context.Users_HOSE.Add(new User_HOSE { Username = username, FullName = fullName, Email = email, Password = password, Role = role, Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                        break;
+                    case "MOLDED":
+                        _context.Users_MOLDED.Add(new User_MOLDED { Username = username, FullName = fullName, Email = email, Password = password, Role = role, Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                        break;
+                    case "MIXING":
+                        _context.Users_MIXING.Add(new User_MIXING { Username = username, FullName = fullName, Email = email, Password = password, Role = role, Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                        break;
+                    default: // RVI
+                        _context.Users.Add(new User { Username = username, FullName = fullName, Email = email, Password = password, Role = role, Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                        break;
+                }
 
-                _context.Users.Add(user);
                 await _context.SaveChangesAsync();
                 return Json(new { success = true });
             }
@@ -122,32 +137,50 @@ namespace AMRVI.Controllers
         {
             try
             {
-                var user = await _context.Users.FindAsync(id);
-                if (user == null) return Json(new { success = false, message = "User not found" });
+                var plant = _plantService.GetPlantName();
 
-                // Check username uniqueness (exclude current user)
-                if (await _context.Users.AnyAsync(u => u.Username == username && u.Id != id))
-                {
+                // Check duplicates excluding current user
+                if (await _plantService.GetUsers().AnyAsync(u => u.Username == username && u.Id != id))
                     return Json(new { success = false, message = "Username sudah digunakan" });
-                }
-
-                // Check email uniqueness (exclude current user)
-                if (await _context.Users.AnyAsync(u => u.Email == email && u.Id != id))
-                {
+                
+                if (await _plantService.GetUsers().AnyAsync(u => u.Email == email && u.Id != id))
                     return Json(new { success = false, message = "Email sudah digunakan" });
-                }
 
-                user.Username = username;
-                user.FullName = fullName;
-                user.Email = email;
-                user.Role = role;
-                user.Department = department;
-                user.IsActive = isActive;
-
-                // Only update password if provided
-                if (!string.IsNullOrWhiteSpace(password))
+                // Update specific entity
+                // Note: We cannot easily use generic IUser for update because DbSet.FindAsync returns localized entity
+                // We have to repeat switch case
+                switch (plant)
                 {
-                    user.Password = password; // Plain text (DEV ONLY)
+                     case "BTR":
+                        var uBTR = await _context.Users_BTR.FindAsync(id);
+                        if(uBTR == null) return Json(new { success = false, message = "User not found" });
+                        uBTR.Username = username; uBTR.FullName = fullName; uBTR.Email = email; uBTR.Role = role; uBTR.Department = department; uBTR.IsActive = isActive;
+                        if(!string.IsNullOrWhiteSpace(password)) uBTR.Password = password;
+                        break;
+                    case "HOSE":
+                        var uHOSE = await _context.Users_HOSE.FindAsync(id);
+                        if(uHOSE == null) return Json(new { success = false, message = "User not found" });
+                        uHOSE.Username = username; uHOSE.FullName = fullName; uHOSE.Email = email; uHOSE.Role = role; uHOSE.Department = department; uHOSE.IsActive = isActive;
+                        if(!string.IsNullOrWhiteSpace(password)) uHOSE.Password = password;
+                        break;
+                    case "MOLDED":
+                        var uMOLDED = await _context.Users_MOLDED.FindAsync(id);
+                        if(uMOLDED == null) return Json(new { success = false, message = "User not found" });
+                        uMOLDED.Username = username; uMOLDED.FullName = fullName; uMOLDED.Email = email; uMOLDED.Role = role; uMOLDED.Department = department; uMOLDED.IsActive = isActive;
+                        if(!string.IsNullOrWhiteSpace(password)) uMOLDED.Password = password;
+                        break;
+                    case "MIXING":
+                        var uMIXING = await _context.Users_MIXING.FindAsync(id);
+                        if(uMIXING == null) return Json(new { success = false, message = "User not found" });
+                        uMIXING.Username = username; uMIXING.FullName = fullName; uMIXING.Email = email; uMIXING.Role = role; uMIXING.Department = department; uMIXING.IsActive = isActive;
+                        if(!string.IsNullOrWhiteSpace(password)) uMIXING.Password = password;
+                        break;
+                    default:
+                        var uRVI = await _context.Users.FindAsync(id);
+                        if(uRVI == null) return Json(new { success = false, message = "User not found" });
+                        uRVI.Username = username; uRVI.FullName = fullName; uRVI.Email = email; uRVI.Role = role; uRVI.Department = department; uRVI.IsActive = isActive;
+                        if(!string.IsNullOrWhiteSpace(password)) uRVI.Password = password;
+                        break;
                 }
 
                 await _context.SaveChangesAsync();
@@ -162,10 +195,32 @@ namespace AMRVI.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null) return Json(new { success = false, message = "User not found" });
+            var plant = _plantService.GetPlantName();
+            
+            switch (plant)
+            {
+                case "BTR":
+                    var uBTR = await _context.Users_BTR.FindAsync(id);
+                    if(uBTR != null) _context.Users_BTR.Remove(uBTR);
+                    break;
+                case "HOSE":
+                    var uHOSE = await _context.Users_HOSE.FindAsync(id);
+                    if(uHOSE != null) _context.Users_HOSE.Remove(uHOSE);
+                    break;
+                case "MOLDED":
+                    var uMOLDED = await _context.Users_MOLDED.FindAsync(id);
+                    if(uMOLDED != null) _context.Users_MOLDED.Remove(uMOLDED);
+                    break;
+                case "MIXING":
+                    var uMIXING = await _context.Users_MIXING.FindAsync(id);
+                    if(uMIXING != null) _context.Users_MIXING.Remove(uMIXING);
+                    break;
+                default:
+                    var uRVI = await _context.Users.FindAsync(id);
+                    if(uRVI != null) _context.Users.Remove(uRVI);
+                    break;
+            }
 
-            _context.Users.Remove(user);
             await _context.SaveChangesAsync();
             return Json(new { success = true });
         }
@@ -175,7 +230,7 @@ namespace AMRVI.Controllers
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            var query = _context.Users.AsQueryable();
+            var query = _plantService.GetUsers();
 
             if (!string.IsNullOrEmpty(role))
             {
@@ -191,7 +246,8 @@ namespace AMRVI.Controllers
 
             using (var package = new ExcelPackage())
             {
-                var worksheet = package.Workbook.Worksheets.Add("User Data");
+                var workSheetName = $"User Data {_plantService.GetPlantName()}";
+                var worksheet = package.Workbook.Worksheets.Add(workSheetName);
 
                 // Header
                 worksheet.Cells[1, 1].Value = "No";
@@ -233,10 +289,11 @@ namespace AMRVI.Controllers
                 package.SaveAs(stream);
                 stream.Position = 0;
 
-                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Users_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Users_{_plantService.GetPlantName()}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
             }
         }
 
+        // Import Excel logic needs to be aware of the plant too
         [HttpPost]
         public async Task<IActionResult> ImportFromExcel(IFormFile file)
         {
@@ -244,6 +301,7 @@ namespace AMRVI.Controllers
                 return Json(new { success = false, message = "File tidak valid" });
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            var plant = _plantService.GetPlantName();
 
             try
             {
@@ -274,26 +332,43 @@ namespace AMRVI.Controllers
                                     continue;
                                 }
 
-                                // Check duplicates
-                                if (await _context.Users.AnyAsync(u => u.Username == username || u.Email == email))
+                                // Check duplicates in CURRENT PLANT
+                                // using ToList/FirstOrDefault to check duplicates might be expensive inside loop but necessary if PlantService.GetUsers is IQueryable
+                                // Better to check against list of existing usernames fetched once, but for now simple check:
+                                bool exists = false;
+                                switch(plant) {
+                                    case "BTR": exists = await _context.Users_BTR.AnyAsync(u => u.Username == username || u.Email == email); break;
+                                    case "HOSE": exists = await _context.Users_HOSE.AnyAsync(u => u.Username == username || u.Email == email); break;
+                                    case "MOLDED": exists = await _context.Users_MOLDED.AnyAsync(u => u.Username == username || u.Email == email); break;
+                                    case "MIXING": exists = await _context.Users_MIXING.AnyAsync(u => u.Username == username || u.Email == email); break;
+                                    default: exists = await _context.Users.AnyAsync(u => u.Username == username || u.Email == email); break;
+                                }
+
+                                if (exists)
                                 {
                                     errors.Add($"Baris {row}: Username atau email sudah ada");
                                     continue;
                                 }
 
-                                var user = new User
+                                switch (plant)
                                 {
-                                    Username = username,
-                                    FullName = fullName ?? username,
-                                    Email = email,
-                                    Password = password, // Plain text (DEV ONLY)
-                                    Role = role ?? "User",
-                                    Department = department,
-                                    IsActive = true,
-                                    CreatedAt = DateTime.Now
-                                };
+                                    case "BTR":
+                                        _context.Users_BTR.Add(new User_BTR { Username = username, FullName = fullName ?? username, Email = email, Password = password, Role = role ?? "User", Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                                        break;
+                                    case "HOSE":
+                                        _context.Users_HOSE.Add(new User_HOSE { Username = username, FullName = fullName ?? username, Email = email, Password = password, Role = role ?? "User", Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                                        break;
+                                    case "MOLDED":
+                                        _context.Users_MOLDED.Add(new User_MOLDED { Username = username, FullName = fullName ?? username, Email = email, Password = password, Role = role ?? "User", Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                                        break;
+                                    case "MIXING":
+                                        _context.Users_MIXING.Add(new User_MIXING { Username = username, FullName = fullName ?? username, Email = email, Password = password, Role = role ?? "User", Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                                        break;
+                                    default:
+                                        _context.Users.Add(new User { Username = username, FullName = fullName ?? username, Email = email, Password = password, Role = role ?? "User", Department = department, IsActive = true, CreatedAt = DateTime.Now });
+                                        break;
+                                }
 
-                                _context.Users.Add(user);
                                 imported++;
                             }
                             catch (Exception ex)
@@ -304,7 +379,7 @@ namespace AMRVI.Controllers
 
                         await _context.SaveChangesAsync();
 
-                        var message = $"Berhasil import {imported} user.";
+                        var message = $"Berhasil import {imported} user ke {plant}.";
                         if (errors.Any())
                         {
                             message += $" {errors.Count} error: " + string.Join("; ", errors.Take(5));
@@ -319,51 +394,41 @@ namespace AMRVI.Controllers
                 return Json(new { success = false, message = "Error: " + ex.Message });
             }
         }
-
+        
         [HttpGet]
         public IActionResult DownloadTemplate()
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+             // Template logic remains mostly same
+             return base.File(System.IO.File.ReadAllBytes("wwwroot/templates/Template_Users.xlsx"), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Template_Users.xlsx");
+             // Or recreate it
+             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+             using (var package = new ExcelPackage())
+             {
+                 var worksheet = package.Workbook.Worksheets.Add("Template Users");
+                 worksheet.Cells[1, 1].Value = "No";
+                 worksheet.Cells[1, 2].Value = "Username";
+                 worksheet.Cells[1, 3].Value = "Full Name";
+                 worksheet.Cells[1, 4].Value = "Email";
+                 worksheet.Cells[1, 5].Value = "Password";
+                 worksheet.Cells[1, 6].Value = "Role";
+                 worksheet.Cells[1, 7].Value = "Department";
+                 
+                 using (var range = worksheet.Cells[1, 1, 1, 7]) { range.Style.Font.Bold = true; }
+                 
+                 worksheet.Cells[2, 1].Value = 1;
+                 worksheet.Cells[2, 2].Value = "user1";
+                 worksheet.Cells[2, 3].Value = "User One";
+                 worksheet.Cells[2, 4].Value = "user1@amrvi.com";
+                 worksheet.Cells[2, 5].Value = "123456";
+                 worksheet.Cells[2, 6].Value = "User";
+                 worksheet.Cells[2, 7].Value = "Production";
 
-            using (var package = new ExcelPackage())
-            {
-                var worksheet = package.Workbook.Worksheets.Add("Template Users");
-
-                // Header
-                worksheet.Cells[1, 1].Value = "No";
-                worksheet.Cells[1, 2].Value = "Username";
-                worksheet.Cells[1, 3].Value = "Full Name";
-                worksheet.Cells[1, 4].Value = "Email";
-                worksheet.Cells[1, 5].Value = "Password";
-                worksheet.Cells[1, 6].Value = "Role";
-                worksheet.Cells[1, 7].Value = "Department";
-
-                // Style header
-                using (var range = worksheet.Cells[1, 1, 1, 7])
-                {
-                    range.Style.Font.Bold = true;
-                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(99, 102, 241));
-                    range.Style.Font.Color.SetColor(System.Drawing.Color.White);
-                }
-
-                // Sample data
-                worksheet.Cells[2, 1].Value = 1;
-                worksheet.Cells[2, 2].Value = "johndoe";
-                worksheet.Cells[2, 3].Value = "John Doe";
-                worksheet.Cells[2, 4].Value = "john@example.com";
-                worksheet.Cells[2, 5].Value = "password123";
-                worksheet.Cells[2, 6].Value = "User";
-                worksheet.Cells[2, 7].Value = "Production";
-
-                worksheet.Cells.AutoFitColumns();
-
-                var stream = new MemoryStream();
-                package.SaveAs(stream);
-                stream.Position = 0;
-
-                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Template_Users.xlsx");
-            }
+                 var stream = new MemoryStream();
+                 package.SaveAs(stream);
+                 stream.Position = 0;
+                 return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Template_Users.xlsx");
+             }
         }
+
     }
 }

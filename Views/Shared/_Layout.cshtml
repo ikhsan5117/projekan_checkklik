@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - AM RVI</title>
+    <title>@ViewData["Title"] - AM @(User.FindFirst("Plant")?.Value ?? "RVI")</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -20,7 +20,9 @@
             <div class="sidebar-header">
                 <div class="logo-wrapper">
                     <i class="ph-atom-bold logo-icon"></i>
-                    <span class="sidebar-logo-text">AM RVI</span>
+                    <span class="sidebar-logo-text">
+                        AM <span style="background: linear-gradient(90deg, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">@(User.FindFirst("Plant")?.Value ?? "RVI")</span>
+                    </span>
                 </div>
             </div>
 
@@ -67,7 +69,7 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="copyright">© 2026 AM RVI</div>
+                <div class="copyright">© 2026 AM @(User.FindFirst("Plant")?.Value ?? "RVI")</div>
             </div>
         </aside>
 

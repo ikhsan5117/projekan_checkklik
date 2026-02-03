@@ -11,6 +11,9 @@ namespace AMRVI.ViewModels
         [DataType(DataType.Password)]
         public required string Password { get; set; }
 
+        [Required(ErrorMessage = "Plant selection is required")]
+        public required string Plant { get; set; } = "RVI";
+
         public bool RememberMe { get; set; }
     }
 }

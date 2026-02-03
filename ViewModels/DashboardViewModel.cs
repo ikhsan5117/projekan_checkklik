@@ -1,4 +1,5 @@
 using AMRVI.Models;
+using AMRVI.Models.Interfaces;
 
 namespace AMRVI.ViewModels
 {
@@ -8,7 +9,7 @@ namespace AMRVI.ViewModels
         public int InspectionsToday { get; set; }
         public int IssuesToday { get; set; }
         public int TotalChecklistItems { get; set; }
-        public List<InspectionSession> RecentInspections { get; set; } = new List<InspectionSession>();
+        public List<IInspectionSession> RecentInspections { get; set; } = new List<IInspectionSession>();
         public List<MachineStatus> MachineStatuses { get; set; } = new List<MachineStatus>();
         
         // Weekly Chart Data (Last 7 days: Mon-Sun)
