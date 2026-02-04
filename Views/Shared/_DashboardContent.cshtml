@@ -490,6 +490,23 @@
         background: rgba(96, 165, 250, 0.1);
         color: #fff;
     }
+
+    /* Force Analytics Section to accommodate pagination */
+    .analytics-section {
+        height: auto !important;
+        min-height: 480px; /* Ensure enough height */
+        padding-bottom: 2rem !important;
+        position: relative;
+        overflow: visible !important; /* Allow controls to be seen if strictly overflowing */
+    }
+
+    .pagination-controls {
+        position: relative;
+        z-index: 10;
+        margin-top: 1rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.1);
+    }
 </style>
 
 <script>
@@ -636,8 +653,11 @@
             // Function to change page
             window.changePageInternal = function(delta) {
                  currentPage += delta;
-                 const msg = document.getElementById("tableFilterMessage")?.innerText || "";
-                 renderTable(displayedData, msg);
+                 // Pass explicit null to keep existing message visible without clearing it?
+                 // Current logic overwrites message. Let's fix message persistence.
+                 const msgEl = document.getElementById("tableFilterMessage");
+                 const currentMsg = msgEl ? msgEl.getAttribute("data-msg") : "";
+                 renderTable(displayedData, currentMsg);
             };
 
             function renderTable(data, message) {
@@ -654,11 +674,28 @@
                      msgDiv.style.fontSize = "0.9rem";
                      msgDiv.style.marginBottom = "0.5rem";
                      msgDiv.style.fontWeight = "600";
+                     msgDiv.style.display = "flex";
+                     msgDiv.style.alignItems = "center";
+                     msgDiv.style.gap = "0.5rem";
+                     
                      const tableContainer = document.querySelector(".ng-detail-table");
                      if(tableContainer) tableContainer.insertBefore(msgDiv, document.querySelector("#ngDetailTable"));
-                     headerMsg = msgDiv; // Assign the newly created element
+                     headerMsg = msgDiv;
                  }
-                 if(headerMsg) headerMsg.innerText = message;
+                 
+                 // Update Message Content
+                 headerMsg.setAttribute("data-msg", message); // Store for pagination persistence
+                 
+                 if (message) {
+                      headerMsg.innerHTML = `
+                        <span>${message}</span>
+                        <button onclick="resetTableFilter()" class="cyber-btn-xs" title="Reset Filter">
+                            <i class="ph-x-bold"></i> Reset
+                        </button>
+                      `;
+                 } else {
+                      headerMsg.innerHTML = "";
+                 }
 
                  // Calculate Pagination
                  const totalPages = Math.ceil(data.length / rowsPerPage) || 1;
@@ -672,7 +709,7 @@
 
                  // Update Pagination Info
                  const pageInfo = document.getElementById("pageInfo");
-                 if(pageInfo) pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+                 if(pageInfo) pageInfo.innerText = `Page ${currentPage} of ${totalPages} (Total: ${data.length})`;
                  
                  const btnPrev = document.getElementById("btnPrevPage");
                  const btnNext = document.getElementById("btnNextPage");
@@ -699,6 +736,13 @@
                     }
                 }
             }
+            
+            // Global Reset Function
+            window.resetTableFilter = function() {
+                currentPage = 1;
+                renderTable(currentTableData, "");
+            };
+
             
             // Function to update data dynamically
             function updateTrendData(month, year) {
