@@ -409,12 +409,35 @@
 </style>
 
 <style>
+    /* Cyber Button Small */
+    .cyber-btn-sm {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(129, 140, 248, 0.3);
+        color: #fff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex; align-items: center; gap: 0.25rem;
+    }
+    .cyber-btn-sm:hover:not(:disabled) {
+        background: rgba(129, 140, 248, 0.2);
+        border-color: #60a5fa;
+    }
+    .cyber-btn-sm:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     /* Premium Table Styling Override */
     .ng-detail-table {
         border-radius: 12px;
         overflow: hidden;
         border: 1px solid rgba(129, 140, 248, 0.15);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        /* Horizontal Scroll handled by browser default on overflow */
     }
     
     .ng-detail-table table {
@@ -479,7 +502,11 @@
 
             // Store table data globally for filtering
             let currentTableData = []; 
-            
+            // Pagination state
+            let currentPage = 1;
+            const rowsPerPage = 5;
+            let displayedData = []; // Data currently being displayed/paginated
+
             // 1. Initial Data from Model (Razor)
             const rawTableData = @Html.Raw(Json.Serialize(Model.NgDetailRecords));
             
@@ -501,6 +528,19 @@
                     problem: r.problem
                 };
             });
+
+            // Make sure to render initial data with pagination
+            // Wait for DOM to be ready implicitly or call it
+            setTimeout(() => renderTable(currentTableData, ""), 0);
+
+            // Pagination Controls Event Listeners
+            const btnPrev = document.getElementById('btnPrevPage');
+            const btnNext = document.getElementById('btnNextPage');
+
+            if (btnPrev && btnNext) {
+                btnPrev.addEventListener('click', () => window.changePageInternal(-1));
+                btnNext.addEventListener('click', () => window.changePageInternal(1));
+            }
 
             // Set initial month picker value to current month
             const monthPicker = document.getElementById('trendMonthPicker');
@@ -554,9 +594,12 @@
                             // Filter table data
                             const filteredData = currentTableData.filter(row => row.rawDate === selectedDate);
                             
+                            // Reset to page 1 for filtered view
+                            currentPage = 1;
                             renderTable(filteredData, `Menampilkan NG Tanggal: ${selectedLabel}`);
                         } else {
                             // Reset Filter (Click on empty space)
+                            currentPage = 1;
                             renderTable(currentTableData, "");
                         }
                     },
@@ -590,6 +633,73 @@
                 }
             });
             
+            // Function to change page
+            window.changePageInternal = function(delta) {
+                 currentPage += delta;
+                 const msg = document.getElementById("tableFilterMessage")?.innerText || "";
+                 renderTable(displayedData, msg);
+            };
+
+            function renderTable(data, message) {
+                 displayedData = data; // Update global reference
+                 
+                 const tableBody = document.querySelector("#ngDetailTable tbody");
+                 let headerMsg = document.getElementById("tableFilterMessage");
+                 
+                 // Add message element if missing
+                 if (!headerMsg) {
+                     const msgDiv = document.createElement("div");
+                     msgDiv.id = "tableFilterMessage";
+                     msgDiv.style.color = "#22d3ee";
+                     msgDiv.style.fontSize = "0.9rem";
+                     msgDiv.style.marginBottom = "0.5rem";
+                     msgDiv.style.fontWeight = "600";
+                     const tableContainer = document.querySelector(".ng-detail-table");
+                     if(tableContainer) tableContainer.insertBefore(msgDiv, document.querySelector("#ngDetailTable"));
+                     headerMsg = msgDiv; // Assign the newly created element
+                 }
+                 if(headerMsg) headerMsg.innerText = message;
+
+                 // Calculate Pagination
+                 const totalPages = Math.ceil(data.length / rowsPerPage) || 1;
+                 // Ensure currentPage is valid
+                 if (currentPage > totalPages) currentPage = totalPages;
+                 if (currentPage < 1) currentPage = 1;
+
+                 const startIndex = (currentPage - 1) * rowsPerPage;
+                 const endIndex = startIndex + rowsPerPage;
+                 const pageData = data.slice(startIndex, endIndex);
+
+                 // Update Pagination Info
+                 const pageInfo = document.getElementById("pageInfo");
+                 if(pageInfo) pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+                 
+                 const btnPrev = document.getElementById("btnPrevPage");
+                 const btnNext = document.getElementById("btnNextPage");
+                 if(btnPrev) btnPrev.disabled = currentPage === 1;
+                 if(btnNext) btnNext.disabled = currentPage === totalPages;
+
+                 // Render Rows
+                 if (tableBody) {
+                    tableBody.innerHTML = "";
+                    if (data.length === 0) {
+                         tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:1rem; color:#94a3b8;'>Data tidak ditemukan.</td></tr>";
+                    } else {
+                        pageData.forEach(row => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${row.date}</td>
+                                <td>${row.machine}</td>
+                                <td>${row.checklist}</td>
+                                <td>${row.standard}</td>
+                                <td>${row.problem}</td>
+                            `;
+                            tableBody.appendChild(tr);
+                        });
+                    }
+                }
+            }
+            
             // Function to update data dynamically
             function updateTrendData(month, year) {
                 fetch(`/Home/GetTrendData?month=${month}&year=${year}`)
@@ -610,50 +720,14 @@
                             // Update Cached Table Data (data.tableData now includes rawDate from API)
                             currentTableData = data.tableData;
 
-                            // Reset table view
+                            // Reset Pagination & View
+                            currentPage = 1;
                             renderTable(currentTableData, "");
                         } else {
                             console.error(data.message);
                         }
                     })
                     .catch(e => console.error("Error fetching trend data:", e));
-            }
-
-            function renderTable(data, message) {
-                 const tableBody = document.querySelector("#ngDetailTable tbody");
-                 const headerMsg = document.getElementById("tableFilterMessage");
-                 
-                 // Add message element if missing
-                 if (!headerMsg) {
-                     const msgDiv = document.createElement("div");
-                     msgDiv.id = "tableFilterMessage";
-                     msgDiv.style.color = "#22d3ee";
-                     msgDiv.style.fontSize = "0.9rem";
-                     msgDiv.style.marginBottom = "0.5rem";
-                     msgDiv.style.fontWeight = "600";
-                     const tableContainer = document.querySelector(".ng-detail-table");
-                     if(tableContainer) tableContainer.insertBefore(msgDiv, document.querySelector("#ngDetailTable"));
-                 }
-                 if(headerMsg) headerMsg.innerText = message;
-
-                 if (tableBody) {
-                    tableBody.innerHTML = "";
-                    if (data.length === 0) {
-                         tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:1rem; color:#94a3b8;'>Data tidak ditemukan.</td></tr>";
-                    } else {
-                        data.forEach(row => {
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = `
-                                <td>${row.date}</td>
-                                <td>${row.machine}</td>
-                                <td>${row.checklist}</td>
-                                <td>${row.standard}</td>
-                                <td>${row.problem}</td>
-                            `;
-                            tableBody.appendChild(tr);
-                        });
-                    }
-                }
             }
         }
     }
