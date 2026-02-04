@@ -30,18 +30,18 @@ namespace AMRVI.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Cari user di tabel yang sesuai dengan Plant yang dipilih
+                // Cari user di tabel yang sesuai dengan Plant yang dipilih (Case-Insensitive)
                 Models.Interfaces.IUser? user = model.Plant switch
                 {
-                    "BTR" => await _context.Users_BTR.FirstOrDefaultAsync(u => u.Username == model.Username && u.IsActive),
-                    "HOSE" => await _context.Users_HOSE.FirstOrDefaultAsync(u => u.Username == model.Username && u.IsActive),
-                    "MOLDED" => await _context.Users_MOLDED.FirstOrDefaultAsync(u => u.Username == model.Username && u.IsActive),
-                    "MIXING" => await _context.Users_MIXING.FirstOrDefaultAsync(u => u.Username == model.Username && u.IsActive),
-                    _ => await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Username && u.IsActive) // RVI default
+                    "BTR" => await _context.Users_BTR.FirstOrDefaultAsync(u => u.Username.ToLower() == model.Username.ToLower() && u.IsActive),
+                    "HOSE" => await _context.Users_HOSE.FirstOrDefaultAsync(u => u.Username.ToLower() == model.Username.ToLower() && u.IsActive),
+                    "MOLDED" => await _context.Users_MOLDED.FirstOrDefaultAsync(u => u.Username.ToLower() == model.Username.ToLower() && u.IsActive),
+                    "MIXING" => await _context.Users_MIXING.FirstOrDefaultAsync(u => u.Username.ToLower() == model.Username.ToLower() && u.IsActive),
+                    _ => await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == model.Username.ToLower() && u.IsActive) // RVI default
                 };
 
-                // Plain text password comparison (DEV ONLY - NOT SECURE)
-                if (user != null && user.Password == model.Password)
+                // Password comparison (Case-Insensitive based on user request)
+                if (user != null && string.Equals(user.Password, model.Password, StringComparison.OrdinalIgnoreCase))
                 {
                     // Create claims
                     var claims = new List<Claim>
