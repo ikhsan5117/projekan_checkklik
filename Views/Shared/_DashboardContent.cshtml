@@ -180,12 +180,16 @@
 
     <!-- RIGHT: TREND TEMUAN ABNORMALITY AM -->
     <div class="analytics-section">
-        <h2 class="section-title">TREND TEMUAN ABNORMALITY AM</h2>
+        <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+            <h2 class="section-title" style="margin-bottom:0;">TREND TEMUAN ABNORMALITY AM</h2>
+            <input type="month" id="trendMonthPicker" class="cyber-input" style="color-scheme: dark;">
+        </div>
+        
         <div class="ng-trend-chart">
             <canvas id="ngTrendChart"></canvas>
         </div>
         <div class="ng-detail-table">
-            <table>
+            <table id="ngDetailTable">
                 <thead>
                     <tr>
                         <th>TANGGAL</th>
@@ -213,6 +217,24 @@
 </div> <!-- Close analytics-split-view -->
 
 <style>
+    /* Cyber Input Styling */
+    .cyber-input {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(129, 140, 248, 0.3);
+        color: #fff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.85rem;
+        outline: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .cyber-input:focus {
+        border-color: #22d3ee;
+        box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
+    }
+
     /* Default Grid (Desktop > 1400px) */
     .quantum-grid {
         display: grid;
@@ -339,6 +361,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 0;
 }
 
 .stat-number {
@@ -385,6 +408,65 @@
 }
 </style>
 
+<style>
+    /* Premium Table Styling Override */
+    .ng-detail-table {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(129, 140, 248, 0.15);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .ng-detail-table table {
+        width: 100%;
+        border-collapse: separate; 
+        border-spacing: 0;
+    }
+
+    .ng-detail-table th {
+        background: linear-gradient(180deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 1) 100%);
+        color: #60a5fa; /* Blue accent text */
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid rgba(96, 165, 250, 0.3);
+        /* Vertical separator */
+        border-right: 1px solid rgba(148, 163, 184, 0.1);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+
+    .ng-detail-table th:last-child {
+        border-right: none;
+    }
+
+    .ng-detail-table td {
+        padding: 0.85rem 1rem;
+        color: #cbd5e1;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08); /* Faint horizontal line */
+        /* Vertical separator */
+        border-right: 1px solid rgba(148, 163, 184, 0.08);
+        background: rgba(15, 23, 42, 0.3);
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+
+    .ng-detail-table td:last-child {
+        border-right: none;
+    }
+
+    .ng-detail-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Hover Effect Row */
+    .ng-detail-table tbody tr:hover td {
+        background: rgba(96, 165, 250, 0.1);
+        color: #fff;
+    }
+
+
 <script>
     // Initialize Charts for this partial
     if (typeof Chart !== 'undefined') {
@@ -393,12 +475,56 @@
             // Destroy existing if any to prevent canvas reuse error
             if (window.myNgChart) window.myNgChart.destroy();
 
+            // Store table data globally for filtering
+            let currentTableData = []; 
+            
+            // 1. Initial Data from Model (Razor)
+            const rawTableData = @Html.Raw(Json.Serialize(Model.NgDetailRecords));
+            
+            // Map Razor Model data -> matches API structure
+            currentTableData = rawTableData.map(r => {
+                // Parse date from ISO string (e.g. 2026-02-04T00:00:00)
+                const d = new Date(r.date); 
+                // Format: "yyyy-MM-dd" for rawDate, locale string for display
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                
+                return {
+                    date: d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+                    rawDate: `${yyyy}-${mm}-${dd}`, // Standard format for filtering
+                    machine: r.machineNumber,
+                    checklist: r.checklistItem,
+                    standard: r.standard,
+                    problem: r.problem
+                };
+            });
+
+            // Set initial month picker value to current month
+            const monthPicker = document.getElementById('trendMonthPicker');
+            if (monthPicker) {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                monthPicker.value = `${yyyy}-${mm}`;
+                
+                // Event Listener
+                monthPicker.addEventListener('change', function() {
+                    const val = this.value; // "yyyy-mm"
+                    if (!val) return;
+                    const [year, month] = val.split('-');
+                    updateTrendData(month, year);
+                });
+            }
+
             const ngTrendData = @Html.Raw(Json.Serialize(Model.NgTrendDaily));
             const ngLabels = ngTrendData.map(d => {
                 const date = new Date(d.date);
                 return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
             });
             const ngCounts = ngTrendData.map(d => d.ngCount);
+            // Store raw dates for click mapping (format yyyy-MM-dd from Model)
+            const ngRawDates = ngTrendData.map(d => d.date.split('T')[0]);
 
             window.myNgChart = new Chart(ngTrendCtx, {
                 type: 'bar',
@@ -416,14 +542,27 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onClick: (e, activeElements) => {
+                        if (activeElements.length > 0) {
+                            // Filter by Clicked Date
+                            const index = activeElements[0].index;
+                            const selectedDate = ngRawDates[index]; // "yyyy-MM-dd"
+                            const selectedLabel = ngLabels[index];
+                            
+                            // Filter table data
+                            const filteredData = currentTableData.filter(row => row.rawDate === selectedDate);
+                            
+                            renderTable(filteredData, `Menampilkan NG Tanggal: ${selectedLabel}`);
+                        } else {
+                            // Reset Filter (Click on empty space)
+                            renderTable(currentTableData, "");
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: true,
                             position: 'top',
-                            labels: {
-                                color: '#94a3b8',
-                                font: { size: 12, weight: '600' }
-                            }
+                            labels: { color: '#94a3b8', font: { size: 12, weight: '600' } }
                         },
                         tooltip: {
                             backgroundColor: 'rgba(15, 23, 42, 0.95)',
@@ -438,29 +577,82 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                color: '#94a3b8',
-                                font: { size: 11 }
-                            },
-                            grid: {
-                                color: 'rgba(129, 140, 248, 0.1)',
-                                drawBorder: false
-                            }
+                            ticks: { color: '#94a3b8', font: { size: 11 } },
+                            grid: { color: 'rgba(129, 140, 248, 0.1)', drawBorder: false }
                         },
                         x: {
-                            ticks: {
-                                color: '#94a3b8',
-                                font: { size: 10 },
-                                maxRotation: 45,
-                                minRotation: 45
-                            },
-                            grid: {
-                                display: false
-                            }
+                            ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, minRotation: 45 },
+                            grid: { display: false }
                         }
                     }
                 }
             });
+            
+            // Function to update data dynamically
+            function updateTrendData(month, year) {
+                fetch(`/Home/GetTrendData?month=${month}&year=${year}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update Chart Data
+                            const newLabels = data.chartData.map(d => d.label);
+                            const newCounts = data.chartData.map(d => d.ngCount);
+                            // Update Raw Dates mapping for click event
+                            ngRawDates.length = 0; // Clear array
+                            data.chartData.forEach(d => ngRawDates.push(d.date));
+
+                            window.myNgChart.data.labels = newLabels;
+                            window.myNgChart.data.datasets[0].data = newCounts;
+                            window.myNgChart.update();
+                            
+                            // Update Cached Table Data (data.tableData now includes rawDate from API)
+                            currentTableData = data.tableData;
+
+                            // Reset table view
+                            renderTable(currentTableData, "");
+                        } else {
+                            console.error(data.message);
+                        }
+                    })
+                    .catch(e => console.error("Error fetching trend data:", e));
+            }
+
+            function renderTable(data, message) {
+                 const tableBody = document.querySelector("#ngDetailTable tbody");
+                 const headerMsg = document.getElementById("tableFilterMessage");
+                 
+                 // Add message element if missing
+                 if (!headerMsg) {
+                     const msgDiv = document.createElement("div");
+                     msgDiv.id = "tableFilterMessage";
+                     msgDiv.style.color = "#22d3ee";
+                     msgDiv.style.fontSize = "0.9rem";
+                     msgDiv.style.marginBottom = "0.5rem";
+                     msgDiv.style.fontWeight = "600";
+                     const tableContainer = document.querySelector(".ng-detail-table");
+                     if(tableContainer) tableContainer.insertBefore(msgDiv, document.querySelector("#ngDetailTable"));
+                 }
+                 if(headerMsg) headerMsg.innerText = message;
+
+                 if (tableBody) {
+                    tableBody.innerHTML = "";
+                    if (data.length === 0) {
+                         tableBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:1rem; color:#94a3b8;'>Data tidak ditemukan.</td></tr>";
+                    } else {
+                        data.forEach(row => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${row.date}</td>
+                                <td>${row.machine}</td>
+                                <td>${row.checklist}</td>
+                                <td>${row.standard}</td>
+                                <td>${row.problem}</td>
+                            `;
+                            tableBody.appendChild(tr);
+                        });
+                    }
+                }
+            }
         }
     }
 </script>

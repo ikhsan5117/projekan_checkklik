@@ -34,11 +34,73 @@ public class HomeController : Controller
         return PartialView("_DashboardContent", viewModel);
     }
 
+    [HttpGet]
+    public IActionResult GetTrendData(int month, int year)
+    {
+        try 
+        {
+            // Validate inputs
+            if (month < 1 || month > 12) return BadRequest("Invalid month");
+            if (year < 2000 || year > 2100) return BadRequest("Invalid year");
+
+            var startDate = new DateTime(year, month, 1);
+            var daysInMonth = DateTime.DaysInMonth(year, month);
+            var endDate = startDate.AddDays(daysInMonth - 1);
+
+            // 1. Chart Data
+            var ngTrendDaily = new List<object>();
+            for (int day = 1; day <= daysInMonth; day++)
+            {
+                var date = new DateTime(year, month, day);
+                // Note: This query inside loop is not optimal for high load but acceptable for low traffic simplified app.
+                // Optimally, fetch all for range then aggregate in memory.
+                var ngCount = _plantService.GetInspectionResults()
+                    .Count(r => r.CreatedAt.Date == date && r.Judgement == "NG");
+
+                ngTrendDaily.Add(new { 
+                    date = date.ToString("yyyy-MM-dd"), 
+                    label = date.ToString("dd MMM"),
+                    ngCount = ngCount 
+                });
+            }
+
+            // 2. Table Data (NG Details)
+            var ngResults = _plantService.GetInspectionResults()
+                .Where(r => r.Judgement == "NG" && r.CreatedAt.Date >= startDate && r.CreatedAt.Date <= endDate)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList();
+
+            var ngDetailRecords = new List<object>();
+            foreach (var result in ngResults)
+            {
+                var session = _plantService.GetInspectionSessions().FirstOrDefault(s => s.Id == result.InspectionSessionId);
+                var machineNumber = session != null ? _plantService.GetMachineNumbers().FirstOrDefault(m => m.Id == session.MachineNumberId) : null;
+                var checklistItem = _plantService.GetChecklistItems().FirstOrDefault(c => c.Id == result.ChecklistItemId);
+
+                ngDetailRecords.Add(new {
+                    date = result.CreatedAt.ToString("dd MMM yyyy"),
+                    rawDate = result.CreatedAt.ToString("yyyy-MM-dd"), // Add separate raw date for filtering
+                    machine = machineNumber?.Number ?? "-",
+                    checklist = checklistItem?.DetailName ?? "-",
+                    standard = checklistItem?.StandardDescription ?? "-",
+                    problem = result.Remarks ?? "-"
+                });
+            }
+
+            return Json(new { success = true, chartData = ngTrendDaily, tableData = ngDetailRecords });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting trend data");
+            return Json(new { success = false, message = "Error loading data" });
+        }
+    }
+
     private AMRVI.ViewModels.DashboardViewModel GetDashboardViewModel()
     {
         var today = DateTime.Today;
 
-        // Fetch Stats using PlantService for multi-plant support
+        // Fetch Stats using PlantService
         var totalMachines = _plantService.GetMachineNumbers().Count(mn => mn.IsActive);
         var totalChecklists = _plantService.GetChecklistItems().Count(c => c.IsActive);
         
@@ -57,18 +119,18 @@ public class HomeController : Controller
             .Take(5)
             .ToList();
 
-        // Machine Status using PlantService
+        // Machine Status
         var machineStats = _plantService.GetMachines()
             .Select(m => new AMRVI.ViewModels.MachineStatus
             {
                 MachineName = m.Name,
-                TotalInspections = 0, // Simplified for multi-plant
+                TotalInspections = 0, 
                 LastInspection = DateTime.Now
             })
             .Take(4)
             .ToList();
 
-        // Calculate Monthly Chart Data (Last 12 months for current year)
+        // Calculate Monthly Chart Data (Yearly Overview)
         var currentYear = today.Year;
         var okCountsPerMonth = new List<int>();
         var ngCountsPerMonth = new List<int>();
@@ -78,109 +140,72 @@ public class HomeController : Controller
         {
             var monthStart = new DateTime(currentYear, month, 1);
             var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-            
-            var okCount = _plantService.GetInspectionResults()
-                .Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "OK");
-            
-            var ngCount = _plantService.GetInspectionResults()
-                .Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "NG");
-            
+            var okCount = _plantService.GetInspectionResults().Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "OK");
+            var ngCount = _plantService.GetInspectionResults().Count(r => r.CreatedAt >= monthStart && r.CreatedAt <= monthEnd && r.Judgement == "NG");
             okCountsPerMonth.Add(okCount);
             ngCountsPerMonth.Add(ngCount);
             monthLabels.Add(monthStart.ToString("MMM"));
         }
 
-        // Calculate Weekly Performance (OK vs NG Percentage for This Week)
-        var startOfThisWeek = today.AddDays(-(int)today.DayOfWeek + 1); // Monday of this week
-        
-        var thisWeekOkCount = _plantService.GetInspectionResults()
-            .Count(r => r.CreatedAt >= startOfThisWeek && r.CreatedAt < today.AddDays(1) && r.Judgement == "OK");
-        
-        var thisWeekNgCount = _plantService.GetInspectionResults()
-            .Count(r => r.CreatedAt >= startOfThisWeek && r.CreatedAt < today.AddDays(1) && r.Judgement == "NG");
-        
+        // Weekly Performance
+        var startOfThisWeek = today.AddDays(-(int)today.DayOfWeek + 1);
+        var thisWeekOkCount = _plantService.GetInspectionResults().Count(r => r.CreatedAt >= startOfThisWeek && r.CreatedAt < today.AddDays(1) && r.Judgement == "OK");
+        var thisWeekNgCount = _plantService.GetInspectionResults().Count(r => r.CreatedAt >= startOfThisWeek && r.CreatedAt < today.AddDays(1) && r.Judgement == "NG");
         var thisWeekTotal = thisWeekOkCount + thisWeekNgCount;
-        
-        double okPercentage = 0;
-        double ngPercentage = 0;
-        
-        if (thisWeekTotal > 0)
-        {
-            okPercentage = ((double)thisWeekOkCount / thisWeekTotal) * 100;
-            ngPercentage = ((double)thisWeekNgCount / thisWeekTotal) * 100;
-        }
+        double okPercentage = (thisWeekTotal > 0) ? ((double)thisWeekOkCount / thisWeekTotal) * 100 : 0;
+        double ngPercentage = (thisWeekTotal > 0) ? ((double)thisWeekNgCount / thisWeekTotal) * 100 : 0;
 
-        // Calculate Total OK/NG Counts (All-Time) using PlantService
+        // Total Counts
         var totalOkCount = _plantService.GetInspectionResults().Count(r => r.Judgement == "OK");
         var totalNgCount = _plantService.GetInspectionResults().Count(r => r.Judgement == "NG");
 
-        // NEW: Machine Update Status
-        var allMachineNumbers = _plantService.GetMachineNumbers()
-            .Where(mn => mn.IsActive)
-            .ToList();
-
+        // Machine Update Status
+        var allMachineNumbers = _plantService.GetMachineNumbers().Where(mn => mn.IsActive).ToList();
         var machineUpdateList = new List<AMRVI.ViewModels.MachineUpdateStatus>();
-        
         foreach (var machineNumber in allMachineNumbers)
         {
-            var lastInspection = _plantService.GetInspectionSessions()
-                .Where(s => s.MachineNumberId == machineNumber.Id)
-                .OrderByDescending(s => s.InspectionDate)
-                .FirstOrDefault();
-
-            var isUpdatedToday = lastInspection != null && lastInspection.InspectionDate >= today;
-
+            var lastInspection = _plantService.GetInspectionSessions().Where(s => s.MachineNumberId == machineNumber.Id).OrderByDescending(s => s.InspectionDate).FirstOrDefault();
             machineUpdateList.Add(new AMRVI.ViewModels.MachineUpdateStatus
             {
                 MachineNumberId = machineNumber.Id,
                 MachineNumber = machineNumber.Number ?? "",
-                MachineName = "", // Interface doesn't have Machine navigation property
-                IsUpdatedToday = isUpdatedToday,
+                IsUpdatedToday = lastInspection != null && lastInspection.InspectionDate >= today,
                 LastInspectionDate = lastInspection?.InspectionDate
             });
         }
-
         var updatedMachinesCount = machineUpdateList.Count(m => m.IsUpdatedToday);
         var notUpdatedMachinesCount = machineUpdateList.Count(m => !m.IsUpdatedToday);
 
-        // NEW: NG Trend Data (Last 30 days)
-        var last30Days = today.AddDays(-29);
+        // NEW: NG Trend Data (Current Month Only)
+        // Default View: Current Month (1st to Current Day/End of Month)
+        var currentMonthStart = new DateTime(today.Year, today.Month, 1);
+        var daysInCurrentMonth = DateTime.DaysInMonth(today.Year, today.Month);
         var ngTrendDaily = new List<AMRVI.ViewModels.NgTrendData>();
 
-        for (int i = 0; i < 30; i++)
+        for (int day = 1; day <= daysInCurrentMonth; day++)
         {
-            var date = last30Days.AddDays(i);
+            var date = new DateTime(today.Year, today.Month, day);
+            // Optimally query once, but consistent with structure
             var ngCount = _plantService.GetInspectionResults()
                 .Count(r => r.CreatedAt.Date == date && r.Judgement == "NG");
 
-            ngTrendDaily.Add(new AMRVI.ViewModels.NgTrendData
-            {
-                Date = date,
-                NgCount = ngCount
-            });
+            ngTrendDaily.Add(new AMRVI.ViewModels.NgTrendData { Date = date, NgCount = ngCount });
         }
 
-        // NEW: NG Detail Records (Last 20 NG findings)
+        // NEW: NG Detail Records (Current Month Only)
+        // User requested: "tampilan pertamanya bulan yang sekarang"
+        // So we filter table by Current Month as well.
         var ngResults = _plantService.GetInspectionResults()
-            .Where(r => r.Judgement == "NG")
+            .Where(r => r.Judgement == "NG" && r.CreatedAt >= currentMonthStart && r.CreatedAt < currentMonthStart.AddMonths(1))
             .OrderByDescending(r => r.CreatedAt)
-            .Take(20)
             .ToList();
 
         var ngDetailRecords = new List<AMRVI.ViewModels.NgDetailRecord>();
-        
         foreach (var result in ngResults)
         {
-            // Get related data separately
-            var session = _plantService.GetInspectionSessions()
-                .FirstOrDefault(s => s.Id == result.InspectionSessionId);
-            
-            var machineNumber = session != null 
-                ? _plantService.GetMachineNumbers().FirstOrDefault(m => m.Id == session.MachineNumberId)
-                : null;
-            
-            var checklistItem = _plantService.GetChecklistItems()
-                .FirstOrDefault(c => c.Id == result.ChecklistItemId);
+            var session = _plantService.GetInspectionSessions().FirstOrDefault(s => s.Id == result.InspectionSessionId);
+            var machineNumber = session != null ? _plantService.GetMachineNumbers().FirstOrDefault(m => m.Id == session.MachineNumberId) : null;
+            var checklistItem = _plantService.GetChecklistItems().FirstOrDefault(c => c.Id == result.ChecklistItemId);
 
             ngDetailRecords.Add(new AMRVI.ViewModels.NgDetailRecord
             {
@@ -213,11 +238,9 @@ public class HomeController : Controller
             TotalNgCount = totalNgCount,
             ViewLevel = "monthly",
             CurrentYear = currentYear,
-            // NEW: Machine Update Status
             MachineUpdateList = machineUpdateList,
             UpdatedMachinesCount = updatedMachinesCount,
             NotUpdatedMachinesCount = notUpdatedMachinesCount,
-            // NEW: NG Trend Data
             NgTrendDaily = ngTrendDaily,
             NgDetailRecords = ngDetailRecords
         };
