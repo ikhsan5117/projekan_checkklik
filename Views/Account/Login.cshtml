@@ -740,6 +740,7 @@
 
             <div class="form-group">
                 <select asp-for="Plant" class="form-control" style="padding-left: 3.2rem;">
+                    <option value="" disabled selected>-- Select Plant --</option>
                     <option value="RVI">RVI (Rubber Vibration Isolator)</option>
                     <option value="BTR">BTR (Bridgestone)</option>
                     <option value="HOSE">HOSE</option>
@@ -780,5 +781,37 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const plantSelect = document.getElementById('Plant');
+            const usernameInput = document.getElementById('Username');
+            const passwordInput = document.getElementById('Password');
+
+            const credentialHints = {
+                'RVI': { user: 'AdminRVI / UserRVI', pass: 'RVI123' },
+                'BTR': { user: 'AdminBTR / UserBTR', pass: 'BTR123' },
+                'HOSE': { user: 'AdminHOSE / UserHOSE', pass: 'HOSE123' },
+                'MOLDED': { user: 'AdminMolded / UserMolded', pass: 'Molded123' },
+                'MIXING': { user: 'AdminMixing / UserMixing', pass: 'Mixing123' }
+            };
+
+            function updatePlaceholders() {
+                const plant = plantSelect.value;
+                const hint = credentialHints[plant];
+                if (hint) {
+                    usernameInput.placeholder = `Username (${hint.user})`;
+                    passwordInput.placeholder = `Password (${hint.pass})`;
+                } else {
+                    usernameInput.placeholder = "Username";
+                    passwordInput.placeholder = "Password";
+                }
+            }
+
+            plantSelect.addEventListener('change', updatePlaceholders);
+            
+            // Initial call
+            updatePlaceholders();
+        });
+    </script>
 </body>
 </html>
