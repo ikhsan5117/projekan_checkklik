@@ -98,20 +98,33 @@ public class HomeController : Controller
 
     private AMRVI.ViewModels.DashboardViewModel GetDashboardViewModel()
     {
+        var now = DateTime.Now;
         var today = DateTime.Today;
+
+        // Shift Calculation Logic
+        // Shift 1: 05:00 - 20:00 (assuming 8 PM for '8.00')
+        // Shift 2: 20:00 - 05:00 (Next Day)
+        int currentShift = 1;
+        DateTime shiftStartTime = today.AddHours(5);
+
+        if (now.Hour >= 20 || now.Hour < 5)
+        {
+            currentShift = 2;
+            shiftStartTime = now.Hour >= 20 ? today.AddHours(20) : today.AddDays(-1).AddHours(20);
+        }
 
         // Fetch Stats using PlantService
         var totalMachines = _plantService.GetMachineNumbers().Count(mn => mn.IsActive);
         var totalChecklists = _plantService.GetChecklistItems().Count(c => c.IsActive);
         
         var inspectionsToday = _plantService.GetInspectionSessions()
-            .Where(s => s.InspectionDate >= today && s.IsCompleted)
+            .Where(s => s.InspectionDate >= shiftStartTime && s.IsCompleted)
             .Select(s => s.MachineNumberId)
             .Distinct()
             .Count();
 
         var issuesToday = _plantService.GetInspectionResults()
-            .Count(r => r.CreatedAt >= today && r.Judgement == "NG");
+            .Count(r => r.CreatedAt >= shiftStartTime && r.Judgement == "NG");
 
         // Fetch Recent Inspections
         var recentInspections = _plantService.GetInspectionSessions()
@@ -159,7 +172,7 @@ public class HomeController : Controller
         var totalOkCount = _plantService.GetInspectionResults().Count(r => r.Judgement == "OK");
         var totalNgCount = _plantService.GetInspectionResults().Count(r => r.Judgement == "NG");
 
-        // Machine Update Status
+        // Machine Update Status (Filter by Shift Start Time)
         var allMachineNumbers = _plantService.GetMachineNumbers().Where(mn => mn.IsActive).ToList();
         var machineUpdateList = new List<AMRVI.ViewModels.MachineUpdateStatus>();
         foreach (var machineNumber in allMachineNumbers)
@@ -169,7 +182,7 @@ public class HomeController : Controller
             {
                 MachineNumberId = machineNumber.Id,
                 MachineNumber = machineNumber.Number ?? "",
-                IsUpdatedToday = lastInspection != null && lastInspection.InspectionDate >= today,
+                IsUpdatedToday = lastInspection != null && lastInspection.InspectionDate >= shiftStartTime,
                 LastInspectionDate = lastInspection?.InspectionDate
             });
         }
@@ -242,7 +255,8 @@ public class HomeController : Controller
             UpdatedMachinesCount = updatedMachinesCount,
             NotUpdatedMachinesCount = notUpdatedMachinesCount,
             NgTrendDaily = ngTrendDaily,
-            NgDetailRecords = ngDetailRecords
+            NgDetailRecords = ngDetailRecords,
+            CurrentShift = currentShift
         };
     }
 

@@ -63,32 +63,34 @@
 
     <!-- Inspection Items -->
     <div id="inspectionSection">
-        <div style="display: flex; flex-direction: row; align-items: center; margin-bottom: 0.5rem; padding: 0 0.5rem; gap: 10px;">
-            <label class="h-label-simple m-0">Checklist</label>
-            <div id="progressText" style="font-size: 0.9rem; font-weight: 700; color: rgba(255, 255, 255, 0.8); display: none;">0/0</div>
+        <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 0.75rem; padding: 0 0.5rem; gap: 12px;">
+            <label class="h-label-simple m-0" style="opacity: 0.6; font-size: 0.8rem; letter-spacing: 1px;">CHECKLIST</label>
+            <div id="progressText" style="font-size: 1.1rem; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(129, 140, 248, 0.4); display: none;">0/0</div>
         </div>
         
-        <!-- Image Card -->
-        <div class="glass-card-simple text-center" style="margin-bottom: 1.5rem;">
-            <label class="h-label-small mb-3 d-block">GAMBAR STANDAR</label>
-            <div id="imageContainer" class="viewscreen-v2">
-                 <i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>
+        <!-- Image Card (Forced Center) -->
+        <div style="width: 100%; display: flex; justify-content: center; margin-bottom: 1.5rem;">
+            <div class="glass-card-simple text-center" style="width: fit-content; min-width: 280px; padding: 1.25rem; margin: 0 auto;">
+                <label class="h-label-small mb-3 d-block" style="font-size: 0.65rem; opacity: 0.8; text-align: center; width: 100%;">GAMBAR STANDAR</label>
+                <div id="imageContainer" class="viewscreen-v2" style="display: flex; justify-content: center; align-items: center;">
+                     <i class="ph-camera-bold" style="font-size: 3rem; opacity: 0.2;"></i>
+                </div>
             </div>
         </div>
 
         <!-- Details & Judgement Card -->
-        <div class="glass-card-simple" style="margin-bottom: 1.5rem;">
-            <div class="mb-3">
-                <label class="h-label-small d-block">Detail</label>
-                <div id="detailText" class="value-text text-secondary">No data</div>
+        <div class="glass-card-simple" style="margin-bottom: 1.5rem; padding: 1.5rem;">
+            <div class="mb-4 text-center">
+                <label class="h-label-small d-block" style="font-size: 0.65rem; opacity: 0.8; margin-bottom: 0.25rem;">DETAIL ITEM</label>
+                <div id="detailText" class="value-text" style="color: #60a5fa; font-size: 1.25rem;">No data</div>
             </div>
             
-            <div class="mb-3">
-                <label class="h-label-small d-block">Standar</label>
-                <div id="standardText" class="value-text text-secondary">No data</div>
+            <div class="mb-4 text-center">
+                <label class="h-label-small d-block" style="font-size: 0.65rem; opacity: 0.8; margin-bottom: 0.25rem;">STANDAR PENGECEKAN</label>
+                <div id="standardText" class="value-text" style="font-size: 1.1rem; line-height: 1.4;">No data</div>
             </div>
 
-            <hr style="border-top: 1px solid rgba(255,255,255,0.05);">
+            <hr style="border-top: 1px solid rgba(255,255,255,0.08); margin: 1.5rem 0;">
 
             <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%;">
                 <label class="h-label-simple m-0" style="color: #fff; font-weight: 700;">Judgement</label>

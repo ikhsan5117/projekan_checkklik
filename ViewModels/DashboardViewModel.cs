@@ -43,6 +43,9 @@ namespace AMRVI.ViewModels
         // NEW: NG Trend Data
         public List<NgTrendData> NgTrendDaily { get; set; } = new List<NgTrendData>();
         public List<NgDetailRecord> NgDetailRecords { get; set; } = new List<NgDetailRecord>();
+
+        // NEW: Shift Info
+        public int CurrentShift { get; set; }
     }
 
     public class MachineStatus 

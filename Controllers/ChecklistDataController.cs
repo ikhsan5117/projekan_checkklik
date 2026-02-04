@@ -51,6 +51,11 @@ namespace AMRVI.Controllers
             return View(machines);
         }
 
+        public IActionResult ImportVelasto()
+        {
+            return View();
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetChecklistItems(int? machineId)
         {
@@ -423,6 +428,193 @@ namespace AMRVI.Controllers
                         var message = $"Berhasil import {imported} item.";
                         if (errors.Any()) message += $" {errors.Count} error: " + string.Join("; ", errors.Take(5));
                         return Json(new { success = true, message = message, imported = imported, errors = errors.Count });
+                    }
+                }
+            } catch (Exception ex) { return Json(new { success = false, message = "Error: " + ex.Message }); }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SmartImportVelasto(IFormFile file)
+        {
+            if (file == null || file.Length == 0) return Json(new { success = false, message = "File tidak valid" });
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            var plant = _plantService.GetPlantName();
+
+            try {
+                using (var stream = new MemoryStream()) {
+                    await file.CopyToAsync(stream);
+                    using (var package = new ExcelPackage(stream)) {
+                        int totalSheets = package.Workbook.Worksheets.Count;
+                        int machinesCreated = 0;
+                        int unitsCreated = 0;
+                        int itemsImported = 0;
+
+                        foreach (var worksheet in package.Workbook.Worksheets) {
+                            string unitNumberStr = "";
+                            string machineName = "";
+
+                            // 1. AGGRESSIVE SEARCH: Scan Rows 1-10, Columns 1-30
+                            for (int r = 1; r <= 15; r++) {
+                                for (int col = 1; col <= 30; col++) {
+                                    var cellValue = worksheet.Cells[r, col].Value?.ToString()?.Trim() ?? "";
+                                    if (string.IsNullOrEmpty(cellValue)) continue;
+
+                                    // Search for Unit Number (PV pattern)
+                                    if (cellValue.Contains("No. Mesin", StringComparison.OrdinalIgnoreCase) || 
+                                        cellValue.Contains("No Mesin", StringComparison.OrdinalIgnoreCase) ||
+                                        cellValue.Equals("No.", StringComparison.OrdinalIgnoreCase)) {
+                                        
+                                        // Check if value is in same cell (e.g., "No. Mesin: PV 014")
+                                        if (cellValue.Contains(":")) {
+                                            var split = cellValue.Split(':');
+                                            if (split.Length > 1 && split[1].Trim().Length >= 3) {
+                                                unitNumberStr = split[1].Trim();
+                                            }
+                                        }
+                                        
+                                        // If still empty, check neighbors (merged cells handle)
+                                        if (string.IsNullOrEmpty(unitNumberStr)) {
+                                            for(int next = 1; next <= 5; next++) {
+                                                var val = worksheet.Cells[r, col + next].Value?.ToString()?.Trim();
+                                                if (!string.IsNullOrEmpty(val) && val.Length >= 3) { unitNumberStr = val; break; }
+                                            }
+                                        }
+                                    }
+
+                                    // Search for Machine Name
+                                    if (cellValue.Contains("Nama Mesin", StringComparison.OrdinalIgnoreCase)) {
+                                        if (cellValue.Contains(":")) {
+                                            var split = cellValue.Split(':');
+                                            if (split.Length > 1 && split[1].Trim().Length >= 3) {
+                                                machineName = split[1].Trim();
+                                            }
+                                        }
+                                        if (string.IsNullOrEmpty(machineName)) {
+                                            for(int next = 1; next <= 8; next++) {
+                                                var val = worksheet.Cells[r, col + next].Value?.ToString()?.Trim();
+                                                if (!string.IsNullOrEmpty(val) && val.Length >= 3) { machineName = val; break; }
+                                            }
+                                        }
+                                    }
+                                }
+                                if (!string.IsNullOrEmpty(unitNumberStr) && !string.IsNullOrEmpty(machineName)) break;
+                            }
+
+                            // 2. BACKUP PLAN: If still empty, use Worksheet Name for Unit Number
+                            if (string.IsNullOrEmpty(unitNumberStr)) {
+                                var wsName = worksheet.Name;
+                                // Regex to find PV followed by numbers (e.g., PV 013 or PV013)
+                                var match = System.Text.RegularExpressions.Regex.Match(wsName, @"PV\s?\d+", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                                if (match.Success) unitNumberStr = match.Value.ToUpper();
+                            }
+
+                            // 4. CLEANING & REFINING
+                            if (!string.IsNullOrEmpty(machineName)) {
+                                if (machineName.Contains("/")) machineName = machineName.Split('/').First().Trim();
+                                if (machineName.Contains(":")) machineName = machineName.Split(':').Last().Trim();
+                                machineName = machineName.Replace("Nama Mesin", "", StringComparison.OrdinalIgnoreCase).Trim();
+                            }
+
+                            // VALIDATION: Reject numeric-only machine names or very short ones
+                            if (string.IsNullOrEmpty(machineName) || int.TryParse(machineName, out _) || machineName.Length < 3) continue;
+                            
+                            if (!string.IsNullOrEmpty(unitNumberStr)) {
+                                unitNumberStr = unitNumberStr.Replace("No. Mesin", "", StringComparison.OrdinalIgnoreCase)
+                                                             .Replace("No Mesin", "", StringComparison.OrdinalIgnoreCase)
+                                                             .Replace(":", "").Trim();
+                            }
+
+                            // If we STILL don't have metadata, we can't process this sheet
+                            if (string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(unitNumberStr)) continue;
+
+                            // 4. Ensure Machine Exists (Case Insensitive)
+                            int machineId = 0;
+                            var now = DateTime.Now;
+                            string p = (plant ?? "MOLDED").ToUpper();
+
+                            if (p == "BTR") {
+                                var m = await _context.Machines_BTR.FirstOrDefaultAsync(m => m.Name.ToLower() == machineName.ToLower());
+                                if (m == null) { m = new Machine_BTR { Name = machineName, IsActive = true, CreatedAt = now }; _context.Machines_BTR.Add(m); await _context.SaveChangesAsync(); machinesCreated++; }
+                                machineId = m.Id;
+                            } else if (p == "HOSE") {
+                                var m = await _context.Machines_HOSE.FirstOrDefaultAsync(m => m.Name.ToLower() == machineName.ToLower());
+                                if (m == null) { m = new Machine_HOSE { Name = machineName, IsActive = true, CreatedAt = now }; _context.Machines_HOSE.Add(m); await _context.SaveChangesAsync(); machinesCreated++; }
+                                machineId = m.Id;
+                            } else if (p == "MOLDED") {
+                                var m = await _context.Machines_MOLDED.FirstOrDefaultAsync(m => m.Name.ToLower() == machineName.ToLower());
+                                if (m == null) { m = new Machine_MOLDED { Name = machineName, IsActive = true, CreatedAt = now }; _context.Machines_MOLDED.Add(m); await _context.SaveChangesAsync(); machinesCreated++; }
+                                machineId = m.Id;
+                            } else if (p == "MIXING") {
+                                var m = await _context.Machines_MIXING.FirstOrDefaultAsync(m => m.Name.ToLower() == machineName.ToLower());
+                                if (m == null) { m = new Machine_MIXING { Name = machineName, IsActive = true, CreatedAt = now }; _context.Machines_MIXING.Add(m); await _context.SaveChangesAsync(); machinesCreated++; }
+                                machineId = m.Id;
+                            } else {
+                                var m = await _context.Machines.FirstOrDefaultAsync(m => m.Name.ToLower() == machineName.ToLower());
+                                if (m == null) { m = new Machine { Name = machineName, IsActive = true, CreatedAt = now }; _context.Machines.Add(m); await _context.SaveChangesAsync(); machinesCreated++; }
+                                machineId = m.Id;
+                            }
+
+                            // 5. Ensure Unit Number Exists
+                            bool unitExists = false;
+                            if (p == "BTR") unitExists = await _context.MachineNumbers_BTR.AnyAsync(n => n.Number.ToLower() == unitNumberStr.ToLower() && n.MachineId == machineId);
+                            else if (p == "HOSE") unitExists = await _context.MachineNumbers_HOSE.AnyAsync(n => n.Number.ToLower() == unitNumberStr.ToLower() && n.MachineId == machineId);
+                            else if (p == "MOLDED") unitExists = await _context.MachineNumbers_MOLDED.AnyAsync(n => n.Number.ToLower() == unitNumberStr.ToLower() && n.MachineId == machineId);
+                            else if (p == "MIXING") unitExists = await _context.MachineNumbers_MIXING.AnyAsync(n => n.Number.ToLower() == unitNumberStr.ToLower() && n.MachineId == machineId);
+                            else unitExists = await _context.MachineNumbers.AnyAsync(n => n.Number.ToLower() == unitNumberStr.ToLower() && n.MachineId == machineId);
+
+                            if (!unitExists) {
+                                if (p == "BTR") _context.MachineNumbers_BTR.Add(new MachineNumber_BTR { MachineId = machineId, Number = unitNumberStr, Location = "Imported", IsActive = true, CreatedAt = now });
+                                else if (p == "HOSE") _context.MachineNumbers_HOSE.Add(new MachineNumber_HOSE { MachineId = machineId, Number = unitNumberStr, Location = "Imported", IsActive = true, CreatedAt = now });
+                                else if (p == "MOLDED") _context.MachineNumbers_MOLDED.Add(new MachineNumber_MOLDED { MachineId = machineId, Number = unitNumberStr, Location = "Imported", IsActive = true, CreatedAt = now });
+                                else if (p == "MIXING") _context.MachineNumbers_MIXING.Add(new MachineNumber_MIXING { MachineId = machineId, Number = unitNumberStr, Location = "Imported", IsActive = true, CreatedAt = now });
+                                else _context.MachineNumbers.Add(new MachineNumber { MachineId = machineId, Number = unitNumberStr, Location = "Imported", IsActive = true, CreatedAt = now });
+                                unitsCreated++;
+                            }
+                            await _context.SaveChangesAsync();
+
+                            // 4. Parse Checklist Items (Table starting from Row 7-8)
+                            // Col B: Komponen (DetailName)
+                            // Col C: Standar (StandardDescription)
+                            string lastDetailName = string.Empty;
+                            int rowCount = worksheet.Dimension?.Rows ?? 0;
+                            
+                            for (int row = 7; row <= rowCount; row++) {
+                                var currentNo = worksheet.Cells[row, 1].Text?.Trim();
+                                var detailName = worksheet.Cells[row, 2].Text?.Trim();
+                                var stdDesc = worksheet.Cells[row, 3].Text?.Trim();
+
+                                // If detail name is empty, it usually inherits from the row above (like Hydraulic sub-items)
+                                if (!string.IsNullOrEmpty(detailName)) lastDetailName = detailName;
+                                if (string.IsNullOrEmpty(lastDetailName) || string.IsNullOrEmpty(stdDesc)) continue;
+
+                                // Check if already exists to avoid duplication in one machine
+                                bool exists = false;
+                                switch(plant) {
+                                    case "BTR": exists = await _context.ChecklistItems_BTR.AnyAsync(c => c.MachineId == machineId && c.DetailName == lastDetailName && c.StandardDescription == stdDesc); break;
+                                    case "HOSE": exists = await _context.ChecklistItems_HOSE.AnyAsync(c => c.MachineId == machineId && c.DetailName == lastDetailName && c.StandardDescription == stdDesc); break;
+                                    case "MOLDED": exists = await _context.ChecklistItems_MOLDED.AnyAsync(c => c.MachineId == machineId && c.DetailName == lastDetailName && c.StandardDescription == stdDesc); break;
+                                    case "MIXING": exists = await _context.ChecklistItems_MIXING.AnyAsync(c => c.MachineId == machineId && c.DetailName == lastDetailName && c.StandardDescription == stdDesc); break;
+                                    default: exists = await _context.ChecklistItems.AnyAsync(c => c.MachineId == machineId && c.DetailName == lastDetailName && c.StandardDescription == stdDesc); break;
+                                }
+
+                                if (!exists) {
+                                    int order = 0; int.TryParse(currentNo, out order);
+                                    if(order == 0) order = itemsImported + 1;
+
+                                    switch(plant) {
+                                        case "BTR": _context.ChecklistItems_BTR.Add(new ChecklistItem_BTR { MachineId = machineId, OrderNumber = order, DetailName = lastDetailName, StandardDescription = stdDesc, CreatedAt = now, IsActive = true }); break;
+                                        case "HOSE": _context.ChecklistItems_HOSE.Add(new ChecklistItem_HOSE { MachineId = machineId, OrderNumber = order, DetailName = lastDetailName, StandardDescription = stdDesc, CreatedAt = now, IsActive = true }); break;
+                                        case "MOLDED": _context.ChecklistItems_MOLDED.Add(new ChecklistItem_MOLDED { MachineId = machineId, OrderNumber = order, DetailName = lastDetailName, StandardDescription = stdDesc, CreatedAt = now, IsActive = true }); break;
+                                        case "MIXING": _context.ChecklistItems_MIXING.Add(new ChecklistItem_MIXING { MachineId = machineId, OrderNumber = order, DetailName = lastDetailName, StandardDescription = stdDesc, CreatedAt = now, IsActive = true }); break;
+                                        default: _context.ChecklistItems.Add(new ChecklistItem { MachineId = machineId, OrderNumber = order, DetailName = lastDetailName, StandardDescription = stdDesc, CreatedAt = now, IsActive = true }); break;
+                                    }
+                                    itemsImported++;
+                                }
+                            }
+                            await _context.SaveChangesAsync();
+                        }
+
+                        return Json(new { success = true, message = $"Beres pak! Berhasil memproses {totalSheets} sheet. Menambahkan {machinesCreated} tipe mesin, {unitsCreated} nomor unit, dan {itemsImported} item checklist." });
                     }
                 }
             } catch (Exception ex) { return Json(new { success = false, message = "Error: " + ex.Message }); }
