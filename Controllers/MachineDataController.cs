@@ -381,5 +381,184 @@ namespace AMRVI.Controllers
             return Json(new { success = true });
         }
         #endregion
+        #region Import/Export
+        [HttpGet]
+        public IActionResult DownloadTemplate()
+        {
+            try
+            {
+                OfficeOpenXml.ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+                using (var package = new OfficeOpenXml.ExcelPackage())
+                {
+                    var worksheet = package.Workbook.Worksheets.Add("MachineTemplate");
+
+                    // Header
+                    worksheet.Cells[1, 1].Value = "Machine Name";
+                    worksheet.Cells[1, 2].Value = "Description";
+                    worksheet.Cells[1, 3].Value = "Unit Number";
+                    worksheet.Cells[1, 4].Value = "Location";
+
+                    // Style
+                    using (var range = worksheet.Cells[1, 1, 1, 4])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                    }
+
+                    // Sample Data
+                    worksheet.Cells[2, 1].Value = "Mesin Injection A";
+                    worksheet.Cells[2, 2].Value = "Mesin injeksi plastik";
+                    worksheet.Cells[2, 3].Value = "M-001";
+                    worksheet.Cells[2, 4].Value = "Line 1";
+
+                    worksheet.Cells[3, 1].Value = "Mesin Injection A";
+                    worksheet.Cells[3, 2].Value = "Mesin injeksi plastik";
+                    worksheet.Cells[3, 3].Value = "M-002";
+                    worksheet.Cells[3, 4].Value = "Line 1";
+                    
+                    worksheet.Cells.AutoFitColumns();
+
+                    var content = package.GetAsByteArray();
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MachineTemplate.xlsx");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error generating template: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ImportMachines(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return Json(new { success = false, message = "File tidak valid atau kosong." });
+
+            try
+            {
+                var plant = _plantService.GetPlantName();
+                OfficeOpenXml.ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+                int machinesAdded = 0;
+                int numbersAdded = 0;
+
+                using (var stream = new MemoryStream())
+                {
+                    await file.CopyToAsync(stream);
+                    using (var package = new OfficeOpenXml.ExcelPackage(stream))
+                    {
+                        var worksheet = package.Workbook.Worksheets[0];
+                        var rowCount = worksheet.Dimension.Rows;
+
+                        for (int row = 2; row <= rowCount; row++)
+                        {
+                            var machineName = worksheet.Cells[row, 1].Value?.ToString()?.Trim();
+                            var description = worksheet.Cells[row, 2].Value?.ToString()?.Trim();
+                            var number = worksheet.Cells[row, 3].Value?.ToString()?.Trim();
+                            var location = worksheet.Cells[row, 4].Value?.ToString()?.Trim();
+
+                            if (string.IsNullOrEmpty(machineName) || string.IsNullOrEmpty(number))
+                                continue;
+
+                            // 1. Handle Machine (Parent)
+                            int machineId = 0;
+                            
+                            // Check existing based on Plant
+                            switch (plant)
+                            {
+                                case "BTR":
+                                    var mBTR = await _context.Machines_BTR.FirstOrDefaultAsync(m => m.Name == machineName);
+                                    if (mBTR == null) {
+                                        mBTR = new Machine_BTR { Name = machineName, Description = description ?? "", IsActive = true, CreatedAt = DateTime.Now };
+                                        _context.Machines_BTR.Add(mBTR);
+                                        await _context.SaveChangesAsync();
+                                        machinesAdded++;
+                                    }
+                                    machineId = mBTR.Id;
+
+                                    if (!await _context.MachineNumbers_BTR.AnyAsync(n => n.MachineId == machineId && n.Number == number)) {
+                                        _context.MachineNumbers_BTR.Add(new MachineNumber_BTR { MachineId = machineId, Number = number, Location = location, IsActive = true, CreatedAt = DateTime.Now });
+                                        numbersAdded++;
+                                    }
+                                    break;
+
+                                case "HOSE":
+                                    var mHOSE = await _context.Machines_HOSE.FirstOrDefaultAsync(m => m.Name == machineName);
+                                    if (mHOSE == null) {
+                                        mHOSE = new Machine_HOSE { Name = machineName, Description = description ?? "", IsActive = true, CreatedAt = DateTime.Now };
+                                        _context.Machines_HOSE.Add(mHOSE);
+                                        await _context.SaveChangesAsync();
+                                        machinesAdded++;
+                                    }
+                                    machineId = mHOSE.Id;
+
+                                    if (!await _context.MachineNumbers_HOSE.AnyAsync(n => n.MachineId == machineId && n.Number == number)) {
+                                        _context.MachineNumbers_HOSE.Add(new MachineNumber_HOSE { MachineId = machineId, Number = number, Location = location, IsActive = true, CreatedAt = DateTime.Now });
+                                        numbersAdded++;
+                                    }
+                                    break;
+                                
+                                case "MOLDED":
+                                    var mMOLDED = await _context.Machines_MOLDED.FirstOrDefaultAsync(m => m.Name == machineName);
+                                    if (mMOLDED == null) {
+                                        mMOLDED = new Machine_MOLDED { Name = machineName, Description = description ?? "", IsActive = true, CreatedAt = DateTime.Now };
+                                        _context.Machines_MOLDED.Add(mMOLDED);
+                                        await _context.SaveChangesAsync();
+                                        machinesAdded++;
+                                    }
+                                    machineId = mMOLDED.Id;
+
+                                    if (!await _context.MachineNumbers_MOLDED.AnyAsync(n => n.MachineId == machineId && n.Number == number)) {
+                                        _context.MachineNumbers_MOLDED.Add(new MachineNumber_MOLDED { MachineId = machineId, Number = number, Location = location, IsActive = true, CreatedAt = DateTime.Now });
+                                        numbersAdded++;
+                                    }
+                                    break;
+
+                                case "MIXING":
+                                    var mMIXING = await _context.Machines_MIXING.FirstOrDefaultAsync(m => m.Name == machineName);
+                                    if (mMIXING == null) {
+                                        mMIXING = new Machine_MIXING { Name = machineName, Description = description ?? "", IsActive = true, CreatedAt = DateTime.Now };
+                                        _context.Machines_MIXING.Add(mMIXING);
+                                        await _context.SaveChangesAsync();
+                                        machinesAdded++;
+                                    }
+                                    machineId = mMIXING.Id;
+
+                                    if (!await _context.MachineNumbers_MIXING.AnyAsync(n => n.MachineId == machineId && n.Number == number)) {
+                                        _context.MachineNumbers_MIXING.Add(new MachineNumber_MIXING { MachineId = machineId, Number = number, Location = location, IsActive = true, CreatedAt = DateTime.Now });
+                                        numbersAdded++;
+                                    }
+                                    break;
+
+                                default: // RVI
+                                    var mRVI = await _context.Machines.FirstOrDefaultAsync(m => m.Name == machineName);
+                                    if (mRVI == null) {
+                                        mRVI = new Machine { Name = machineName, Description = description ?? "", IsActive = true, CreatedAt = DateTime.Now };
+                                        _context.Machines.Add(mRVI);
+                                        await _context.SaveChangesAsync();
+                                        machinesAdded++;
+                                    }
+                                    machineId = mRVI.Id;
+
+                                    if (!await _context.MachineNumbers.AnyAsync(n => n.MachineId == machineId && n.Number == number)) {
+                                        _context.MachineNumbers.Add(new MachineNumber { MachineId = machineId, Number = number, Location = location, IsActive = true, CreatedAt = DateTime.Now });
+                                        numbersAdded++;
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                }
+                
+                await _context.SaveChangesAsync(); // Save all number additions
+                return Json(new { success = true, message = $"Import berhasil! {machinesAdded} mesin baru, {numbersAdded} nomor unit ditambahkan." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Terjadi kesalahan: " + ex.Message });
+            }
+        }
+        #endregion
     }
 }

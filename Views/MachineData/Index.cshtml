@@ -18,9 +18,14 @@
                     <p class="subtitle">Kelola daftar mesin, nomor register, dan lokasi area operasional.</p>
                 </div>
             </div>
-            <button onclick="showCreateModal()" class="btn btn-action-primary">
-                + TAMBAH MESIN
-            </button>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="showImportModal()" class="btn btn-action-success">
+                    📥 IMPORT DATA
+                </button>
+                <button onclick="showCreateModal()" class="btn btn-action-primary">
+                    + TAMBAH MESIN
+                </button>
+            </div>
         </div>
 
         <div class="table-responsive">
@@ -71,6 +76,35 @@
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+<!-- Modal Import Machine -->
+<div id="importModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content dark-modal">
+        <div class="modal-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2 class="modal-title" style="margin:0;">Import Data Mesin</h2>
+            <button onclick="closeImportModal()" class="btn-close-modal">
+                <i class="ph-x-bold"></i>
+            </button>
+        </div>
+        
+        <div style="background: rgba(15, 23, 42, 0.4); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; text-align: center; margin-bottom: 2rem;">
+            <p style="color: #94a3b8; margin-bottom: 1rem;">1. Download template Excel terlebih dahulu:</p>
+            <a href="@Url.Action("DownloadTemplate", "MachineData")" class="btn btn-cancel" style="display: inline-block; text-decoration: none; border-color: #3b82f6; color: #3b82f6;">
+                📄 Download Template.xlsx
+            </a>
+            
+            <p style="color: #94a3b8; margin: 2rem 0 1rem 0;">2. Upload file Excel yang sudah diisi:</p>
+            <form id="importForm">
+                <input type="file" id="importFile" accept=".xlsx" class="form-control" style="margin-bottom: 1rem;" required>
+                <button type="submit" class="btn btn-action-success" style="width: 100%;">
+                    📤 UPLOAD & IMPORT
+                </button>
+            </form>
+        </div>
+        
+        <div id="importStatus" style="display: none; padding: 1rem; border-radius: 8px; font-size: 0.9rem;"></div>
     </div>
 </div>
 
@@ -166,13 +200,41 @@
         width: 100%;
     }
 
+
+</style>
+<style>
+    /* --- Premium Page Layout (Glassmorphism Upgrade) --- */
+    .dark-card {
+        background: rgba(15, 23, 42, 0.7); 
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-radius: 24px;
+        padding: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 
+            0 0 0 1px rgba(255, 255, 255, 0.05), 
+            0 25px 50px -12px rgba(0, 0, 0, 0.6),
+            inset 0 0 30px rgba(0, 0, 0, 0.3); /* Inner depth */
+        margin-top: 1.5rem;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Top accent light */
+    .dark-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+    }
+
     .header-section {
         display: flex;
         justify-content: space-between;
-        align-items: center; /* Center Vertically */
-        margin-bottom: 2rem;
-        padding-bottom: 0;
-        border-bottom: none;
+        align-items: center;
+        margin-bottom: 2.5rem;
     }
     
     .title-block {
@@ -182,203 +244,179 @@
     }
     
     .icon-wrapper {
-        background: rgba(59, 130, 246, 0.1);
-        width: 60px;
-        height: 60px;
-        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.2));
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid rgba(59, 130, 246, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.2);
     }
 
     .subtitle {
         color: #94a3b8;
-        margin: 0.25rem 0 0 0;
+        margin: 0.35rem 0 0 0;
         font-size: 0.95rem;
+        font-weight: 500;
     }
 
     .page-title {
-        font-size: 1.8rem;
-        font-weight: 700;
+        font-size: 2rem;
+        font-weight: 800;
         margin: 0;
-        color: #f8fafc;
-        background: none;
-        -webkit-text-fill-color: initial;
+        background: linear-gradient(to right, #f8fafc, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
 
-    /* --- Buttons --- */
+    /* --- Buttons with Glow --- */
     .btn-action-primary {
         background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         color: white;
         border: none;
-        padding: 0.8rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
+        padding: 0.8rem 1.75rem;
+        border-radius: 14px;
+        font-weight: 700;
         font-size: 0.9rem;
         letter-spacing: 0.5px;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
     }
     .btn-action-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 20px -5px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
     }
 
-    /* --- Table Styles --- */
+    .btn-action-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 0.8rem 1.75rem;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 
+            0 0 0 1px rgba(16, 185, 129, 0.4),
+            0 4px 6px -1px rgba(16, 185, 129, 0.3), 
+            inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .btn-action-success:hover {
+        transform: translateY(-3px);
+        box-shadow: 
+            0 0 20px rgba(16, 185, 129, 0.4), /* Outer Glow */
+            0 12px 20px -5px rgba(16, 185, 129, 0.5), 
+            inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    /* --- Table Styles (Vertical Lines Added) --- */
     .table-responsive {
-        background: rgba(15, 23, 42, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        overflow: auto; /* Enable both scrolls */
-        max-height: 65vh; /* Fixed height for vertical scroll */
-        position: relative;
-    }
-
-    /* Custom Scrollbar */
-    .table-responsive::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-    .table-responsive::-webkit-scrollbar-track {
-        background: rgba(15, 23, 42, 0.5);
-    }
-    .table-responsive::-webkit-scrollbar-thumb {
-        background: rgba(56, 189, 248, 0.3);
-        border-radius: 4px;
-    }
-    .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: rgba(56, 189, 248, 0.5);
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 0; 
+        overflow: hidden; /* For radius */
+        overflow-x: auto;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     }
 
     .custom-table {
         width: 100%;
-        border-collapse: separate; /* Needed for sticky header radius if any, but border-spacing 0 */
-        border-spacing: 0; /* Rapat kembali */
+        border-collapse: collapse; /* Collapse to make borders cleaner */
         color: #e2e8f0;
     }
 
     .custom-table thead tr {
-        position: sticky; /* Kunci header */
-        top: 0;
-        z-index: 20; /* Di atas konten */
-        background: #1e3a8a; /* Fallback solid color */
-        /* Vivid Blue Gradient Background */
-        background: linear-gradient(90deg, #1e3a8a 0%, #172554 100%);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        background: #1e3a8a;
+        background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+        border-bottom: 2px solid #3b82f6; 
     }
 
     .custom-table thead th {
-        background: transparent; /* Background handle by TR */
-        padding: 1rem 1.5rem;
-        font-size: 0.8rem;
+        padding: 1.25rem 1.5rem;
+        font-size: 0.85rem;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #e2e8f0;
-        border-bottom: 2px solid rgba(56, 189, 248, 0.4);
+        letter-spacing: 0.08em;
+        color: #f1f5f9;
         text-align: left;
-        white-space: nowrap; /* Prevent header wrap */
+        white-space: nowrap;
+        border-right: 1px solid rgba(255, 255, 255, 0.15); /* Vertikal Line on Header */
     }
+    .custom-table thead th:last-child { border-right: none; }
 
-    /* Remove pseudo-element lines since we use border-bottom now */
-    .custom-table thead th::after { content: none; }
-    
     .custom-table tbody tr {
-        background: rgba(30, 41, 59, 0.3);
-        transition: background 0.15s;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Garis lebih terang */
+        background: transparent;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.2s ease;
     }
     
-    /* Zebra striping untuk readability */
+    /* Zebra Striping */
     .custom-table tbody tr:nth-child(even) {
-        background: rgba(15, 23, 42, 0.4);
+        background: rgba(30, 41, 59, 0.3);
     }
     
     .custom-table tbody tr:hover {
-        background: rgba(56, 189, 248, 0.15); /* Hover lebih jelas */
-        transform: none;
-        box-shadow: none;
+        background: rgba(59, 130, 246, 0.1);
     }
     
-    /* Reset radius & border */
-    .custom-table tbody tr td:first-child { border-radius: 0; }
-    .custom-table tbody tr td:last-child { border-radius: 0; }
-
     .custom-table td {
-        padding: 1rem 1.5rem;
+        padding: 1.25rem 1.5rem;
         vertical-align: middle;
         font-size: 0.95rem;
-        border-right: 1px solid rgba(255, 255, 255, 0.08); /* Garis vertikal antar kolom */
-        white-space: nowrap;
+        border-right: 1px solid rgba(255, 255, 255, 0.08); /* --- GARIS VERTIKAL DISINI --- */
+        color: #cbd5e1;
     }
     
     .custom-table td:last-child {
-        border-right: none; /* Hapus border di kolom terakhir */
+        border-right: none; /* Hapus garis di kolom terakhir */
     }
     
-    /* Allow description to wrap if too long, or set max-width */
-    .custom-table td:nth-child(3) {
-        white-space: normal;
-        min-width: 300px;
+    /* Highlighted Name */
+    .custom-table td:nth-child(2) {
+        color: #fff;
+        font-weight: 600;
     }
+
     .custom-table .text-center { text-align: center; }
     .custom-table .text-right { text-align: right; }
-
-    .custom-table tbody tr {
-        background: rgba(30, 41, 59, 0.4);
-        position: relative;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    /* Rounded corners for the whole row */
-    .custom-table tbody tr td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
-    .custom-table tbody tr td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
-    
-    .custom-table tbody tr:hover {
-        background: rgba(30, 41, 59, 0.8);
-        transform: translateY(-4px) scale(1.005);
-        box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5);
-        border-color: rgba(96, 165, 250, 0.3); /* Blue border glow */
-        z-index: 10;
-    }
-
-    .custom-table td {
-        padding: 1.5rem;
-        vertical-align: middle;
-        font-size: 0.95rem;
-        border: none;
-    }
 
     /* Badges */
     .badge-number {
         background: rgba(15, 23, 42, 0.6);
-        color: #38bdf8; /* Cyan-400 */
+        color: #38bdf8; 
         padding: 0.5rem 1.25rem;
-        border-radius: 99px; /* Pill shape */
+        border-radius: 12px;
         font-size: 0.85rem;
         font-weight: 700;
-        border: 1px solid rgba(56, 189, 248, 0.2);
+        border: 1px solid rgba(56, 189, 248, 0.3);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         display: inline-block;
-        min-width: 80px;
+        min-width: 90px;
     }
 
     /* Action Buttons */
     .action-buttons {
         display: flex;
         justify-content: flex-end;
-        gap: 0.5rem;
+        gap: 0.6rem;
     }
 
     .btn-icon {
-        width: 42px;
-        height: 42px;
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
         border: none;
         cursor: pointer;
@@ -386,28 +424,26 @@
         align-items: center;
         justify-content: center;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        font-size: 1.2rem;
-        /* Glass effect button */
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 1.3rem;
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         color: #94a3b8;
     }
     
     .btn-icon:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px);
         color: white;
     }
     
-    /* Specific Colors on Hover */
-    .btn-blue:hover { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 8px 15px -3px rgba(59, 130, 246, 0.5); }
-    .btn-indigo:hover { background: #6366f1; border-color: #6366f1; box-shadow: 0 8px 15px -3px rgba(99, 102, 241, 0.5); }
-    .btn-red:hover { background: #ef4444; border-color: #ef4444; box-shadow: 0 8px 15px -3px rgba(239, 68, 68, 0.5); }
+    .btn-blue:hover { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+    .btn-indigo:hover { background: #6366f1; border-color: #6366f1; box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+    .btn-red:hover { background: #ef4444; border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
 
     /* Modals & Forms */
     .modal-backdrop {
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.8);
+        background: rgba(0,0,0,0.85);
         backdrop-filter: blur(8px);
         display: flex;
         align-items: center;
@@ -418,12 +454,19 @@
 
     .modal-content {
         background: #1e293b;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 20px;
+        background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 24px;
         padding: 2.5rem;
         width: 90%;
         max-width: 550px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    
+    .modal-title {
+         font-size: 1.5rem;
+         font-weight: 700;
+         color: #f8fafc;
     }
 
     .form-group label {
@@ -433,14 +476,15 @@
         font-weight: 700;
         margin-bottom: 0.75rem;
         letter-spacing: 0.05em;
+        text-transform: uppercase;
     }
 
     .form-control {
         width: 100%;
-        background: rgba(15, 23, 42, 0.6);
+        background: rgba(15, 23, 42, 0.5);
         border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 10px;
-        padding: 0.8rem 1.25rem;
+        border-radius: 12px;
+        padding: 0.9rem 1.25rem;
         color: white;
         font-family: inherit;
         font-size: 0.95rem;
@@ -450,7 +494,7 @@
         outline: none;
         border-color: #3b82f6;
         background: rgba(15, 23, 42, 0.8);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
     }
 
     .modal-actions {
@@ -465,30 +509,32 @@
         color: #94a3b8;
         border: 1px solid rgba(255,255,255,0.1);
         padding: 0.75rem 1.5rem;
-        border-radius: 10px;
+        border-radius: 12px;
         cursor: pointer;
         font-weight: 600;
+        transition: all 0.2s;
     }
-    .btn-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .btn-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,255,255,0.25); }
 
     .btn-submit {
         background: #3b82f6;
         color: white;
         border: none;
         padding: 0.75rem 2rem;
-        border-radius: 10px;
+        border-radius: 12px;
         font-weight: 600;
         cursor: pointer;
         box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+        transition: all 0.2s;
     }
-    .btn-submit:hover { background: #2563eb; }
+    .btn-submit:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.5); }
     
     @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* Number Management Specifics */
     .form-inline-card {
         background: rgba(15, 23, 42, 0.4);
-        border: 1px dashed rgba(255,255,255,0.1);
+        border: 1px dashed rgba(255,255,255,0.15);
         border-radius: 16px;
         padding: 1.5rem;
         margin: 2rem 0;
@@ -497,16 +543,17 @@
     .list-container {
         max-height: 400px;
         overflow-y: auto;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(0,0,0,0.2);
     }
     
     /* Premium Close Button */
     .btn-close-modal {
         background: rgba(255, 255, 255, 0.05);
-        border: none;
-        width: 40px;
-        height: 40px;
+        border: 1px solid rgba(255,255,255,0.05);
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -514,87 +561,35 @@
         color: #94a3b8;
         cursor: pointer;
         transition: all 0.2s ease;
-        font-size: 1.2rem;
+        font-size: 1.25rem;
     }
     
     .btn-close-modal:hover {
-        background: rgba(239, 68, 68, 0.2);
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.3);
         color: #f87171;
         transform: rotate(90deg);
     }
     
     /* --- RESPONSIVE MEDIA QUERIES --- */
     @@media (max-width: 768px) {
-        /* 1. Reset Container Padding */
-        .container-fluid {
-            padding: 0 1rem !important;
-        }
+        .container-fluid { padding: 0 1rem !important; }
+        .header-section { flex-direction: column; gap: 1.5rem; align-items: flex-start; }
+        .title-block { width: 100%; }
+        .header-section > div { width: 100%; flex-direction: column; }
+        .header-section button { width: 100%; justify-content: center; }
         
-        /* 2. Stack Header Elements */
-        .header-section {
-            flex-direction: column;
-            gap: 1.5rem;
-            align-items: flex-start;
-        }
+        .dark-card { padding: 1.5rem 1rem; border-radius: 16px; }
+        .table-responsive { margin: 0 -1rem; padding: 0; width: calc(100% + 2rem); border-radius: 0; border-left: none; border-right: none; }
         
-        .title-block {
-            width: 100%;
-        }
+        .page-title { font-size: 1.75rem; }
+        .subtitle { font-size: 0.9rem; }
         
-        .header-section button {
-            width: 100%; /* Tombol full width di HP */
-            justify-content: center;
-        }
-        
-        /* 3. Responsive Table as Scrollable Cards Container */
-        /* Kita pertahankan scroll horizontal karena data tabular kompleks */
-        /* Tapi kita murnikan tampilannya */
-        .dark-card {
-            padding: 1.5rem 1rem;
-            border-radius: 16px;
-        }
-        
-        .table-responsive {
-            margin: 0 -1rem; /* Negative margin biar mentok layar */
-            padding: 0 1rem 1.5rem 1rem;
-            width: calc(100% + 2rem);
-        }
-        
-        /* Font size adjustment */
-        .page-title { font-size: 1.5rem; }
-        .subtitle { font-size: 0.85rem; }
-        
-        .badge-number {
-             font-size: 0.75rem;
-             padding: 0.25rem 0.75rem;
-        }
-        
-        /* Modal Responsive */
-        .modal-content {
-            padding: 1.5rem;
-            width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header-row {
-            flex-direction: row; /* Tetap row buat tombol close */
-            align-items: center;
-        }
-        
-        .form-inline-card form {
-            flex-direction: column;
-            align-items: stretch !important;
-        }
-        
-        .form-inline-card div {
-            flex: none !important;
-        }
-        
-        #btnSaveNumber, #btnCancelEdit {
-            width: 100%;
-            margin-top: 1rem;
-        }
+        .modal-content { padding: 1.5rem; width: 95%; max-height: 90vh; overflow-y: auto; }
+        .modal-header-row { flex-direction: row; align-items: center; }
+        .form-inline-card form { flex-direction: column; align-items: stretch !important; }
+        .form-inline-card div { flex: none !important; }
+        #btnSaveNumber, #btnCancelEdit { width: 100%; margin-top: 1rem; }
     }
 </style>
 
@@ -760,5 +755,47 @@
             });
         }
     }
+
+    // --- Import Export ---
+    function showImportModal() {
+        $('#importFile').val('');
+        $('#importStatus').hide();
+        $('#importModal').fadeIn(200);
+    }
+
+    function closeImportModal() {
+        $('#importModal').fadeOut(200);
+    }
+
+    $('#importForm').submit(function(e) {
+        e.preventDefault();
+        
+        var formData = new FormData();
+        var file = $('#importFile')[0].files[0];
+        formData.append('file', file);
+
+        $('#importStatus').show().html('<span style="color: #38bdf8;">⏳ Sedang memproses data... mohon tunggu.</span>').css('background', 'rgba(56, 189, 248, 0.1)');
+        
+        $.ajax({
+            url: '@Url.Action("ImportMachines", "MachineData")',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                if (response.success) {
+                    $('#importStatus').html(`<span style="color: #4ade80;">✅ ${response.message}</span>`).css('background', 'rgba(74, 222, 128, 0.1)');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    $('#importStatus').html(`<span style="color: #f87171;">❌ ${response.message}</span>`).css('background', 'rgba(248, 113, 113, 0.1)');
+                }
+            },
+            error: function() {
+                 $('#importStatus').html('<span style="color: #f87171;">❌ Terjadi kesalahan server.</span>').css('background', 'rgba(248, 113, 113, 0.1)');
+            }
+        });
+    });
     </script>
 }
