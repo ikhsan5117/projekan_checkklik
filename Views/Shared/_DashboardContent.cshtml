@@ -1,0 +1,466 @@
+@model AMRVI.ViewModels.DashboardViewModel
+
+<!-- Hero Section: Atmospheric Command -->
+<div class="quantum-hero" style="margin-bottom: 3rem;">
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-scanline"></div>
+    <div class="hero-main">
+        <div class="hero-chip">SYSTEM STATUS: NOMINAL</div>
+        <h1 class="hero-title">@User.FindFirst("Plant")?.Value <span class="glow-text">Dashboard</span></h1>
+        <p class="hero-subtitle">Semua mesin dalam kondisi terpantau. Anda telah melakukan <strong>@Model.InspectionsToday</strong> inspeksi hari ini.</p>
+        
+    </div>
+    
+    <div class="hero-sidebar">
+        @{
+            var auditPercent = Model.TotalMachines > 0 ? (Model.InspectionsToday * 100) / Model.TotalMachines : 0;
+        }
+            <div class="mini-gauge-card">
+                <div class="gauge-ring" style="--percent: @auditPercent;">
+                    <svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70"></circle><circle cx="80" cy="80" r="70"></circle></svg>
+                    <div class="gauge-data">
+                        <span class="g-num">@Model.TotalMachines</span>
+                        <span class="g-unit">UNITS</span>
+                    </div>
+                </div>
+                <p>Audit Progress: @auditPercent%</p>
+            </div>
+    </div>
+</div>
+
+<!-- Main Grid -->
+<div class="quantum-grid" style="margin-top: -2rem;">
+    <!-- Total Machine Card -->
+    <div id="cardMachine" class="bento-card dashboard-stat-card" style="--card-color: #22d3ee; --card-color-rgb: 34, 211, 238;">
+        <div class="stat-card-inner">
+            <div class="stat-bg-orb"></div>
+            <div class="stat-content">
+                <div class="stat-meta">
+                    <span class="stat-label">TOTAL MC</span>
+                </div>
+                <div class="stat-main">
+                    <h2 class="stat-number">@Model.TotalMachines</h2>
+                    <div class="stat-icon-wrapper">
+                        <i class="ph-monitor-bold"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total OK Card -->
+    <div id="cardOk" class="bento-card dashboard-stat-card" onclick="toggleFilter('ok')" style="--card-color: #34d399; --card-color-rgb: 52, 211, 153;">
+        <div class="stat-card-inner">
+            <div class="stat-bg-orb"></div>
+            <div class="stat-content">
+                <div class="stat-meta">
+                    <span class="stat-label">TOTAL OK</span>
+                    <div class="stat-badge" id="filterBadgeOk" style="display:none;">FILTERED</div>
+                </div>
+                <div class="stat-main">
+                    <h2 class="stat-number" id="totalOkCount">@Model.TotalOkCount</h2>
+                    <div class="stat-icon-wrapper">
+                        <i class="ph-check-circle-bold"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total NG Card -->
+    <div id="cardNg" class="bento-card dashboard-stat-card" onclick="toggleFilter('ng')" style="--card-color: #fb7185; --card-color-rgb: 251, 113, 133;">
+        <div class="stat-card-inner">
+            <div class="stat-bg-orb"></div>
+            <div class="stat-content">
+                <div class="stat-meta">
+                    <span class="stat-label">TOTAL NG</span>
+                    <div class="stat-badge" id="filterBadgeNg" style="display:none;">FILTERED</div>
+                </div>
+                <div class="stat-main">
+                    <h2 class="stat-number" id="totalNgCount">@Model.TotalNgCount</h2>
+                    <div class="stat-icon-wrapper">
+                        <i class="ph-warning-octagon-bold"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Inspections Card -->
+    <div id="cardTotal" class="bento-card dashboard-stat-card active-state" onclick="toggleFilter('all')" style="--card-color: #818cf8; --card-color-rgb: 129, 140, 248;">
+        <div class="stat-card-inner">
+            <div class="stat-bg-orb"></div>
+            <div class="stat-content">
+                <div class="stat-meta">
+                    <span class="stat-label">TOTAL SESSIONS</span>
+                    <div class="stat-badge" id="filterBadgeTotal" style="display:none;">FILTERED</div>
+                </div>
+                <div class="stat-main">
+                    <h2 class="stat-number" id="totalInspectionsCount">@(Model.TotalOkCount + Model.TotalNgCount)</h2>
+                    <div class="stat-icon-wrapper">
+                        <i class="ph-clipboard-text-bold"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- Close quantum-grid -->
+
+<!-- NEW: ANALYTICS SPLIT VIEW -->
+<div class="analytics-split-view">
+    
+    <!-- LEFT: UPDATE AM MESIN HARI INI -->
+    <div class="analytics-section">
+        <h2 class="section-title">UPDATE AM MESIN HARI INI</h2>
+        <!-- Changed to side-by-side Layout similar to reference -->
+        <div class="summary-cards-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="summary-card red" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; height: 80px;">
+                <div class="summary-label" style="font-size:0.7rem; margin-bottom:0.25rem;">MC TIDAK UPDATE</div>
+                <div class="summary-value" style="font-size:2rem;">@Model.NotUpdatedMachinesCount</div>
+            </div>
+            <div class="summary-card green" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; height: 80px;">
+                <div class="summary-label" style="font-size:0.7rem; margin-bottom:0.25rem;">MC UPDATE</div>
+                <div class="summary-value" style="font-size:2rem;">@Model.UpdatedMachinesCount</div>
+            </div>
+        </div>
+        
+        <!-- Logic to split list into two columns -->
+        @{
+            var machines = Model.MachineUpdateList;
+            var count = machines.Count;
+            var half = (int)Math.Ceiling(count / 2.0);
+            var col1 = machines.Take(half).ToList();
+            var col2 = machines.Skip(half).ToList();
+        }
+
+        <div class="machine-dual-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <!-- Column 1 -->
+            <div class="machine-col">
+                <table class="machine-status-table compact">
+                    <thead>
+                        <tr>
+                            <th>M/C</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var m in col1)
+                        {
+                            <tr class="@(m.IsUpdatedToday ? "updated" : "not-updated")">
+                                <td>@m.MachineNumber</td>
+                                <td>@(m.IsUpdatedToday ? "UPDATE" : "TIDAK")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <!-- Column 2 -->
+            <div class="machine-col">
+                <table class="machine-status-table compact">
+                    <thead>
+                        <tr>
+                            <th>M/C</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var m in col2)
+                        {
+                            <tr class="@(m.IsUpdatedToday ? "updated" : "not-updated")">
+                                <td>@m.MachineNumber</td>
+                                <td>@(m.IsUpdatedToday ? "UPDATE" : "TIDAK")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: TREND TEMUAN ABNORMALITY AM -->
+    <div class="analytics-section">
+        <h2 class="section-title">TREND TEMUAN ABNORMALITY AM</h2>
+        <div class="ng-trend-chart">
+            <canvas id="ngTrendChart"></canvas>
+        </div>
+        <div class="ng-detail-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>TANGGAL</th>
+                        <th>M/C</th>
+                        <th>NG CHECKLIST</th>
+                        <th>STANDAR</th>
+                        <th>PROBLEM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var record in Model.NgDetailRecords)
+                    {
+                        <tr>
+                            <td>@record.Date.ToString("dd MMM yyyy")</td>
+                            <td>@record.MachineNumber</td>
+                            <td>@record.ChecklistItem</td>
+                            <td>@record.Standard</td>
+                            <td>@record.Problem</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> <!-- Close analytics-split-view -->
+
+<style>
+    /* Default Grid (Desktop > 1400px) */
+    .quantum-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+    .analytics-card {
+        grid-column: span 3;
+        grid-row: span 1;
+    }
+    .feed-card {
+        grid-column: span 1; 
+        grid-row: span 2; /* Full sidebar height */
+        display: flex; flex-direction: column;
+    }
+    #cardTotal {
+        grid-column: span 1; /* Normal 1-col width */
+    }
+    .stats-card {
+        grid-column: span 1;
+    }
+
+    /* Pulse Animation */
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    /* Custom Scrollbar */
+    .feed-card div::-webkit-scrollbar { width: 6px; }
+    .feed-card div::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+    .feed-card div::-webkit-scrollbar-thumb { background: rgba(129, 140, 248, 0.3); border-radius: 10px; }
+    .feed-card div::-webkit-scrollbar-thumb:hover { background: rgba(129, 140, 248, 0.5); }
+
+/* --- Dashboard Stat Cards (Cyber-Industrial) --- */
+.dashboard-stat-card {
+    position: relative;
+    padding: 0 !important;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(var(--card-color-rgb), 0.1);
+    backdrop-filter: blur(20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border-radius: 20px;
+    height: 110px; /* Force consistent height */
+    box-sizing: border-box;
+}
+
+.dashboard-stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(var(--card-color-rgb), 0.08), transparent);
+    z-index: 0;
+}
+
+.stat-card-inner {
+    position: relative;
+    padding: 1rem 1.25rem;
+    height: 100%;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-bg-orb {
+    position: absolute;
+    top: -40%;
+    right: -20%;
+    width: 120px;
+    height: 120px;
+    background: var(--card-color);
+    filter: blur(50px);
+    opacity: 0.1;
+    z-index: 1;
+    transition: opacity 0.5s ease;
+}
+
+/* Card States via Classes */
+.dashboard-stat-card.active-state {
+    border-color: rgba(var(--card-color-rgb), 0.6);
+    background: rgba(var(--card-color-rgb), 0.05);
+    box-shadow: 0 0 25px rgba(var(--card-color-rgb), 0.1);
+}
+
+.dashboard-stat-card.active-state .stat-bg-orb {
+    opacity: 0.3;
+}
+
+.dashboard-stat-card.filtered-state {
+    opacity: 0.2;
+    filter: grayscale(0.5) blur(1px);
+    pointer-events: auto;
+}
+
+.stat-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.15rem;
+    height: 24px; /* Fixed height to prevent jumps when badge appears */
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.stat-badge {
+    font-size: 0.6rem;
+    font-weight: 900;
+    color: var(--card-color);
+    background: rgba(var(--card-color-rgb), 0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(var(--card-color-rgb), 0.3);
+}
+
+.stat-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-number {
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: #fff;
+    margin: 0;
+    line-height: 1;
+    font-family: 'Outfit', sans-serif;
+    text-shadow: 0 0 20px rgba(var(--card-color-rgb), 0.3);
+}
+
+.stat-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(var(--card-color-rgb), 0.1);
+    border: 1px solid rgba(var(--card-color-rgb), 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--card-color);
+    font-size: 1.25rem;
+    box-shadow: inset 0 0 10px rgba(var(--card-color-rgb), 0.1);
+}
+
+@@keyframes statusPulse {
+    0% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(3); opacity: 0; }
+    100% { transform: scale(1); opacity: 0; }
+}
+
+/* --- RESPONSIVE MEDIA QUERIES --- */
+@@media (max-width: 1400px) {
+    .quantum-grid { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .analytics-card { grid-column: span 3; }
+    .feed-card { grid-column: span 3; grid-row: auto; height: 350px; }
+}
+
+/* Tablet/Small Laptop (Max 992px) */
+@@media (max-width: 992px) {
+    .quantum-grid { grid-template-columns: 1fr; }
+    .analytics-card, .feed-card, .stats-card, .bento-card { grid-column: span 1; grid-row: auto; }
+}
+</style>
+
+<script>
+    // Initialize Charts for this partial
+    if (typeof Chart !== 'undefined') {
+        const ngTrendCtx = document.getElementById('ngTrendChart');
+        if (ngTrendCtx) {
+            // Destroy existing if any to prevent canvas reuse error
+            if (window.myNgChart) window.myNgChart.destroy();
+
+            const ngTrendData = @Html.Raw(Json.Serialize(Model.NgTrendDaily));
+            const ngLabels = ngTrendData.map(d => {
+                const date = new Date(d.date);
+                return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+            });
+            const ngCounts = ngTrendData.map(d => d.ngCount);
+
+            window.myNgChart = new Chart(ngTrendCtx, {
+                type: 'bar',
+                data: {
+                    labels: ngLabels,
+                    datasets: [{
+                        label: 'JUDGEMENT',
+                        data: ngCounts,
+                        backgroundColor: '#60a5fa',
+                        borderColor: '#60a5fa',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { size: 12, weight: '600' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#fff',
+                            bodyColor: '#94a3b8',
+                            borderColor: 'rgba(129, 140, 248, 0.3)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: 11 }
+                            },
+                            grid: {
+                                color: 'rgba(129, 140, 248, 0.1)',
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: 10 },
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+</script>

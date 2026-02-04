@@ -23,6 +23,19 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
+        var viewModel = GetDashboardViewModel();
+        return View(viewModel);
+    }
+
+    [HttpGet]
+    public IActionResult DashboardPartial()
+    {
+        var viewModel = GetDashboardViewModel();
+        return PartialView("_DashboardContent", viewModel);
+    }
+
+    private AMRVI.ViewModels.DashboardViewModel GetDashboardViewModel()
+    {
         var today = DateTime.Today;
 
         // Fetch Stats using PlantService for multi-plant support
@@ -181,7 +194,7 @@ public class HomeController : Controller
             });
         }
 
-        var viewModel = new AMRVI.ViewModels.DashboardViewModel
+        return new AMRVI.ViewModels.DashboardViewModel
         {
             TotalMachines = totalMachines,
             TotalChecklistItems = totalChecklists,
@@ -208,8 +221,6 @@ public class HomeController : Controller
             NgTrendDaily = ngTrendDaily,
             NgDetailRecords = ngDetailRecords
         };
-
-        return View(viewModel);
     }
 
     public IActionResult Privacy()
