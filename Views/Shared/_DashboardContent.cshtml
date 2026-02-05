@@ -113,8 +113,13 @@
     <div class="analytics-section">
         <div style="text-align: center; margin-bottom: 1.5rem;">
             <h2 class="section-title" style="margin-bottom: 0.25rem; display: block; width: 100%;">UPDATE DAILY MACHINE CHECKLIST HARI INI</h2>
-            <div style="color: #22d3ee; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase;">
-                SHIFT @Model.CurrentShift
+            <div class="shift-selector-wrapper" onclick="openShiftSettingsModal()" title="Ubah Jam Shift" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(34, 211, 238, 0.1); padding: 0.4rem 1rem; border-radius: 100px; border: 1px solid rgba(34, 211, 238, 0.2); transition: all 0.3s ease;">
+                <div style="color: #22d3ee; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.1em; text-transform: uppercase; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="ph-clock-bold"></i> SHIFT @Model.CurrentShift
+                </div>
+                <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(34, 211, 238, 0.2); display: flex; align-items: center; justify-content: center; color: #22d3ee; font-size: 0.8rem;">
+                    <i class="ph-gear-six-bold"></i>
+                </div>
             </div>
         </div>
         <!-- Changed to side-by-side Layout similar to reference -->
@@ -800,4 +805,267 @@
             }
         }
     }
+</script>
+
+<!-- SHIFT SETTINGS MODAL -->
+<div id="shiftSettingsModal" class="quantum-modal-overlay" style="display: none;">
+    <div class="quantum-modal-card" style="max-width: 450px;">
+        <div class="modal-header">
+            <h3><i class="ph-clock-bold"></i> PENGATURAN JAM SHIFT</h3>
+            <button class="modal-close" onclick="closeShiftSettingsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem;">Atur jam mulai dan selesai untuk setiap shift di plant <strong>@User.FindFirst("Plant")?.Value</strong>.</p>
+            
+            <form id="shiftSettingsForm">
+                <div id="shiftSettingsContainer">
+                    <!-- Dynamic Content -->
+                    <div style="text-align: center; padding: 2rem;">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button type="button" class="cyber-btn-sm" onclick="addNewShiftRow()" style="display: inline-flex; width: auto; background: rgba(34, 211, 238, 0.1);">
+                        <i class="ph-plus-bold"></i> TAMBAH SHIFT
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="cyber-btn" onclick="closeShiftSettingsModal()" style="background: rgba(148, 163, 184, 0.1); border-color: rgba(148, 163, 184, 0.2);">BATAL</button>
+            <button class="cyber-btn" onclick="saveShiftSettings()" style="background: linear-gradient(135deg, #6366f1, #a855f7); border: none; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);">
+                <i class="ph-floppy-disk-bold"></i> SIMPAN PERUBAHAN
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modal Styling */
+    .quantum-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.85);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9000;
+        animation: fadeIn 0.3s ease;
+    }
+    .quantum-modal-card {
+        background: #0f172a;
+        border: 1px solid rgba(129, 140, 248, 0.2);
+        border-radius: 20px;
+        width: 90%;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .modal-header h3 { margin: 0; font-size: 1.1rem; color: #fff; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.75rem; }
+    .modal-close { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: color 0.2s; }
+    .modal-close:hover { color: #fff; }
+    .modal-body { padding: 1.5rem; }
+    .modal-footer { padding: 1.25rem 1.5rem; border-top: 1px solid rgba(148, 163, 184, 0.1); display: flex; justify-content: flex-end; gap: 0.75rem; }
+    
+    .delete-shift-btn {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .delete-shift-btn:hover {
+        background: #ef4444;
+        color: #fff;
+    }
+
+    .shift-row {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .shift-badge-circle { width: 32px; height: 32px; border-radius: 50%; background: #6366f1; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
+    .shift-times { flex-grow: 1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.5rem; }
+    .shift-times input { background: #1e293b; border: 1px solid rgba(129, 140, 248, 0.3); color: #fff; padding: 0.4rem; border-radius: 6px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; text-align: center; width: 100%; outline: none; transition: border-color 0.2s; }
+    .shift-times input:focus { border-color: #6366f1; }
+    
+    .cyber-btn {
+        padding: 0.6rem 1.2rem;
+        border: 1px solid rgba(129, 140, 248, 0.3);
+        border-radius: 8px;
+        color: #fff;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .cyber-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+
+    @@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+
+<script>
+    function openShiftSettingsModal() {
+        const modal = document.getElementById('shiftSettingsModal');
+        modal.style.display = 'flex';
+        
+        // Load Data from API
+        const container = document.getElementById('shiftSettingsContainer');
+        container.innerHTML = '<div style="text-align: center; padding: 2rem;"><div class="loading-spinner"></div></div>';
+        
+        fetch('/api/dashboard/shift-settings')
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    renderShiftRows(res.data);
+                }
+            })
+            .catch(err => {
+                container.innerHTML = '<div style="color: #ef4444; text-align: center;">Gagal memuat data!</div>';
+            });
+    }
+
+    function renderShiftRows(data) {
+        const container = document.getElementById('shiftSettingsContainer');
+        let html = '';
+        data.forEach((s, index) => {
+            html += `
+                <div class="shift-row" data-id="${s.id || 0}">
+                    <div class="shift-badge-circle">${s.shiftNumber || (index + 1)}</div>
+                    <div class="shift-times">
+                        <input type="time" class="shift-start" value="${s.startTime}" required>
+                        <span style="color: #64748b;"><i class="ph-arrow-right"></i></span>
+                        <input type="time" class="shift-end" value="${s.endTime}" required>
+                    </div>
+                    <button type="button" class="delete-shift-btn" onclick="removeShiftRow(this)" title="Hapus Shift">
+                        <i class="ph-trash-bold"></i>
+                    </button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function addNewShiftRow() {
+        const container = document.getElementById('shiftSettingsContainer');
+        const nextNumber = container.querySelectorAll('.shift-row').length + 1;
+        const div = document.createElement('div');
+        div.className = 'shift-row';
+        div.setAttribute('data-id', '0');
+        div.innerHTML = `
+            <div class="shift-badge-circle">${nextNumber}</div>
+            <div class="shift-times">
+                <input type="time" class="shift-start" value="00:00" required>
+                <span style="color: #64748b;"><i class="ph-arrow-right"></i></span>
+                <input type="time" class="shift-end" value="00:00" required>
+            </div>
+            <button type="button" class="delete-shift-btn" onclick="removeShiftRow(this)" title="Hapus Shift">
+                <i class="ph-trash-bold"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    }
+
+    function removeShiftRow(btn) {
+        const row = btn.closest('.shift-row');
+        row.remove();
+        // Recalculate numbers
+        document.querySelectorAll('.shift-badge-circle').forEach((badge, i) => {
+            badge.innerText = i + 1;
+        });
+    }
+
+    function closeShiftSettingsModal() {
+        document.getElementById('shiftSettingsModal').style.display = 'none';
+    }
+
+    function saveShiftSettings() {
+        const rows = document.querySelectorAll('.shift-row');
+        const payload = Array.from(rows).map((row, index) => {
+            return {
+                id: parseInt(row.getAttribute('data-id')),
+                shiftNumber: index + 1,
+                startTime: row.querySelector('.shift-start').value,
+                endTime: row.querySelector('.shift-end').value
+            };
+        });
+
+        // Use a new API or handle dynamic update (Delete others not in payload)
+        fetch('/api/dashboard/sync-shifts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                closeShiftSettingsModal();
+                // Correct function name from Index.cshtml
+                if (typeof refreshDashboard === 'function') {
+                    refreshDashboard();
+                } else {
+                    location.reload();
+                }
+            } else {
+                alert("Gagal menyimpan: " + res.message);
+            }
+        })
+        .catch(err => alert("Terjadi kesalahan sistem!"));
+    }
+
+    // Close on overlay click
+    window.addEventListener('click', function(e) {
+        if (e.target.id === 'shiftSettingsModal') closeShiftSettingsModal();
+    });
+
+    // Precise Shift Transition Trigger
+    (function() {
+        // Clear any existing transition timeout early to be safe
+        if (window.shiftTransitionTimeout) {
+            clearTimeout(window.shiftTransitionTimeout);
+            window.shiftTransitionTimeout = null;
+        }
+
+        const nextChangeStr = "@(Model.NextShiftChangeTime?.ToString("yyyy-MM-ddTHH:mm:ss"))";
+        if (nextChangeStr) {
+            const nextChange = new Date(nextChangeStr);
+            const now = new Date();
+            const msToWait = nextChange - now;
+            
+            // If the time is very close (or just passed), trigger a reload soon
+            if (msToWait > -5000 && msToWait < 86400000) { 
+                const waitTime = Math.max(1000, msToWait + 2000); // Wait at least 1s, add 2s buffer
+                console.log("Scheduling precise shift refresh in " + Math.round(waitTime/1000) + "s at " + nextChangeStr);
+                
+                window.shiftTransitionTimeout = setTimeout(function() {
+                    console.log("PRECISE SHIFT TRANSITION: Re-loading dashboard now!");
+                    if (typeof refreshDashboard === 'function') refreshDashboard();
+                }, waitTime);
+            }
+        }
+    })();
 </script>

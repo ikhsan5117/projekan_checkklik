@@ -110,20 +110,7 @@ body {
     }
 }
 
-/* Luxury Grain Noise */
-body::after {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-    opacity: 0.04;
-    z-index: 9999;
-    pointer-events: none;
-    mix-blend-mode: overlay;
-}
+/* Luxury Grain Noise removed due to 402 error */
 
 .app-shell {
     display: flex;
@@ -242,7 +229,8 @@ body::after {
     align-items: center;
     gap: 0.75rem;
     color: #fff;
-    white-space: normal; /* Allow wrapping for long titles */
+    white-space: normal;
+    /* Allow wrapping for long titles */
     overflow: visible;
 }
 

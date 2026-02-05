@@ -17,6 +17,7 @@ namespace AMRVI.Data
         public DbSet<InspectionSession> InspectionSessions { get; set; }
         public DbSet<InspectionResult> InspectionResults { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<ShiftSetting> ShiftSettings { get; set; }
 
         // ================== BTR PLANT ==================
         public DbSet<Machine_BTR> Machines_BTR { get; set; }
@@ -99,6 +100,23 @@ namespace AMRVI.Data
             SeedData_HOSE(modelBuilder);
             SeedData_MOLDED(modelBuilder);
             SeedData_MIXING(modelBuilder);
+            SeedShiftSettings(modelBuilder);
+        }
+
+        private void SeedShiftSettings(ModelBuilder modelBuilder)
+        {
+            var plants = new[] { "RVI", "BTR", "HOSE", "MOLDED", "MIXING" };
+            int idCounter = 1;
+            
+            foreach (var plant in plants)
+            {
+                // Shift 1: 05:00 - 14:00 (8 jam kerja + 1 jam istirahat)
+                modelBuilder.Entity<ShiftSetting>().HasData(
+                    new ShiftSetting { Id = idCounter++, Plant = plant, ShiftNumber = 1, StartTime = new TimeSpan(5, 0, 0), EndTime = new TimeSpan(14, 0, 0) },
+                    new ShiftSetting { Id = idCounter++, Plant = plant, ShiftNumber = 2, StartTime = new TimeSpan(14, 0, 0), EndTime = new TimeSpan(22, 0, 0) },
+                    new ShiftSetting { Id = idCounter++, Plant = plant, ShiftNumber = 3, StartTime = new TimeSpan(22, 0, 0), EndTime = new TimeSpan(5, 0, 0) }
+                );
+            }
         }
 
         private void SeedData_BTR(ModelBuilder modelBuilder)

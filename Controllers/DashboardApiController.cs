@@ -4,6 +4,7 @@ using AMRVI.Data;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using AMRVI.Models;
 
 namespace AMRVI.Controllers
 {
@@ -204,5 +205,122 @@ namespace AMRVI.Controllers
                 recentInspections = recentInspections
             });
         }
+        // GET: api/dashboard/shift-settings
+        [HttpGet("shift-settings")]
+        public async Task<IActionResult> GetShiftSettings()
+        {
+            var plant = _plantService.GetPlantName();
+            var settings = await _context.ShiftSettings
+                .Where(s => s.Plant == plant)
+                .OrderBy(s => s.ShiftNumber)
+                .Select(s => new {
+                    s.Id,
+                    s.ShiftNumber,
+                    startTime = s.StartTime.ToString(@"hh\:mm"),
+                    endTime = s.EndTime.ToString(@"hh\:mm")
+                })
+                .ToListAsync();
+
+            return Ok(new { success = true, data = settings });
+        }
+
+        // POST: api/dashboard/update-shift
+        [HttpPost("update-shift")]
+        public async Task<IActionResult> UpdateShiftSettings([FromBody] List<ShiftUpdateModel> models)
+        {
+            if (models == null || !models.Any()) return BadRequest("No data provided");
+
+            var plant = _plantService.GetPlantName();
+            
+            foreach (var model in models)
+            {
+                var setting = await _context.ShiftSettings.FirstOrDefaultAsync(s => s.Id == model.Id && s.Plant == plant);
+                if (setting != null)
+                {
+                    if (TimeSpan.TryParse(model.StartTime, out var start) && TimeSpan.TryParse(model.EndTime, out var end))
+                    {
+                        setting.StartTime = start;
+                        setting.EndTime = end;
+                        setting.UpdatedAt = DateTime.Now;
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "Pengaturan shift didefinisikan ulang!" });
+        }
+
+        [HttpPost("sync-shifts")]
+        public async Task<IActionResult> SyncShifts([FromBody] List<ShiftSyncModel> models)
+        {
+            if (models == null) return BadRequest("No data provided");
+
+            var plant = _plantService.GetPlantName();
+            
+            // Get existing shifts for this plant
+            var existingShifts = await _context.ShiftSettings.Where(s => s.Plant == plant).ToListAsync();
+            
+            // 1. Delete shifts that are no longer in the payload
+            var modelIds = models.Where(m => m.Id > 0).Select(m => m.Id).ToList();
+            var shiftsToDelete = existingShifts.Where(s => !modelIds.Contains(s.Id)).ToList();
+            if (shiftsToDelete.Any())
+            {
+                _context.ShiftSettings.RemoveRange(shiftsToDelete);
+            }
+
+            // 2. Update existing or Add new shifts
+            foreach (var model in models)
+            {
+                if (model.Id > 0)
+                {
+                    // Update
+                    var setting = existingShifts.FirstOrDefault(s => s.Id == model.Id);
+                    if (setting != null)
+                    {
+                        if (TimeSpan.TryParse(model.StartTime, out var start) && TimeSpan.TryParse(model.EndTime, out var end))
+                        {
+                            setting.ShiftNumber = model.ShiftNumber;
+                            setting.StartTime = start;
+                            setting.EndTime = end;
+                            setting.UpdatedAt = DateTime.Now;
+                        }
+                    }
+                }
+                else
+                {
+                    // Add New
+                    if (TimeSpan.TryParse(model.StartTime, out var start) && TimeSpan.TryParse(model.EndTime, out var end))
+                    {
+                        var newSetting = new ShiftSetting
+                        {
+                            Plant = plant,
+                            ShiftNumber = model.ShiftNumber,
+                            StartTime = start,
+                            EndTime = end,
+                            UpdatedAt = DateTime.Now
+                        };
+                        _context.ShiftSettings.Add(newSetting);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "Shift berhasil disinkronisasi!" });
+        }
+    }
+
+    public class ShiftUpdateModel
+    {
+        public int Id { get; set; }
+        public string StartTime { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
+    }
+
+    public class ShiftSyncModel
+    {
+        public int Id { get; set; }
+        public int ShiftNumber { get; set; }
+        public string StartTime { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
     }
 }

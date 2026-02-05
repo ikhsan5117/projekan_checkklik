@@ -28,6 +28,7 @@ public class HomeController : Controller
     }
 
     [HttpGet]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult DashboardPartial()
     {
         var viewModel = GetDashboardViewModel();
@@ -101,16 +102,70 @@ public class HomeController : Controller
         var now = DateTime.Now;
         var today = DateTime.Today;
 
-        // Shift Calculation Logic
-        // Shift 1: 05:00 - 20:00 (assuming 8 PM for '8.00')
-        // Shift 2: 20:00 - 05:00 (Next Day)
-        int currentShift = 1;
-        DateTime shiftStartTime = today.AddHours(5);
+        // Fetch Shift Settings for Current Plant
+        var plant = _plantService.GetPlantName()?.ToUpper();
+        var shiftSettings = _context.ShiftSettings
+            .Where(s => s.Plant.ToUpper() == plant)
+            .OrderBy(s => s.ShiftNumber)
+            .ToList();
 
-        if (now.Hour >= 20 || now.Hour < 5)
+        // Fallback to default if not found
+        if (!shiftSettings.Any())
         {
-            currentShift = 2;
-            shiftStartTime = now.Hour >= 20 ? today.AddHours(20) : today.AddDays(-1).AddHours(20);
+            shiftSettings = new List<ShiftSetting>
+            {
+                new ShiftSetting { ShiftNumber = 1, StartTime = new TimeSpan(5, 0, 0), EndTime = new TimeSpan(14, 0, 0) },
+                new ShiftSetting { ShiftNumber = 2, StartTime = new TimeSpan(14, 0, 0), EndTime = new TimeSpan(22, 0, 0) },
+                new ShiftSetting { ShiftNumber = 3, StartTime = new TimeSpan(22, 0, 0), EndTime = new TimeSpan(5, 0, 0) }
+            };
+        }
+
+        int currentShift = 1;
+        DateTime shiftStartTime = today;
+
+        // Determine Current Shift based on TimeRange
+        var timeNow = now.TimeOfDay;
+        var activeSetting = shiftSettings.FirstOrDefault(s => 
+            (s.StartTime < s.EndTime && timeNow >= s.StartTime && timeNow < s.EndTime) ||
+            (s.StartTime > s.EndTime && (timeNow >= s.StartTime || timeNow < s.EndTime))
+        );
+
+        if (activeSetting != null)
+        {
+            currentShift = activeSetting.ShiftNumber;
+            // Calculate shiftStartTime (handle midnight crossing)
+            if (activeSetting.StartTime > activeSetting.EndTime && timeNow < activeSetting.EndTime)
+            {
+                shiftStartTime = today.AddDays(-1).Add(activeSetting.StartTime);
+            }
+            else
+            {
+                shiftStartTime = today.Add(activeSetting.StartTime);
+            }
+        }
+        else 
+        {
+            // Default behavior if something is wrong
+            currentShift = 1;
+            shiftStartTime = today.AddHours(5);
+        }
+
+        // Calculate Next Shift Change Time
+        DateTime? nextShiftChange = null;
+        if (activeSetting != null)
+        {
+            if (activeSetting.StartTime < activeSetting.EndTime)
+            {
+                nextShiftChange = today.Add(activeSetting.EndTime);
+            }
+            else
+            {
+                // wraps midnight
+                if (timeNow >= activeSetting.StartTime)
+                    nextShiftChange = today.AddDays(1).Add(activeSetting.EndTime);
+                else
+                    nextShiftChange = today.Add(activeSetting.EndTime);
+            }
         }
 
         // Fetch Stats using PlantService
@@ -256,7 +311,8 @@ public class HomeController : Controller
             NotUpdatedMachinesCount = notUpdatedMachinesCount,
             NgTrendDaily = ngTrendDaily,
             NgDetailRecords = ngDetailRecords,
-            CurrentShift = currentShift
+            CurrentShift = currentShift,
+            NextShiftChangeTime = nextShiftChange
         };
     }
 

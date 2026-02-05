@@ -17,13 +17,15 @@
         console.log("Refreshing dashboard via Partial Update...");
         $("#dashboardContainer").css("opacity", "0.5"); // Visual feedback
         
-        $("#dashboardContainer").load("/Home/DashboardPartial", function(response, status, xhr) {
+        const url = "/Home/DashboardPartial?t=" + new Date().getTime();
+        $("#dashboardContainer").load(url, function(response, status, xhr) {
             $("#dashboardContainer").css("opacity", "1");
             if (status == "error") {
                 console.error("Error reloading dashboard: " + xhr.status + " " + xhr.statusText);
             } else {
-                console.log("Dashboard refreshed successfully!");
+                console.log("Dashboard refreshed successfully! [" + new Date().toLocaleTimeString() + "]");
             }
         });
     }
+
 </script>

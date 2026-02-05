@@ -46,6 +46,7 @@ namespace AMRVI.ViewModels
 
         // NEW: Shift Info
         public int CurrentShift { get; set; }
+        public DateTime? NextShiftChangeTime { get; set; }
     }
 
     public class MachineStatus 
