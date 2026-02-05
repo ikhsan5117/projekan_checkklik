@@ -240,11 +240,10 @@ body::after {
 .logo-wrapper {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     color: #fff;
-    white-space: nowrap;
-    /* Prevents wrapping */
-    overflow: hidden;
+    white-space: normal; /* Allow wrapping for long titles */
+    overflow: visible;
 }
 
 .sidebar.collapsed .logo-wrapper {
@@ -252,9 +251,10 @@ body::after {
 }
 
 .sidebar-logo-text {
-    font-size: 1.6rem;
-    font-weight: 900;
-    letter-spacing: -1.2px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
     background: linear-gradient(135deg, #fff 0%, #fff 30%, var(--primary) 70%, var(--secondary) 100%);
     -webkit-background-clip: text;
     background-clip: text;

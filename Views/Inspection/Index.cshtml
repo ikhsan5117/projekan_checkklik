@@ -1,7 +1,7 @@
 @model AMRVI.ViewModels.InspectionViewModel
 
 @{
-    ViewData["Title"] = "AM " + (User.FindFirst("Plant")?.Value ?? "RVI") + " Inspection";
+    ViewData["Title"] = "Daily Machine Checklist " + (User.FindFirst("Plant")?.Value ?? "RVI") + " Inspection";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -10,7 +10,7 @@
     <div class="d-flex flex-column align-items-center mb-4">
         <h1 class="h-label m-0" style="font-size: 1.5rem; letter-spacing: 2px; text-align: center; color: #fff; font-weight: 800; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);">
             <span style="background: linear-gradient(90deg, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                AM @(User.FindFirst("Plant")?.Value ?? "RVI")
+                Daily Machine Checklist @(User.FindFirst("Plant")?.Value ?? "RVI")
             </span>
         </h1>
         <div id="inspectionDate" class="text-secondary small" style="text-align: center; color: rgba(255, 255, 255, 0.7);">@DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</div>
