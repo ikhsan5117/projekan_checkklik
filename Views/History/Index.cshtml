@@ -94,6 +94,7 @@
                             <th class="th-style">INSPECTOR</th>
                             <th class="th-style">DATE</th>
                             <th class="th-style">STATUS</th>
+                            <th class="th-style">SHIFT</th>
                             <th class="th-style">ITEMS</th>
                             <th class="th-style" style="text-align: right;">ACTIONS</th>
                         </tr>
@@ -127,6 +128,9 @@
                                             <i class="ph-clock-fill"></i> In Progress
                                         </span>
                                     }
+                                </td>
+                                <td class="td-style" style="color: #e5e7eb; font-weight: 600;">
+                                    @(session.ShiftNumber.HasValue ? $"Shift {session.ShiftNumber}" : "-")
                                 </td>
                                 <td class="td-style" style="color: #94a3b8;">
                                     <span style="background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">

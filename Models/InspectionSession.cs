@@ -24,6 +24,13 @@ namespace AMRVI.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        /// <summary>
+        /// Calculated shift number for this inspection (1/2/3, etc.).
+        /// Not mapped to the database – set in controller/service logic when needed.
+        /// </summary>
+        [NotMapped]
+        public int? ShiftNumber { get; set; }
+
         // Navigation Properties
         [ForeignKey("MachineNumberId")]
         public virtual MachineNumber MachineNumber { get; set; } = null!;

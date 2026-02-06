@@ -3,6 +3,10 @@
 ##
 ## This list is a summary of Microsoft's own [Visual Studio gitignore](https://github.com/github/gitignore/blob/main/VisualStudio.gitignore)
 
+# Publish output (untuk deploy IIS)
+publish/
+Daily_Checklist_Machine/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

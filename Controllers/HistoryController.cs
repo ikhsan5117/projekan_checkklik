@@ -94,6 +94,40 @@ namespace AMRVI.Controllers
                     break;
             }
 
+            // Enrich sessions with calculated ShiftNumber based on inspection time and plant shift settings
+            if (sessions.Any())
+            {
+                var upperPlant = plant?.ToUpper();
+                var shiftSettings = _context.ShiftSettings
+                    .Where(s => s.Plant.ToUpper() == upperPlant)
+                    .OrderBy(s => s.ShiftNumber)
+                    .ToList();
+
+                // Fallback default shifts (same as in HomeController) when no settings defined yet
+                if (!shiftSettings.Any())
+                {
+                    shiftSettings = new List<ShiftSetting>
+                    {
+                        new ShiftSetting { ShiftNumber = 1, StartTime = new TimeSpan(5, 0, 0), EndTime = new TimeSpan(14, 0, 0) },
+                        new ShiftSetting { ShiftNumber = 2, StartTime = new TimeSpan(14, 0, 0), EndTime = new TimeSpan(22, 0, 0) },
+                        new ShiftSetting { ShiftNumber = 3, StartTime = new TimeSpan(22, 0, 0), EndTime = new TimeSpan(5, 0, 0) }
+                    };
+                }
+
+                foreach (var s in sessions)
+                {
+                    var time = s.InspectionDate.TimeOfDay;
+
+                    // Same logic as dashboard: handle normal and midnight-crossing shifts
+                    var activeSetting = shiftSettings.FirstOrDefault(sh =>
+                        (sh.StartTime < sh.EndTime && time >= sh.StartTime && time < sh.EndTime) ||
+                        (sh.StartTime > sh.EndTime && (time >= sh.StartTime || time < sh.EndTime))
+                    );
+
+                    s.ShiftNumber = activeSetting?.ShiftNumber;
+                }
+            }
+
             return View(sessions);
         }
 
@@ -225,9 +259,9 @@ namespace AMRVI.Controllers
             {
                 var sheet = package.Workbook.Worksheets.Add("History");
                 
-                using (var range = sheet.Cells["A1:I1"])
+                using (var range = sheet.Cells["A1:J1"])
                 {
-                    var headers = new[] { "ID", "Machine", "No.", "Inspector", "Date", "Status", "OK", "NG", "Total" };
+                    var headers = new[] { "ID", "Machine", "No.", "Inspector", "Date", "Status", "Shift", "OK", "NG", "Total" };
                     for (int h = 0; h < headers.Length; h++) sheet.Cells[1, h + 1].Value = headers[h];
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -247,14 +281,15 @@ namespace AMRVI.Controllers
                     sheet.Cells[i + 2, 4].Value = s.InspectorName;
                     sheet.Cells[i + 2, 5].Value = s.InspectionDate.ToString("yyyy-MM-dd HH:mm");
                     sheet.Cells[i + 2, 6].Value = s.IsCompleted ? "Completed" : "In Progress";
-                    sheet.Cells[i + 2, 7].Value = ok;
-                    sheet.Cells[i + 2, 8].Value = ng;
-                    sheet.Cells[i + 2, 9].Value = ok + ng;
+                    sheet.Cells[i + 2, 7].Value = s.ShiftNumber.HasValue ? s.ShiftNumber.Value.ToString() : "";
+                    sheet.Cells[i + 2, 8].Value = ok;
+                    sheet.Cells[i + 2, 9].Value = ng;
+                    sheet.Cells[i + 2, 10].Value = ok + ng;
 
                     if (ng > 0)
                     {
-                        sheet.Cells[i + 2, 8].Style.Font.Color.SetColor(Color.Red);
-                        sheet.Cells[i + 2, 8].Style.Font.Bold = true;
+                        sheet.Cells[i + 2, 9].Style.Font.Color.SetColor(Color.Red);
+                        sheet.Cells[i + 2, 9].Style.Font.Bold = true;
                     }
                 }
 
