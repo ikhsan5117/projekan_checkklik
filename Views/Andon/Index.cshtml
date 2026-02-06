@@ -1,0 +1,799 @@
+@{
+    ViewData["Title"] = "Andon Control System";
+}
+
+<!-- SignalR Client Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+
+<div class="andon-v2-container">
+    <!-- Header -->
+    <div class="andon-header-v2">
+        <div class="header-left">
+            <div class="filter-box">
+                <span class="filter-label">PLANT: @ViewBag.CurrentPlant</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <h1 id="headerTitle">ANDON CONTROL SYSTEM @ViewBag.CurrentPlant</h1>
+        </div>
+        <div class="header-right">
+            <div class="sync-status" style="margin-right: 20px;">
+                <i class="ph-calendar" style="color: #00d9ff;"></i>
+                <span id="todayDate">TODAY: Loading...</span>
+            </div>
+            <div class="sync-status" id="liveIndicator">
+                <div class="dot"></div>
+                <span id="signalrStatus">CONNECTING...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-body">
+        <!-- Sidebar Stats -->
+        <div class="stats-sidebar">
+            <h2 class="section-title">MACHINE STATUS</h2>
+            <div class="stats-grid">
+                <div class="stat-box blue">
+                    <span class="label">NO LOADING</span>
+                    <span class="value" id="countNoLoading">0</span>
+                </div>
+                <div class="stat-box green">
+                    <span class="label">M/C RUNNING</span>
+                    <span class="value" id="countRunning">0</span>
+                </div>
+                <div class="stat-box orange">
+                    <span class="label">NO RUNNING (NO MP)</span>
+                    <span class="value" id="countNoRunning">0</span>
+                </div>
+                <div class="stat-box red">
+                    <span class="label">LINE STOP</span>
+                    <span class="value" id="countStop">0</span>
+                </div>
+            </div>
+
+            <h2 class="section-title">4M STATUS</h2>
+            <div class="stats-grid">
+                <div class="stat-box purple">
+                    <span class="label">METHODE</span>
+                    <span class="value" id="countMethode">0</span>
+                </div>
+                <div class="stat-box cyan">
+                    <span class="label">MAN</span>
+                    <span class="value" id="countMan">0</span>
+                </div>
+                <div class="stat-box yellow">
+                    <span class="label">MATERIAL</span>
+                    <span class="value" id="countMaterial">0</span>
+                </div>
+                <div class="stat-box pink">
+                    <span class="label">MACHINE</span>
+                    <span class="value" id="countMachineCat">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Table Content -->
+        <div class="table-container-v2">
+            <table class="andon-table" id="andonTable">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">NO.</th>
+                        <th>PLANT</th>
+                        <th>MACHINE</th>
+                        <th class="sortable" id="statusHeader" style="cursor: pointer;">
+                            STATUS <i class="ph-arrows-down-up sort-icon"></i>
+                        </th>
+                        <th class="sortable" id="kategoriHeader" style="cursor: pointer;">
+                            4M <i class="ph-arrows-down-up sort-icon"></i>
+                        </th>
+                        <th>REMARK</th>
+                        <th style="width: 120px;">LOG</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be injected here -->
+                </tbody>
+            </table>
+            
+            <div class="table-footer">
+                <div class="rows-info" id="rowsInfo">1 - 0 / 0</div>
+                <div class="pagination-btns">
+                    <i class="ph-caret-left"></i>
+                    <i class="ph-caret-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --bg-black: #000000;
+        --border-gray: #333333;
+        --text-white: #ffffff;
+        --box-blue: #3b82f6;
+        --box-green: #22c55e;
+        --box-orange: #f97316;
+        --box-red: #ef4444;
+        --box-purple: #a855f7;
+        --box-cyan: #06b6d4;
+        --box-yellow: #eab308;
+        --box-pink: #ec4899;
+    }
+
+    /* Custom Scrollbar - Chrome, Edge, Safari */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #0a0a0a;
+        border-radius: 5px;
+        border: 1px solid #1a1a1a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #00d9ff 0%, #0099cc 100%);
+        border-radius: 5px;
+        border: 2px solid #0a0a0a;
+        transition: all 0.3s ease;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #00ff88 0%, #00cc66 100%);
+        box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+
+    ::-webkit-scrollbar-corner {
+        background: #0a0a0a;
+    }
+
+    /* Firefox Scrollbar */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #00d9ff #0a0a0a;
+    }
+
+    .andon-v2-container {
+        background-color: var(--bg-black);
+        color: var(--text-white);
+        min-height: 100vh;
+        padding: 20px;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Header */
+    .andon-header-v2 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid var(--box-blue);
+        padding-bottom: 10px;
+        margin-bottom: 25px;
+    }
+
+    .filter-box {
+        border: 1px solid var(--box-blue);
+        padding: 8px 15px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.8rem;
+        color: var(--box-blue);
+    }
+
+    .andon-header-v2 h1 {
+        font-size: 2.2rem;
+        font-weight: 500;
+        margin: 0;
+        letter-spacing: 1px;
+    }
+
+    .sync-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        color: #888;
+        text-transform: uppercase;
+    }
+
+    .sync-status.pulse .dot {
+        animation: pulse 1s ease-in-out;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.5); opacity: 0.7; box-shadow: 0 0 15px rgba(0, 255, 136, 0.8); }
+    }
+
+    /* SignalR Status States */
+    .sync-status.connected #signalrStatus {
+        color: #00ff88;
+    }
+
+    .sync-status.connected .dot {
+        background-color: #00ff88;
+        box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+    }
+
+    .sync-status.connecting #signalrStatus {
+        color: #fbbf24;
+    }
+
+    .sync-status.connecting .dot {
+        background-color: #fbbf24;
+        animation: blink 1.5s infinite;
+    }
+
+    .sync-status.disconnected #signalrStatus {
+        color: #ef4444;
+    }
+
+    .sync-status.disconnected .dot {
+        background-color: #ef4444;
+    }
+
+    @@keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+    
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #888; /* Default color for the dot */
+    }
+
+    /* Layout */
+    .dashboard-body {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 30px;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        margin: 0 0 15px 0;
+        letter-spacing: 1px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 35px;
+    }
+
+    /* Stat Box */
+    .stat-box {
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100px;
+        justify-content: center;
+    }
+
+    .stat-box .label {
+        font-size: 0.75rem;
+        margin-bottom: 0px;
+        text-align: center;
+    }
+
+    .stat-box .value {
+        font-size: 2.5rem;
+        font-weight: 400;
+    }
+
+    .stat-box.blue { border-color: var(--box-blue); color: var(--box-blue); }
+    .stat-box.green { border-color: var(--box-green); color: var(--box-green); }
+    .stat-box.orange { border-color: var(--box-orange); color: var(--box-orange); }
+    .stat-box.red { border-color: var(--box-red); color: var(--box-red); }
+    .stat-box.purple { border-color: var(--box-purple); color: var(--box-purple); }
+    .stat-box.cyan { border-color: var(--box-cyan); color: var(--box-cyan); }
+    .stat-box.yellow { border-color: var(--box-yellow); color: var(--box-yellow); }
+    .stat-box.pink { border-color: var(--box-pink); color: var(--box-pink); }
+
+    /* Table */
+    .table-container-v2 {
+        background: #0a0a0a;
+        border: 1px solid #222;
+        border-radius: 4px;
+        overflow: hidden;
+        max-height: 750px;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .andon-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .andon-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #0a0a0a;
+    }
+
+    .andon-table th {
+        color: var(--box-blue);
+        text-align: left;
+        padding: 12px 15px;
+        border-bottom: 1px solid #333;
+        font-weight: 500;
+        text-transform: uppercase;
+        background: #0a0a0a;
+        position: sticky;
+        top: 0;
+    }
+
+    .andon-table th.sortable {
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .andon-table th.sortable:hover {
+        background: #1a1a1a;
+        color: #00ff88;
+    }
+
+    .andon-table th.sortable .sort-icon {
+        opacity: 0.4;
+        transition: opacity 0.2s, color 0.2s;
+    }
+
+    .andon-table th.sortable.sorted {
+        color: #00ff88;
+    }
+
+    .andon-table th.sortable.sorted .sort-icon {
+        opacity: 1;
+        color: #00ff88;
+    }
+
+    .andon-table td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #1a1a1a;
+        border-right: 1px solid #2a2a2a;
+    }
+
+    /* Remove padding for cells with badges so badge fills entire cell */
+    .andon-table td.badge-cell {
+        padding: 0;
+    }
+
+    .andon-table td:last-child {
+        border-right: none;
+    }
+
+    .andon-table th {
+        border-right: 1px solid #2a2a2a;
+    }
+
+    .andon-table th:last-child {
+        border-right: none;
+    }
+
+    /* Row-level coloring for LINE STOP only */
+    .row-line-stop {
+        background-color: #ef4444 !important;
+        color: white !important;
+        animation: rowPulse 2s infinite;
+    }
+
+    @@keyframes rowPulse {
+        0% { background-color: #ef4444; }
+        50% { background-color: #ff5f5f; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+        100% { background-color: #ef4444; }
+    }
+
+    /* Status Badge - hanya di kolom status */
+    .status-badge {
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-weight: 700;
+        display: block;
+        width: 100%;
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        box-sizing: border-box;
+    }
+
+    .badge-running { 
+        background-color: #22c55e; 
+        color: white; 
+    }
+    
+    .badge-line-stop { 
+        background-color: transparent; 
+        color: white;
+    }
+    
+    .badge-no-loading { 
+        background-color: #3b82f6; 
+        color: white; 
+    }
+    
+    .badge-no-running { 
+        background-color: #f97316; 
+        color: white; 
+    }
+
+    /* 4M Badge - untuk kolom kategori */
+    .badge-4m {
+        padding: 6px 10px;
+        border-radius: 3px;
+        font-weight: 600;
+        display: block;
+        width: 100%;
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        box-sizing: border-box;
+    }
+
+    .badge-methode {
+        background-color: #a855f7;
+        color: white;
+    }
+
+    .badge-man {
+        background-color: #06b6d4;
+        color: white;
+    }
+
+    .badge-material {
+        background-color: #eab308;
+        color: black;
+    }
+
+    .badge-machine-cat {
+        background-color: #ec4899;
+        color: white;
+    }
+
+    /* Hover effect */
+    .andon-table tbody tr:hover {
+        filter: brightness(1.2);
+        cursor: pointer;
+    }
+
+    .table-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 15px;
+        gap: 20px;
+        border-top: 1px solid #222;
+    }
+
+    .rows-info { font-size: 0.8rem; color: #888; }
+    .pagination-btns { display: flex; gap: 20px; color: #888; }
+
+    /* Update stat value boldness */
+    .stat-box .value {
+        font-weight: 700;
+        text-shadow: 0 0 15px rgba(255,255,255,0.1);
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 1200px) {
+        .dashboard-body { grid-template-columns: 1fr; }
+        .stats-sidebar { order: 2; }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        let allData = []; // Store all data globally
+        let selectedPlant = '@ViewBag.CurrentPlant'; // Get plant from server session
+        let isSortedByPriority = false; // Track sorting state for STATUS
+        let isSortedBy4M = false; // Track sorting state for 4M
+
+        async function fetchAndonData() {
+            try {
+                const response = await fetch('@Url.Action("GetData", "Andon")');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const jsonData = await response.json();
+                parseAndRender(jsonData);
+            } catch (error) {
+                console.error("Error fetching Andon data:", error);
+            }
+        }
+
+        function parseAndRender(data) {
+            console.log("Received data:", data);
+            
+            if (!Array.isArray(data) || data.length === 0) {
+                console.warn("No data available");
+                allData = [];
+                updateTodayDate();
+                applyPlantFilter();
+                return;
+            }
+
+            // Map JSON response to expected format
+            allData = data.map(record => ({
+                plant: record.plantCode || "-",
+                machine: record.machineCode || "-",
+                kategori: record.fourMName || "-",
+                remark: record.remark || "-",
+                status: (record.statusName || "-").toUpperCase(),
+                alarm: record.fourMName || "-", // Using 4M as alarm
+                timestamp: record.recordedAt ? new Date(record.recordedAt).toLocaleString('id-ID') : "-"
+            }));
+
+            updateTodayDate();
+            applyPlantFilter();
+        }
+
+        function updateTodayDate() {
+            const now = new Date();
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            const dateStr = now.toLocaleDateString('id-ID', options).toUpperCase();
+            document.getElementById('todayDate').textContent = `TODAY: ${dateStr}`;
+        }
+
+        function getStatusPriority(status) {
+            // Lower number = higher priority (shows first)
+            if (status.includes("LINE STOP")) return 1;
+            if (status.includes("NO LOADING")) return 2;
+            if (status.includes("NO RUNNING")) return 3;
+            if (status.includes("RUNNING")) return 4;
+            return 5; // Unknown status
+        }
+
+        function get4MPriority(kategori) {
+            // Lower number = higher priority (problem categories first)
+            const kat = kategori.toUpperCase();
+            if (kat.includes("MACHINE") || kat.includes("MESIN")) return 1;
+            if (kat.includes("MATERIAL")) return 2;
+            if (kat.includes("MAN")) return 3;
+            if (kat.includes("METHODE") || kat.includes("METODE")) return 4;
+            return 5; // NO PROBLEM or others
+        }
+
+        function sortDataByPriority(data) {
+            return [...data].sort((a, b) => {
+                const priorityA = getStatusPriority(a.status);
+                const priorityB = getStatusPriority(b.status);
+                return priorityA - priorityB;
+            });
+        }
+
+        function sortDataBy4M(data) {
+            return [...data].sort((a, b) => {
+                const priorityA = get4MPriority(a.kategori);
+                const priorityB = get4MPriority(b.kategori);
+                return priorityA - priorityB;
+            });
+        }
+
+        function applyPlantFilter() {
+            // Filter data by current user's plant
+            let filteredData = allData.filter(d => d.plant === selectedPlant);
+
+            // Apply sorting if enabled
+            if (isSortedByPriority) {
+                filteredData = sortDataByPriority(filteredData);
+            } else if (isSortedBy4M) {
+                filteredData = sortDataBy4M(filteredData);
+            }
+
+            renderTable(filteredData);
+            updateStats(filteredData);
+            updateHeaderTitle();
+        }
+
+        function updateHeaderTitle() {
+            const title = document.getElementById('headerTitle');
+            title.textContent = `ANDON CONTROL SYSTEM ${selectedPlant}`;
+        }
+
+        // Status header click handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusHeader = document.getElementById('statusHeader');
+            const kategoriHeader = document.getElementById('kategoriHeader');
+            
+            statusHeader.addEventListener('click', function() {
+                isSortedByPriority = !isSortedByPriority;
+                isSortedBy4M = false; // Reset 4M sorting
+                
+                // Update visual indicator
+                if (isSortedByPriority) {
+                    this.classList.add('sorted');
+                    this.querySelector('.sort-icon').className = 'ph-sort-ascending sort-icon';
+                    kategoriHeader.classList.remove('sorted');
+                    kategoriHeader.querySelector('.sort-icon').className = 'ph-arrows-down-up sort-icon';
+                } else {
+                    this.classList.remove('sorted');
+                    this.querySelector('.sort-icon').className = 'ph-arrows-down-up sort-icon';
+                }
+                
+                applyPlantFilter();
+            });
+
+            kategoriHeader.addEventListener('click', function() {
+                isSortedBy4M = !isSortedBy4M;
+                isSortedByPriority = false; // Reset status sorting
+                
+                // Update visual indicator
+                if (isSortedBy4M) {
+                    this.classList.add('sorted');
+                    this.querySelector('.sort-icon').className = 'ph-sort-ascending sort-icon';
+                    statusHeader.classList.remove('sorted');
+                    statusHeader.querySelector('.sort-icon').className = 'ph-arrows-down-up sort-icon';
+                } else {
+                    this.classList.remove('sorted');
+                    this.querySelector('.sort-icon').className = 'ph-arrows-down-up sort-icon';
+                }
+                
+                applyPlantFilter();
+            });
+
+            // SignalR Connection Setup
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/notificationHub")
+                .withAutomaticReconnect()
+                .build();
+
+            // Listen for Andon data updates
+            connection.on("AndonDataUpdated", function(plant) {
+                console.log("Received Andon update for plant:", plant);
+                
+                // Refresh data if it's for our plant or ALL plants
+                if (plant === selectedPlant || plant === "ALL") {
+                    fetchAndonData();
+                    showLiveIndicator();
+                }
+            });
+
+            // Start SignalR connection
+            connection.start()
+                .then(() => {
+                    console.log("SignalR connected successfully");
+                    updateSignalRStatus('connected', 'LIVE SYNC');
+                })
+                .catch(err => {
+                    console.error("SignalR connection error:", err);
+                    updateSignalRStatus('disconnected', 'DISCONNECTED');
+                });
+
+            // Handle reconnection
+            connection.onreconnected(() => {
+                console.log("SignalR reconnected");
+                updateSignalRStatus('connected', 'LIVE SYNC');
+            });
+
+            connection.onreconnecting(() => {
+                console.log("SignalR reconnecting...");
+                updateSignalRStatus('connecting', 'RECONNECTING...');
+            });
+
+            connection.onclose(() => {
+                console.log("SignalR disconnected");
+                updateSignalRStatus('disconnected', 'DISCONNECTED');
+            });
+
+            // Initial data fetch
+            fetchAndonData();
+        });
+
+        function updateSignalRStatus(status, text) {
+            const indicator = document.getElementById('liveIndicator');
+            const statusText = document.getElementById('signalrStatus');
+            
+            // Remove all status classes
+            indicator.classList.remove('connected', 'connecting', 'disconnected');
+            
+            // Add new status class
+            indicator.classList.add(status);
+            
+            // Update text
+            statusText.textContent = text;
+        }
+
+        function showLiveIndicator() {
+            const indicator = document.getElementById('liveIndicator');
+            indicator.classList.add('pulse');
+            setTimeout(() => {
+                indicator.classList.remove('pulse');
+            }, 1000);
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            data.forEach((m, index) => {
+                let badgeClass = "";
+                let rowClass = "";
+                const status = m.status.replace(/\s+/g, ' ');
+
+                if (status.includes("LINE STOP")) {
+                    rowClass = "row-line-stop";
+                    badgeClass = "badge-line-stop";
+                } else if (status.includes("NO LOADING")) {
+                    badgeClass = "badge-no-loading";
+                } else if (status.includes("RUNNING") && !status.includes("NO RUNNING")) {
+                    badgeClass = "badge-running";
+                } else if (status.includes("NO RUNNING")) {
+                    badgeClass = "badge-no-running";
+                }
+
+                // 4M Badge Class
+                let badge4M = "";
+                const kategori = m.kategori.toUpperCase();
+                if (kategori.includes("METHODE") || kategori.includes("METODE")) {
+                    badge4M = "badge-methode";
+                } else if (kategori.includes("MAN")) {
+                    badge4M = "badge-man";
+                } else if (kategori.includes("MATERIAL")) {
+                    badge4M = "badge-material";
+                } else if (kategori.includes("MACHINE") || kategori.includes("MESIN")) {
+                    badge4M = "badge-machine-cat";
+                }
+
+                const tr = document.createElement('tr');
+                if (rowClass) tr.className = rowClass;
+                
+                // Format timestamp for display
+                let formattedTime = m.timestamp;
+                try {
+                    const date = new Date(m.timestamp);
+                    if (!isNaN(date.getTime())) {
+                        formattedTime = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    }
+                } catch (e) {
+                    // Keep original if parsing fails
+                }
+                
+                tr.innerHTML = `
+                    <td style="color: ${rowClass ? 'white' : '#888'};">${index + 1}.</td>
+                    <td>${m.plant}</td>
+                    <td style="font-weight: 600;">${m.machine}</td>
+                    <td class="badge-cell">
+                        <span class="status-badge ${badgeClass}">${m.status}</span>
+                    </td>
+                    <td class="${badge4M ? 'badge-cell' : ''}" style="${!badge4M ? `color: ${rowClass ? 'white' : '#bbb'};` : ''}">
+                        ${badge4M ? `<span class="badge-4m ${badge4M}">${m.kategori}</span>` : m.kategori}
+                    </td>
+                    <td style="color: ${rowClass ? 'white' : '#999'}; font-size: 0.85rem;">${m.remark}</td>
+                    <td style="color: ${rowClass ? 'white' : '#aaa'}; font-size: 0.85rem;">${formattedTime}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('rowsInfo').innerText = `1 - ${data.length} / ${data.length}`;
+        }
+
+        function updateStats(data) {
+            // Machine Status Counts
+            document.getElementById('countRunning').innerText = data.filter(d => d.status === 'RUNNING').length;
+            document.getElementById('countStop').innerText = data.filter(d => d.status === 'LINE STOP').length;
+            document.getElementById('countNoLoading').innerText = data.filter(d => d.status === 'NO LOADING').length;
+            document.getElementById('countNoRunning').innerText = data.filter(d => d.status === 'NO RUNNING (NO MP)').length;
+
+            // 4M Status Counts (Based on Category)
+            document.getElementById('countMethode').innerText = data.filter(d => d.kategori === 'METHODE' || d.kategori === 'METODE').length;
+            document.getElementById('countMan').innerText = data.filter(d => d.kategori === 'MAN').length;
+            document.getElementById('countMaterial').innerText = data.filter(d => d.kategori === 'MATERIAL').length;
+            document.getElementById('countMachineCat').innerText = data.filter(d => d.kategori === 'MACHINE' || d.kategori === 'MESIN').length;
+        }
+
+        // Auto Refresh every 30 seconds
+        setInterval(fetchAndonData, 30000);
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', fetchAndonData);
+    </script>
+}

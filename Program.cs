@@ -30,6 +30,12 @@ builder.Services.AddHttpContextAccessor();
 // Add PlantService
 builder.Services.AddScoped<AMRVI.Services.PlantService>();
 
+// Add HttpClient for internal API calls
+builder.Services.AddHttpClient();
+
+// Add Andon Monitor Background Service
+builder.Services.AddHostedService<AMRVI.Services.AndonMonitorService>();
+
 var app = builder.Build();
 
 // Auto-migrate database (commented out - run manually with: dotnet ef database update)

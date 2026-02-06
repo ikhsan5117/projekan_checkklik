@@ -1,0 +1,260 @@
+@{
+    ViewData["Title"] = "Input Menu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+
+        .input-menu-container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 2rem;
+        }
+
+        .menu-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .menu-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .menu-subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .menu-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: block;
+        }
+
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(167, 139, 250, 0.1));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .menu-card:hover::before {
+            opacity: 1;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(96, 165, 250, 0.4);
+            box-shadow: 
+                0 20px 60px rgba(96, 165, 250, 0.3),
+                0 0 0 1px rgba(96, 165, 250, 0.2);
+        }
+
+        .menu-card.scw-card:hover {
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 
+                0 20px 60px rgba(239, 68, 68, 0.3),
+                0 0 0 1px rgba(239, 68, 68, 0.2);
+        }
+
+        .menu-card.scw-card::before {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(251, 146, 60, 0.1));
+        }
+
+        .menu-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            transition: all 0.4s ease;
+        }
+
+        .menu-card.scw-card .menu-icon {
+            background: linear-gradient(135deg, #ef4444, #fb923c);
+        }
+
+        .menu-card:hover .menu-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .menu-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .menu-card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 0.75rem;
+        }
+
+        .menu-card-description {
+            color: #94a3b8;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .menu-card-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-card-features li {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .menu-card-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #60a5fa;
+            font-weight: 700;
+        }
+
+        .menu-card.scw-card .menu-card-features li::before {
+            color: #ef4444;
+        }
+
+        .menu-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(96, 165, 250, 0.2);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-card.scw-card .menu-badge {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        @@keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .menu-card:hover .menu-icon {
+            animation: float 2s ease-in-out infinite;
+        }
+    </style>
+}
+
+<div class="input-menu-container">
+    <div class="menu-header">
+        <h1 class="menu-title">Pilih Menu Input</h1>
+        <p class="menu-subtitle">Plant: @ViewBag.CurrentPlant</p>
+    </div>
+
+    <div class="menu-grid">
+        <!-- Checklist Mesin Card -->
+        <a href="@Url.Action("Index", "Inspection")" class="menu-card">
+            <span class="menu-badge">Routine</span>
+            <div class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                </svg>
+            </div>
+            <h2 class="menu-card-title">Checklist Mesin</h2>
+            <p class="menu-card-description">
+                Inspeksi harian mesin sesuai checklist standar untuk memastikan kondisi mesin optimal.
+            </p>
+            <ul class="menu-card-features">
+                <li>Checklist item standar</li>
+                <li>Upload foto bukti</li>
+                <li>Riwayat inspeksi</li>
+                <li>Laporan harian</li>
+            </ul>
+        </a>
+
+        <!-- SCW Card -->
+        <a href="@Url.Action("Index", "SCW")" class="menu-card scw-card">
+            <span class="menu-badge">Emergency</span>
+            <div class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                </svg>
+            </div>
+            <h2 class="menu-card-title">SCW</h2>
+            <p class="menu-card-description">
+                Stop Call Work - Laporkan masalah mesin secara real-time untuk penanganan cepat.
+            </p>
+            <ul class="menu-card-features">
+                <li>Laporan masalah cepat</li>
+                <li>Status mesin real-time</li>
+                <li>Kategori 4M</li>
+                <li>Notifikasi Andon</li>
+            </ul>
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add subtle animation on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.menu-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+        });
+    </script>
+}

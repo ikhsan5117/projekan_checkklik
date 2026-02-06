@@ -42,6 +42,10 @@
                     <i class="ph-clock-counter-clockwise"></i>
                     <span class="link-text">HISTORY</span>
                 </a>
+                <a href="@Url.Action("Index", "Andon")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" ? "active" : "")">
+                    <i class="ph-broadcast"></i>
+                    <span class="link-text">ANDON</span>
+                </a>
                 <div class="nav-divider"></div>
                 
                 <!-- System Management Dropdown -->

@@ -1,0 +1,329 @@
+@{
+    ViewData["Title"] = "SCW - Stop Call Work";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+
+        .scw-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .scw-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .scw-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .scw-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .scw-subtitle {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: #e2e8f0;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #f1f5f9;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            background: rgba(30, 41, 59, 0.9);
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @@keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+}
+
+<div class="scw-container">
+    <div class="scw-card">
+        <div class="scw-header">
+            <h1 class="scw-title">SCW</h1>
+            <p class="scw-subtitle">Stop Call Work - @ViewBag.CurrentPlant</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <form id="scwForm">
+            <div class="form-group">
+                <label class="form-label" for="machineSelect">Pilih Mesin</label>
+                <select class="form-select" id="machineSelect" required>
+                    <option value="">- Pilih Mesin -</option>
+                    @foreach (dynamic machine in ViewBag.Machines)
+                    {
+                        <option value="@machine.id">@machine.name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="machineNumberSelect">No Mesin</label>
+                <select class="form-select" id="machineNumberSelect" required disabled>
+                    <option value="">- Pilih No Mesin -</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="statusSelect">Status</label>
+                <select class="form-select" id="statusSelect" required>
+                    <option value="">- Pilih Status -</option>
+                    @foreach (var status in ViewBag.StatusTypes)
+                    {
+                        <option value="@status.StatusCode">@status.StatusName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="remarkInput">Rejection / Material Shortage</label>
+                <textarea class="form-control" id="remarkInput" placeholder="Masukkan keterangan masalah..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="fourMSelect">Jenis 4M</label>
+                <select class="form-select" id="fourMSelect" required>
+                    <option value="">- Pilih Jenis 4M -</option>
+                    @foreach (var fourM in ViewBag.FourMCategories)
+                    {
+                        <option value="@fourM.CategoryCode">@fourM.CategoryName</option>
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+                Submit
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const machineSelect = document.getElementById('machineSelect');
+        const machineNumberSelect = document.getElementById('machineNumberSelect');
+        const scwForm = document.getElementById('scwForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const alertContainer = document.getElementById('alertContainer');
+
+        // Load machine numbers when machine is selected
+        machineSelect.addEventListener('change', async function() {
+            const machineId = this.value;
+            machineNumberSelect.innerHTML = '<option value="">- Pilih No Mesin -</option>';
+            machineNumberSelect.disabled = true;
+
+            if (!machineId) return;
+
+            try {
+                const response = await fetch(`@Url.Action("GetMachineNumbers", "SCW")?machineId=${machineId}`);
+                if (!response.ok) throw new Error('Failed to fetch machine numbers');
+                
+                const machineNumbers = await response.json();
+                
+                machineNumbers.forEach(mn => {
+                    const option = document.createElement('option');
+                    option.value = mn.number;
+                    option.textContent = `No. ${mn.number} - ${mn.location}`;
+                    machineNumberSelect.appendChild(option);
+                });
+
+                machineNumberSelect.disabled = false;
+            } catch (error) {
+                console.error('Error loading machine numbers:', error);
+                showAlert('error', 'Gagal memuat nomor mesin');
+            }
+        });
+
+        // Handle form submission
+        scwForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const machineNumber = machineNumberSelect.value;
+            const statusCode = document.getElementById('statusSelect').value;
+            const remark = document.getElementById('remarkInput').value;
+            const fourMCode = document.getElementById('fourMSelect').value;
+
+            if (!machineNumber || !statusCode || !remark || !fourMCode) {
+                showAlert('error', 'Semua field harus diisi!');
+                return;
+            }
+
+            // Disable submit button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span>Submitting...';
+
+            try {
+                const response = await fetch('@Url.Action("Submit", "SCW")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        plantCode: '@ViewBag.CurrentPlant',
+                        machineCode: `Machine ${machineNumber}`,
+                        statusCode: statusCode,
+                        fourMCode: fourMCode,
+                        remark: remark
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showAlert('success', result.message);
+                    scwForm.reset();
+                    machineNumberSelect.disabled = true;
+                    machineNumberSelect.innerHTML = '<option value="">- Pilih No Mesin -</option>';
+                } else {
+                    showAlert('error', result.error || 'Gagal menyimpan data');
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                showAlert('error', 'Terjadi kesalahan saat menyimpan data');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit';
+            }
+        });
+
+        function showAlert(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+}

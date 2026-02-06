@@ -51,6 +51,13 @@ namespace AMRVI.Data
         public DbSet<InspectionResult_MIXING> InspectionResults_MIXING { get; set; }
         public DbSet<User_MIXING> Users_MIXING { get; set; }
 
+        // ================== ANDON SYSTEM ==================
+        public DbSet<Plant> Plants { get; set; }
+        public DbSet<AndonMachine> AndonMachines { get; set; }
+        public DbSet<StatusType> StatusTypes { get; set; }
+        public DbSet<FourMCategory> FourMCategories { get; set; }
+        public DbSet<AndonRecord> AndonRecords { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -101,6 +108,10 @@ namespace AMRVI.Data
             SeedData_MOLDED(modelBuilder);
             SeedData_MIXING(modelBuilder);
             SeedShiftSettings(modelBuilder);
+
+            // Configure and Seed Andon System
+            ConfigureAndon(modelBuilder);
+            SeedDataAndon(modelBuilder);
         }
 
         private void SeedShiftSettings(ModelBuilder modelBuilder)
@@ -228,6 +239,86 @@ namespace AMRVI.Data
                 new User { Id = 1, Username = "admin", FullName = "Administrator", Email = "admin@amrvi.com", Password = "admin123", Role = "Admin", Department = "IT", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
                 new User { Id = 2, Username = "supervisor", FullName = "Supervisor Production", Email = "supervisor@amrvi.com", Password = "super123", Role = "Supervisor", Department = "Production", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
                 new User { Id = 3, Username = "operator1", FullName = "Operator Mesin 1", Email = "operator1@amrvi.com", Password = "user123", Role = "User", Department = "Production", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) }
+            );
+        }
+
+        private void ConfigureAndon(ModelBuilder modelBuilder)
+        {
+            // Configure unique constraints
+            modelBuilder.Entity<Plant>()
+                .HasIndex(p => p.PlantCode)
+                .IsUnique();
+
+            modelBuilder.Entity<AndonMachine>()
+                .HasIndex(m => new { m.PlantId, m.MachineCode })
+                .IsUnique();
+
+            modelBuilder.Entity<StatusType>()
+                .HasIndex(s => s.StatusCode)
+                .IsUnique();
+
+            modelBuilder.Entity<FourMCategory>()
+                .HasIndex(f => f.CategoryCode)
+                .IsUnique();
+
+            // Configure indexes for performance
+            modelBuilder.Entity<AndonRecord>()
+                .HasIndex(a => a.PlantId);
+
+            modelBuilder.Entity<AndonRecord>()
+                .HasIndex(a => a.MachineId);
+
+            modelBuilder.Entity<AndonRecord>()
+                .HasIndex(a => a.RecordedAt);
+
+            // Configure delete behavior
+            modelBuilder.Entity<AndonRecord>()
+                .HasOne(a => a.Plant)
+                .WithMany(p => p.AndonRecords)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AndonRecord>()
+                .HasOne(a => a.AndonMachine)
+                .WithMany(m => m.AndonRecords)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AndonRecord>()
+                .HasOne(a => a.StatusType)
+                .WithMany(s => s.AndonRecords)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AndonRecord>()
+                .HasOne(a => a.FourMCategory)
+                .WithMany(f => f.AndonRecords)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+
+        private void SeedDataAndon(ModelBuilder modelBuilder)
+        {
+            // Seed Plants
+            modelBuilder.Entity<Plant>().HasData(
+                new Plant { Id = 1, PlantCode = "RVI", PlantName = "Rubber Vibration Isolator", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new Plant { Id = 2, PlantCode = "BTR", PlantName = "Bridgestone", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new Plant { Id = 3, PlantCode = "HOSE", PlantName = "HOSE Production", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new Plant { Id = 4, PlantCode = "MOLDED", PlantName = "MOLDED Production", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+                new Plant { Id = 5, PlantCode = "MIXING", PlantName = "MIXING Production", IsActive = true, CreatedAt = new DateTime(2025, 1, 1) }
+            );
+
+            // Seed StatusTypes
+            modelBuilder.Entity<StatusType>().HasData(
+                new StatusType { Id = 1, StatusCode = "LINE_STOP", StatusName = "LINE STOP", ColorCode = "#ef4444", Priority = 1 },
+                new StatusType { Id = 2, StatusCode = "NO_LOADING", StatusName = "NO LOADING", ColorCode = "#3b82f6", Priority = 2 },
+                new StatusType { Id = 3, StatusCode = "NO_RUNNING", StatusName = "NO RUNNING", ColorCode = "#f97316", Priority = 3 },
+                new StatusType { Id = 4, StatusCode = "RUNNING", StatusName = "RUNNING", ColorCode = "#10b981", Priority = 4 }
+            );
+
+            // Seed FourMCategories
+            modelBuilder.Entity<FourMCategory>().HasData(
+                new FourMCategory { Id = 1, CategoryCode = "MACHINE", CategoryName = "MACHINE", ColorCode = "#ec4899", Priority = 1 },
+                new FourMCategory { Id = 2, CategoryCode = "MATERIAL", CategoryName = "MATERIAL", ColorCode = "#eab308", Priority = 2 },
+                new FourMCategory { Id = 3, CategoryCode = "MAN", CategoryName = "MAN", ColorCode = "#22d3ee", Priority = 3 },
+                new FourMCategory { Id = 4, CategoryCode = "METHODE", CategoryName = "METHODE", ColorCode = "#a855f7", Priority = 4 },
+                new FourMCategory { Id = 5, CategoryCode = "NO_PROBLEM", CategoryName = "NO PROBLEM", ColorCode = "#6b7280", Priority = 5 }
             );
         }
     }
