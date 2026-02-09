@@ -53,7 +53,11 @@ namespace AMRVI.Controllers
                     query = query.Where(a => a.Plant.PlantCode == plant);
                 }
 
-                var records = await query
+                var allRecords = await query.ToListAsync();
+
+                var records = allRecords
+                    .GroupBy(a => a.MachineId)
+                    .Select(g => g.OrderByDescending(a => a.RecordedAt).First())
                     .OrderByDescending(a => a.RecordedAt)
                     .Select(a => new AndonRecordDto
                     {
@@ -68,7 +72,7 @@ namespace AMRVI.Controllers
                         RecordedAt = a.RecordedAt,
                         IsResolved = a.IsResolved
                     })
-                    .ToListAsync();
+                    .ToList();
 
                 return Ok(records);
             }
@@ -118,26 +122,42 @@ namespace AMRVI.Controllers
                 if (fourM == null)
                     return BadRequest(new { error = "4M Category not found" });
 
-                // Create Record
-                var record = new AndonRecord
-                {
-                    PlantId = plant.Id,
-                    MachineId = machine.Id,
-                    StatusId = status.Id,
-                    FourMCategoryId = fourM.Id,
-                    Remark = dto.Remark,
-                    CreatedBy = dto.CreatedBy,
-                    RecordedAt = DateTime.Now,
-                    IsResolved = false
-                };
+                // Check if there is an unresolved record for this machine
+                var existingRecord = await _context.AndonRecords
+                    .FirstOrDefaultAsync(r => r.MachineId == machine.Id && !r.IsResolved);
 
-                _context.AndonRecords.Add(record);
+                if (existingRecord != null)
+                {
+                    // Update existing record
+                    existingRecord.StatusId = status.Id;
+                    existingRecord.FourMCategoryId = fourM.Id;
+                    existingRecord.Remark = dto.Remark;
+                    existingRecord.RecordedAt = DateTime.Now;
+                    existingRecord.CreatedBy = dto.CreatedBy;
+                    existingRecord.UpdatedAt = DateTime.Now;
+                }
+                else
+                {
+                    // Create Record
+                    var record = new AndonRecord
+                    {
+                        PlantId = plant.Id,
+                        MachineId = machine.Id,
+                        StatusId = status.Id,
+                        FourMCategoryId = fourM.Id,
+                        Remark = dto.Remark,
+                        CreatedBy = dto.CreatedBy,
+                        RecordedAt = DateTime.Now,
+                        IsResolved = false
+                    };
+                    _context.AndonRecords.Add(record);
+                }
+
+                string finalPlantCode = plant.PlantCode;
                 await _context.SaveChangesAsync();
 
                 // Broadcast update via SignalR
-                await _hubContext.Clients.All.SendAsync("AndonDataUpdated", dto.PlantCode);
-
-                return Ok(new { id = record.Id, message = "Record created successfully" });
+                return Ok(new { success = true, message = "Record processed successfully" });
             }
             catch (Exception ex)
             {

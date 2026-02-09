@@ -1126,10 +1126,6 @@ body {
         display: none !important;
     }
 
-    .fullscreen-btn {
-        display: none !important;
-    }
-
     .nav-user-deck {
         padding-left: 0.5rem;
         gap: 0.5rem;

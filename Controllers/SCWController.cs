@@ -111,20 +111,37 @@ namespace AMRVI.Controllers
                 if (fourM == null)
                     return BadRequest(new { error = "4M Category not found" });
 
-                // Create Record
-                var record = new Models.AndonRecord
-                {
-                    PlantId = plant.Id,
-                    MachineId = machine.Id,
-                    StatusId = status.Id,
-                    FourMCategoryId = fourM.Id,
-                    Remark = dto.Remark,
-                    CreatedBy = userName,
-                    RecordedAt = DateTime.Now,
-                    IsResolved = false
-                };
+                // Check if there is an unresolved record for this machine
+                var existingRecord = await _context.AndonRecords
+                    .FirstOrDefaultAsync(r => r.MachineId == machine.Id && !r.IsResolved);
 
-                _context.AndonRecords.Add(record);
+                if (existingRecord != null)
+                {
+                    // Update existing record
+                    existingRecord.StatusId = status.Id;
+                    existingRecord.FourMCategoryId = fourM.Id;
+                    existingRecord.Remark = dto.Remark;
+                    existingRecord.RecordedAt = DateTime.Now;
+                    existingRecord.CreatedBy = userName;
+                    existingRecord.UpdatedAt = DateTime.Now;
+                }
+                else
+                {
+                    // Create New Record
+                    var record = new Models.AndonRecord
+                    {
+                        PlantId = plant.Id,
+                        MachineId = machine.Id,
+                        StatusId = status.Id,
+                        FourMCategoryId = fourM.Id,
+                        Remark = dto.Remark,
+                        CreatedBy = userName,
+                        RecordedAt = DateTime.Now,
+                        IsResolved = false
+                    };
+                    _context.AndonRecords.Add(record);
+                }
+
                 await _context.SaveChangesAsync();
 
                 // Broadcast update via SignalR with details
