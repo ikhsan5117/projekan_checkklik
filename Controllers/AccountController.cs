@@ -101,7 +101,7 @@ namespace AMRVI.Controllers
                         if ((returnUrl == "/" || returnUrl.ToLower().Contains("/home")) && 
                             user.Role != "Administrator" && user.Role != "Admin" && user.Role != "Supervisor")
                         {
-                             return RedirectToAction("Index", "Inspection");
+                             return RedirectToAction("Selection", "Home");
                         }
                         return Redirect(returnUrl);
                     }
@@ -115,7 +115,7 @@ namespace AMRVI.Controllers
                         else
                         {
                             // Operator / User: Direct to Inspection, Skip Dashboard
-                            return RedirectToAction("Index", "Inspection");
+                            return RedirectToAction("Selection", "Home");
                         }
                     }
                 }

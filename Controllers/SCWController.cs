@@ -127,8 +127,14 @@ namespace AMRVI.Controllers
                 _context.AndonRecords.Add(record);
                 await _context.SaveChangesAsync();
 
-                // Broadcast update via SignalR
-                await _hubContext.Clients.All.SendAsync("AndonDataUpdated", plantCode);
+                // Broadcast update via SignalR with details
+                await _hubContext.Clients.All.SendAsync("AndonDataUpdated", new { 
+                    PlantCode = plantCode, 
+                    MachineCode = dto.MachineCode, 
+                    StatusName = status.StatusName,
+                    FourMName = fourM.CategoryName,
+                    Remark = dto.Remark
+                });
 
                 return Ok(new { success = true, message = "Data berhasil disimpan!" });
             }

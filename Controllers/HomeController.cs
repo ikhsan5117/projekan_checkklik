@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AMRVI.Controllers;
 
-[Authorize(Roles = "Administrator,Admin,Supervisor")]
+[Authorize]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -21,10 +21,16 @@ public class HomeController : Controller
         _plantService = plantService;
     }
 
+    [Authorize(Roles = "Administrator,Admin,Supervisor")]
     public IActionResult Index()
     {
         var viewModel = GetDashboardViewModel();
         return View(viewModel);
+    }
+
+    public IActionResult Selection()
+    {
+        return View();
     }
 
     [HttpGet]

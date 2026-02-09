@@ -1,0 +1,252 @@
+@{
+    ViewData["Title"] = "Pilih Layanan";
+    Layout = "_Layout";
+}
+
+<div class="selection-container">
+    <div class="selection-header animate-fade-in">
+        <h1 class="welcome-text">Selamat Datang, <span class="user-name">@(User.FindFirst("FullName")?.Value ?? User.Identity?.Name)</span></h1>
+        <p class="subtitle">Silakan pilih layanan yang ingin Anda akses hari ini</p>
+    </div>
+
+    <div class="selection-grid">
+        <!-- Daily Inspection Card -->
+        <a href="@Url.Action("Index", "Inspection")" class="selection-card animate-slide-up" style="--delay: 0.1s">
+            <div class="card-glass"></div>
+            <div class="card-content">
+                <div class="icon-wrapper blue">
+                    <i class="ph-clipboard-text"></i>
+                </div>
+                <h2>DAILY CHECKLIST</h2>
+                <p>Lakukan pengecekan rutin mesin harian untuk menjaga performa produksi.</p>
+                <div class="card-footer">
+                    <span>Mulai Pengecekan</span>
+                    <i class="ph-arrow-right"></i>
+                </div>
+            </div>
+            <div class="card-glow"></div>
+        </a>
+
+        <!-- SCW Card -->
+        <a href="@Url.Action("Index", "SCW")" class="selection-card animate-slide-up" style="--delay: 0.2s">
+            <div class="card-glass"></div>
+            <div class="card-content">
+                <div class="icon-wrapper red">
+                    <i class="ph-warning-circle"></i>
+                </div>
+                <h2>INPUT SCW</h2>
+                <p>Laporkan Stop Call Work segera jika ditemukan problem pada area kerja.</p>
+                <div class="card-footer">
+                    <span>Buat Laporan</span>
+                    <i class="ph-arrow-right"></i>
+                </div>
+            </div>
+            <div class="card-glow"></div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .selection-container {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .selection-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .welcome-text {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 1rem;
+        letter-spacing: -0.5px;
+    }
+
+    .user-name {
+        background: linear-gradient(135deg, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+        color: #94a3b8;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .selection-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2.5rem;
+        width: 100%;
+        max-width: 900px;
+    }
+
+    .selection-card {
+        position: relative;
+        text-decoration: none;
+        color: inherit;
+        height: 380px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        border-radius: 24px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .card-glass {
+        position: absolute;
+        inset: 0;
+        background: rgba(30, 41, 59, 0.4);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        z-index: 1;
+        transition: all 0.5s ease;
+    }
+
+    .selection-card:hover .card-glass {
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: scale(1.02);
+    }
+
+    .card-content {
+        position: relative;
+        z-index: 2;
+        padding: 3rem 2rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .icon-wrapper {
+        width: 100px;
+        height: 100px;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 2rem;
+        font-size: 3.5rem;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .icon-wrapper.blue {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+    }
+
+    .icon-wrapper.red {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
+    }
+
+    .selection-card:hover .icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .selection-card:hover .icon-wrapper.blue {
+        box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+    }
+
+    .selection-card:hover .icon-wrapper.red {
+        box-shadow: 0 15px 40px rgba(239, 68, 68, 0.4);
+    }
+
+    .card-content h2 {
+        color: #fff;
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        letter-spacing: 1px;
+    }
+
+    .card-content p {
+        color: #94a3b8;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: auto;
+    }
+
+    .card-footer {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        color: #fff;
+        font-weight: 700;
+        margin-top: 2rem;
+        opacity: 0.6;
+        transition: all 0.3s ease;
+    }
+
+    .selection-card:hover .card-footer {
+        opacity: 1;
+        transform: translateY(-5px);
+    }
+
+    .card-glow {
+        position: absolute;
+        inset: -20%;
+        background: radial-gradient(circle at 50% 50%, rgba(129, 140, 248, 0.15), transparent 70%);
+        z-index: 0;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        pointer-events: none;
+    }
+
+    .selection-card:hover .card-glow {
+        opacity: 1;
+    }
+
+    /* Animations */
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: var(--delay);
+        opacity: 0;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .selection-header { margin-bottom: 2rem; }
+        .welcome-text { font-size: 2rem; }
+        .selection-grid { grid-template-columns: 1fr; }
+        .selection-card { height: 320px; }
+    }
+</style>

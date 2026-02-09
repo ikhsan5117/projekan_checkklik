@@ -32,18 +32,31 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="@Url.Action("Index", "Home")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")">
-                    <i class="ph-house-line"></i>
-                    <span class="link-text">DASHBOARD</span>
-                </a>
+                @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                {
+                    <a href="@Url.Action("Index", "Home")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                        <i class="ph-house-line"></i>
+                        <span class="link-text">DASHBOARD</span>
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Selection", "Home")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Selection" ? "active" : "")">
+                        <i class="ph-house-line"></i>
+                        <span class="link-text">HOME</span>
+                    </a>
+                }
                 <a href="@Url.Action("Index", "Inspection")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Inspection" ? "active" : "")">
                     <i class="ph-magnifying-glass"></i>
                     <span class="link-text">CHECKLIST</span>
                 </a>
-                <a href="@Url.Action("Index", "History")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "History" ? "active" : "")">
-                    <i class="ph-clock-counter-clockwise"></i>
-                    <span class="link-text">HISTORY</span>
-                </a>
+                @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                {
+                    <a href="@Url.Action("Index", "History")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "History" ? "active" : "")">
+                        <i class="ph-clock-counter-clockwise"></i>
+                        <span class="link-text">HISTORY</span>
+                    </a>
+                }
                 <!-- Andon System Dropdown -->
                 <div class="nav-dropdown">
                     <!-- Parent Menu -->
@@ -55,10 +68,13 @@
                     
                     <!-- Submenu -->
                     <div class="submenu @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" || ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "open" : "")">
-                        <a href="@Url.Action("Index", "Andon")" class="nav-link submenu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" ? "active" : "")" title="Andon Monitoring">
-                            <i class="ph-monitor"></i>
-                            <span class="submenu-text">Monitoring Andon</span>
-                        </a>
+                        @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                        {
+                            <a href="@Url.Action("Index", "Andon")" class="nav-link submenu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" ? "active" : "")" title="Andon Monitoring">
+                                <i class="ph-monitor"></i>
+                                <span class="submenu-text">Monitoring Andon</span>
+                            </a>
+                        }
                         <a href="@Url.Action("Index", "SCW")" class="nav-link submenu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "active" : "")" title="Input SCW">
                             <i class="ph-warning-circle"></i>
                             <span class="submenu-text">Input SCW</span>
@@ -67,35 +83,38 @@
                 </div>
                 <div class="nav-divider"></div>
                 
-                <!-- System Management Dropdown -->
-                <div class="nav-dropdown">
-                    <!-- Parent Menu -->
-                    <div class="nav-link has-submenu" onclick="toggleDropdown(this)">
-                        <i class="ph-gear-six"></i>
-                        <span class="link-text">Manajemen Sistem</span>
-                        <i class="ph-caret-down dropdown-arrow"></i>
+                @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                {
+                    <!-- System Management Dropdown -->
+                    <div class="nav-dropdown">
+                        <!-- Parent Menu -->
+                        <div class="nav-link has-submenu" onclick="toggleDropdown(this)">
+                            <i class="ph-gear-six"></i>
+                            <span class="link-text">Manajemen Sistem</span>
+                            <i class="ph-caret-down dropdown-arrow"></i>
+                        </div>
+                        
+                        <!-- Submenu -->
+                        <div class="submenu">
+                            <a href="@Url.Action("Index", "MachineData")" class="nav-link submenu-item" title="Data Mesin">
+                                <i class="ph-hard-drives"></i>
+                                <span class="submenu-text">Data Mesin</span>
+                            </a>
+                            <a href="@Url.Action("Index", "ChecklistData")" class="nav-link submenu-item" title="Data Checklist">
+                                <i class="ph-clipboard-text"></i>
+                                <span class="submenu-text">Data Checklist</span>
+                            </a>
+                            <a href="@Url.Action("Index", "UserManagement")" class="nav-link submenu-item" title="Manajemen User">
+                                <i class="ph-users"></i>
+                                <span class="submenu-text">Manajemen User</span>
+                            </a>
+                            <a href="@Url.Action("ImportVelasto", "ChecklistData")" class="nav-link submenu-item" title="Smart Import Velasto">
+                                <i class="ph-file-xls"></i>
+                                <span class="submenu-text">Smart Import Velasto</span>
+                            </a>
+                        </div>
                     </div>
-                    
-                    <!-- Submenu -->
-                    <div class="submenu">
-                        <a href="@Url.Action("Index", "MachineData")" class="nav-link submenu-item" title="Data Mesin">
-                            <i class="ph-hard-drives"></i>
-                            <span class="submenu-text">Data Mesin</span>
-                        </a>
-                        <a href="@Url.Action("Index", "ChecklistData")" class="nav-link submenu-item" title="Data Checklist">
-                            <i class="ph-clipboard-text"></i>
-                            <span class="submenu-text">Data Checklist</span>
-                        </a>
-                        <a href="@Url.Action("Index", "UserManagement")" class="nav-link submenu-item" title="Manajemen User">
-                            <i class="ph-users"></i>
-                            <span class="submenu-text">Manajemen User</span>
-                        </a>
-                        <a href="@Url.Action("ImportVelasto", "ChecklistData")" class="nav-link submenu-item" title="Smart Import Velasto">
-                            <i class="ph-file-xls"></i>
-                            <span class="submenu-text">Smart Import Velasto</span>
-                        </a>
-                    </div>
-                </div>
+                }
             </nav>
 
             <div class="sidebar-footer">
