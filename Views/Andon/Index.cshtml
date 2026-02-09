@@ -666,27 +666,27 @@
                     // If it's a new LINE STOP, show a premium popup
                     if (data.statusName && data.statusName.toUpperCase().includes("STOP")) {
                         Swal.fire({
-                            title: '<span style="color: #ef4444; font-weight: 800;">!!! LINE STOP ALERT !!!</span>',
+                            title: '<span style="color: #ef4444; font-weight: 800; font-size: 1rem;">!!! LINE STOP ALERT !!!</span>',
                             html: `
-                                <div style="text-align: left; background: rgba(15, 23, 42, 0.05); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #ef4444;">
-                                    <div style="margin-bottom: 0.5rem;"><strong style="color: #64748b;">MACHINE:</strong> <span style="font-size: 1.2rem; font-weight: 700;">${data.machineCode}</span></div>
-                                    <div style="margin-bottom: 0.5rem;"><strong style="color: #64748b;">PROBLEM:</strong> <span style="font-size: 1.1rem; color: #f97316; font-weight: 600;">${data.fourMName}</span></div>
-                                    <div style="margin-bottom: 0.5rem;"><strong style="color: #64748b;">REMARK:</strong> <span style="font-style: italic;">"${data.remark}"</span></div>
+                                <div style="text-align: left; background: rgba(239, 68, 68, 0.05); padding: 1rem; border-radius: 10px; border-left: 4px solid #ef4444; margin-top: 0.5rem;">
+                                    <div style="margin-bottom: 0.3rem;"><strong style="color: #94a3b8; font-size: 0.7rem; text-transform: uppercase;">MACHINE:</strong> <span style="font-size: 1rem; font-weight: 700; color: #fff;">${data.machineCode}</span></div>
+                                    <div style="margin-bottom: 0.3rem;"><strong style="color: #94a3b8; font-size: 0.7rem; text-transform: uppercase;">PROBLEM:</strong> <span style="font-size: 0.95rem; color: #f97316; font-weight: 600;">${data.fourMName}</span></div>
+                                    <div style="margin-bottom: 0.3rem;"><strong style="color: #94a3b8; font-size: 0.7rem; text-transform: uppercase;">REMARK:</strong> <span style="font-style: italic; font-size: 0.85rem; color: #cbd5e1;">"${data.remark}"</span></div>
                                 </div>
                             `,
                             icon: 'error',
-                            background: '#0a0a0a',
+                            background: 'rgba(10, 10, 10, 0.95)',
                             color: '#fff',
-                            toast: false,
-                            position: 'center',
-                            showConfirmButton: true,
-                            confirmButtonText: 'ACKNOWLEDGE',
-                            confirmButtonColor: '#ef4444',
-                            timer: 10000,
+                            toast: true,
+                            position: 'bottom-end',
+                            showConfirmButton: false,
+                            timer: 15000,
                             timerProgressBar: true,
-                            backdrop: `rgba(239, 68, 68, 0.15)`,
                             showClass: {
-                                popup: 'animate__animated animate__shakeX'
+                                popup: 'animate__animated animate__fadeInUp'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutDown'
                             }
                         });
                     }
