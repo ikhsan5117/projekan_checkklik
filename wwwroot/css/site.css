@@ -492,18 +492,20 @@ body {
 /* Command Clock - Vertically Stacked */
 .nav-clock {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     background: rgba(15, 23, 42, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.5rem 1.25rem;
+    padding: 0.35rem 1rem;
     border-radius: 6px;
-    height: 60px;
-    min-width: 130px;
+    height: auto;
+    min-width: 110px;
+    margin-left: 0.75rem;
     position: relative;
     border-top: 2px solid var(--secondary);
     box-shadow: inset 0 0 15px rgba(129, 140, 248, 0.05);
+    flex-shrink: 0;
 }
 
 .nav-clock::before {
@@ -511,30 +513,29 @@ body {
 }
 
 .clock-time {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 850;
     color: #fff;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.5px;
     line-height: 1;
     display: flex;
+    flex-direction: row-reverse;
+    /* Put icon on the right */
     align-items: center;
     gap: 0.5rem;
 }
 
-.clock-time i {
-    color: var(--secondary);
-    font-size: 1rem;
-}
-
 .clock-date {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 800;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-top: 6px;
+    letter-spacing: 1px;
+    margin-top: 4px;
     line-height: 1;
+    text-align: right;
+    width: 100%;
 }
 
 /* Fullscreen Button */
@@ -794,19 +795,24 @@ body {
     font-weight: 700;
     color: #fff;
     letter-spacing: -0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
 }
 
 .u-role-tag {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     font-size: 0.6rem;
     font-weight: 800;
     color: var(--primary);
     letter-spacing: 1px;
     background: rgba(129, 140, 248, 0.1);
-    padding: 0.25rem 0.6rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 4px;
+    white-space: nowrap;
 }
 
 .u-role-tag .dot {
@@ -815,6 +821,8 @@ body {
     background: var(--primary);
     border-radius: 50%;
 }
+
+
 
 /* --- CLICKABLE USER DECK --- */
 .nav-user-deck-wrapper {
@@ -1005,21 +1013,136 @@ body {
 
 /* Responsive Grid Adjustments */
 @media (max-width: 1024px) {
+    .app-shell {
+        padding: 0;
+        gap: 0;
+        display: block;
+        /* Switch to block to avoid flex gap issues if any */
+        width: 100%;
+    }
+
+    .main-wrapper {
+        margin: 0 !important;
+        width: 100% !important;
+        padding: 0;
+        min-height: 100vh;
+    }
+
     .sidebar {
+        display: none;
+        /* Hard hide unless mobile-active */
         position: fixed;
-        left: -300px;
-        top: 1rem;
-        bottom: 1rem;
-        height: auto;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        z-index: 2000;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        background: rgba(15, 23, 42, 0.98);
+        backdrop-filter: blur(20px);
+        margin: 0;
+        height: 100vh;
     }
 
     .sidebar.mobile-active {
-        left: 1rem;
-        box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
+        display: flex;
+        transform: translateX(0);
+        box-shadow: 20px 0 100px rgba(0, 0, 0, 0.8);
     }
 
-    .app-shell {
-        padding: 0.5rem;
+    .app-navbar {
+        padding: 0.4rem 0.75rem;
+        border-radius: 0;
+        min-height: auto;
+        height: auto;
+        gap: 0.5rem;
+        justify-content: space-between;
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+
+    .nav-left {
+        flex: 0 1 auto;
+        gap: 0.4rem;
+        min-width: 0;
+        /* Allow shrinking */
+    }
+
+    .nav-right {
+        flex: 0 1 auto;
+        gap: 0.4rem;
+        min-width: 0;
+        /* Allow shrinking */
+    }
+
+    .nav-clock {
+        min-width: auto;
+        height: auto;
+        padding: 0.2rem 0.4rem;
+        margin-left: 0.25rem !important;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        align-items: center;
+        flex-direction: row;
+        /* Horizontal on tablet to save height */
+    }
+
+    .clock-time {
+        font-size: 0.85rem;
+    }
+
+    .clock-time i {
+        font-size: 0.8rem;
+    }
+
+    .clock-date {
+        display: none !important;
+    }
+
+    .system-status-nav {
+        padding: 0.2rem 0.4rem;
+        background: transparent;
+        border: none;
+    }
+
+    .system-status-nav span,
+    .status-label-nav {
+        display: none !important;
+    }
+
+    .u-name {
+        max-width: 80px;
+        font-size: 0.8rem;
+    }
+
+    .u-role-tag {
+        display: none !important;
+        /* Hide role tag on tablet to save width */
+    }
+
+    .nav-divider-v {
+        display: none !important;
+    }
+
+    .fullscreen-btn {
+        display: none !important;
+    }
+
+    .nav-user-deck {
+        padding-left: 0.5rem;
+        gap: 0.5rem;
+        background: transparent;
+    }
+
+    .user-avatar-hex {
+        width: 32px;
+        height: 32px;
+    }
+
+    .avatar-inner {
+        font-size: 0.7rem;
     }
 }
 
@@ -1962,51 +2085,7 @@ body:has(.inspection-portal-v2) .mesh-bg {
 }
 
 /* Responsive Overrides */
-@media (max-width: 1024px) {
-    .app-container {
-        padding: 1rem;
-        gap: 1rem;
-    }
-
-    .sidebar {
-        /* display: none;  <-- REMOVED: This was preventing it from showing */
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 250px;
-        z-index: 2000;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        background: rgba(15, 23, 42, 0.95);
-        /* Ensure background is solid enough */
-        backdrop-filter: blur(20px);
-    }
-
-    .sidebar.mobile-active {
-        transform: translateX(0);
-        /* Slide in */
-        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
-    }
-
-    /* Screen overlay when menu is open */
-    .sidebar.mobile-active::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 250px;
-        /* Starts after sidebar */
-        right: -100vw;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: -1;
-    }
-
-    .main-wrapper {
-        margin-left: 0;
-        width: 100%;
-    }
-}
+/* Consolidated into previous block */
 
 /* Fix for mobile FAB positioning in new layout - Enhanced Glass Style */
 .fab-container {

@@ -6,7 +6,6 @@
     <title>@ViewData["Title"] - Daily Machine Checklist @(User.FindFirst("Plant")?.Value ?? "RVI")</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/dashboard-analytics.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/tv-display-fix.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -57,30 +56,38 @@
                         <span class="link-text">HISTORY</span>
                     </a>
                 }
-                <!-- Andon System Dropdown -->
-                <div class="nav-dropdown">
-                    <!-- Parent Menu -->
-                    <div class="nav-link has-submenu @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" || ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "active" : "")" onclick="toggleDropdown(this)">
-                        <i class="ph-broadcast"></i>
-                        <span class="link-text">ANDON SYSTEM</span>
-                        <i class="ph-caret-down dropdown-arrow"></i>
-                    </div>
-                    
-                    <!-- Submenu -->
-                    <div class="submenu @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" || ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "open" : "")">
-                        @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
-                        {
+                @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                {
+                    <!-- Andon System Dropdown for Admins -->
+                    <div class="nav-dropdown">
+                        <!-- Parent Menu -->
+                        <div class="nav-link has-submenu @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" || ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "active" : "")" onclick="toggleDropdown(this)">
+                            <i class="ph-broadcast"></i>
+                            <span class="link-text">ANDON SYSTEM</span>
+                            <i class="ph-caret-down dropdown-arrow"></i>
+                        </div>
+                        
+                        <!-- Submenu -->
+                        <div class="submenu @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" || ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "open" : "")">
                             <a href="@Url.Action("Index", "Andon")" class="nav-link submenu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" ? "active" : "")" title="Andon Monitoring">
                                 <i class="ph-monitor"></i>
                                 <span class="submenu-text">Monitoring Andon</span>
                             </a>
-                        }
-                        <a href="@Url.Action("Index", "SCW")" class="nav-link submenu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "active" : "")" title="Input SCW">
-                            <i class="ph-warning-circle"></i>
-                            <span class="submenu-text">Input SCW</span>
-                        </a>
+                            <a href="@Url.Action("Index", "SCW")" class="nav-link submenu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "active" : "")" title="Input SCW">
+                                <i class="ph-warning-circle"></i>
+                                <span class="submenu-text">Input SCW</span>
+                            </a>
+                        </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <!-- Direct SCW Link for Operators (No Dropdown) -->
+                    <a href="@Url.Action("Index", "SCW")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "active" : "")">
+                        <i class="ph-warning-circle"></i>
+                        <span class="link-text">INPUT SCW</span>
+                    </a>
+                }
                 <div class="nav-divider"></div>
                 
                 @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
@@ -127,12 +134,9 @@
             <!-- Navbar: The Command Deck -->
             <header class="app-navbar">
                 <div class="nav-left">
-                    @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
-                    {
-                        <button class="nav-btn" id="sidebarToggle" title="Toggle Navigation">
-                            <i class="ph-list-bold"></i>
-                        </button>
-                    }
+                    <button class="nav-btn" id="sidebarToggle" title="Toggle Navigation">
+                        <i class="ph-list-bold"></i>
+                    </button>
                     
                     <!-- Global Adaptive Search -->
                     <!-- Global Search Removed -->
@@ -151,12 +155,12 @@
                     </button>
 
                     <!-- Real-time Command Clock (Moved Here) -->
-                    <div class="nav-clock" style="margin-left: 1.5rem;">
-                        <div class="clock-time" style="flex-direction: row-reverse; gap: 0.5rem;">
+                    <div class="nav-clock">
+                        <div class="clock-time">
                             <i class="ph-clock-bold"></i>
                             <span id="navTime">--:--:--</span>
                         </div>
-                        <div class="clock-date" id="navDate" style="text-align: right;">--------</div>
+                        <div class="clock-date" id="navDate">--------</div>
                     </div>
                 </div>
 

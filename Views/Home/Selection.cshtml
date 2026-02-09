@@ -48,26 +48,29 @@
 
 <style>
     .selection-container {
-        min-height: calc(100vh - 120px);
+        min-height: calc(100vh - 86px); /* 86px is navbar height */
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 2rem;
+        padding: 2rem 1rem;
         position: relative;
         z-index: 1;
+        width: 100%;
+        margin: 0 auto;
     }
 
     .selection-header {
         text-align: center;
-        margin-bottom: 4rem;
+        margin-bottom: 3rem;
+        width: 100%;
     }
 
     .welcome-text {
-        font-size: 2.5rem;
+        font-size: clamp(1.8rem, 5vw, 2.8rem);
         font-weight: 800;
         color: #fff;
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
         letter-spacing: -0.5px;
     }
 
@@ -79,27 +82,31 @@
 
     .subtitle {
         color: #94a3b8;
-        font-size: 1.1rem;
+        font-size: clamp(0.9rem, 2vw, 1.1rem);
         font-weight: 500;
     }
 
     .selection-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 2.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
         width: 100%;
-        max-width: 900px;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding-bottom: 2rem;
     }
 
     .selection-card {
         position: relative;
         text-decoration: none;
         color: inherit;
-        height: 380px;
+        height: min(400px, 60vh);
         transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         border-radius: 24px;
         overflow: hidden;
         cursor: pointer;
+        display: flex;
+        flex-direction: column;
     }
 
     .card-glass {
@@ -243,10 +250,22 @@
         }
     }
 
+    @@media (max-width: 1024px) {
+        .selection-grid { 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            max-width: 800px;
+            gap: 1.5rem;
+        }
+        .selection-card { height: 350px; }
+    }
+
     @@media (max-width: 768px) {
         .selection-header { margin-bottom: 2rem; }
-        .welcome-text { font-size: 2rem; }
-        .selection-grid { grid-template-columns: 1fr; }
-        .selection-card { height: 320px; }
+        .welcome-text { font-size: 1.8rem; }
+        .selection-grid { 
+            grid-template-columns: 1fr;
+            max-width: 400px;
+        }
+        .selection-card { height: 300px; }
     }
 </style>
