@@ -6,144 +6,433 @@
 @section Styles {
     <style>
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f172a 100%);
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Orbs */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            animation: float 20s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        body::before {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            top: -250px;
+            right: -250px;
+            animation-delay: 0s;
+        }
+
+        body::after {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            bottom: -200px;
+            left: -200px;
+            animation-delay: 10s;
+        }
+
+        @@keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
         }
 
         .scw-container {
-            max-width: 600px;
+            max-width: 650px;
             margin: 2rem auto;
             padding: 2rem;
+            position: relative;
+            z-index: 1;
         }
 
         .scw-card {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 2.5rem;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 28px;
+            padding: 3rem;
             box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 25px 80px rgba(239, 68, 68, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: cardEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @@keyframes cardEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Glowing Corner Accent */
+        .scw-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.3), transparent 70%);
+            border-radius: 50%;
+            filter: blur(40px);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @@keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
         }
 
         .scw-header {
             text-align: center;
             margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 2;
         }
 
         .scw-title {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ef4444, #f97316, #fb923c);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+            letter-spacing: -0.5px;
+            animation: titleGlow 2s ease-in-out infinite;
+        }
+
+        @@keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
         }
 
         .scw-subtitle {
-            color: #94a3b8;
-            font-size: 0.95rem;
+            color: #cbd5e1;
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0.9;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
+            position: relative;
+            z-index: 2;
+            animation: fadeInUp 0.5s ease-out backwards;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1.25rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .form-group:hover {
+            background: rgba(15, 23, 42, 0.6);
+            border-color: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+        }
+
+        /* Vertical layout for specific fields */
+        .form-group.vertical {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .form-group.vertical .form-label {
+            min-width: auto;
+            width: 100%;
+        }
+
+        .form-group.vertical .form-control,
+        .form-group.vertical .form-select {
+            width: 100%;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+        .form-group:nth-child(5) { animation-delay: 0.5s; }
+        .form-group:nth-child(6) { animation-delay: 0.6s; }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .form-label {
-            display: block;
-            color: #e2e8f0;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #f1f5f9;
+            font-weight: 700;
+            margin-bottom: 0;
+            font-size: 0.95rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            min-width: 180px;
+            flex-shrink: 0;
+        }
+
+        .form-label i {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+            transition: all 0.3s ease;
+        }
+
+        .form-group:hover .form-label i {
+            filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.6));
+            transform: scale(1.1) rotate(5deg);
         }
 
         .form-control, .form-select {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            background: rgba(30, 41, 59, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            flex: 1;
+            padding: 1rem 1.25rem;
+            background: rgba(30, 41, 59, 0.7);
+            border: 2px solid rgba(239, 68, 68, 0.2);
+            border-radius: 14px;
             color: #f1f5f9;
             font-size: 1rem;
-            transition: all 0.3s ease;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .form-control:focus, .form-select:focus {
             outline: none;
-            background: rgba(30, 41, 59, 0.9);
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+            background: rgba(30, 41, 59, 0.95);
+            border-color: #ef4444;
+            box-shadow: 
+                0 0 0 4px rgba(239, 68, 68, 0.15),
+                0 8px 20px rgba(239, 68, 68, 0.2),
+                inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
         }
 
         .form-select {
             cursor: pointer;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            padding-right: 2.5rem;
+            position: relative;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.8));
+            background-image: 
+                linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.8)),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23ef4444' d='M10 12l-6-6h12z' transform='rotate(180 10 10)'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat;
+            background-position: 0 0, right 1rem center;
+            padding-right: 3.5rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-select:hover {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 0.95));
+            background-image: 
+                linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 0.95)),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23f97316' d='M10 12l-6-6h12z' transform='rotate(180 10 10)'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat;
+            background-position: 0 0, right 1rem center;
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .form-select:focus {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1));
+            background-image: 
+                linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1)),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23fb923c' d='M10 12l-6-6h12z' transform='rotate(180 10 10)'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat;
+            background-position: 0 0, right 1rem center;
+        }
+
+        /* Custom option styling */
+        .form-select option {
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 1rem;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+        }
+
+        .form-select option:hover,
+        .form-select option:checked {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), rgba(251, 146, 60, 0.1));
+            color: #fff;
+        }
+
+        .form-select option:disabled {
+            color: #64748b;
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        /* Add icon before select text */
+        .form-select::before {
+            content: '▼';
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ef4444;
+            font-size: 0.75rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus::before {
+            transform: translateY(-50%) rotate(180deg);
+            color: #fb923c;
         }
 
         .form-control::placeholder {
             color: #64748b;
+            font-weight: 400;
         }
 
         textarea.form-control {
             min-height: 100px;
+            max-height: 150px;
             resize: vertical;
+            font-family: inherit;
+            align-self: stretch;
         }
 
         .btn-submit {
             width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             color: white;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 1.1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 1.5rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            box-shadow: 
+                0 10px 30px rgba(239, 68, 68, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-out 0.7s backwards;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
         }
 
         .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 
+                0 15px 40px rgba(239, 68, 68, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .btn-submit:active {
-            transform: translateY(0);
+            transform: translateY(-2px);
         }
 
         .btn-submit:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
         .alert {
-            padding: 1rem;
-            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            border-radius: 14px;
             margin-bottom: 1.5rem;
-            font-weight: 500;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        @@keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            flex-shrink: 0;
         }
 
         .alert-success {
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid rgba(16, 185, 129, 0.4);
             color: #10b981;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .alert-success::before {
+            background: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
         }
 
         .alert-error {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid rgba(239, 68, 68, 0.4);
             color: #ef4444;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .alert-error::before {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
         }
 
         .loading-spinner {
@@ -153,12 +442,43 @@
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
-            animation: spin 0.8s linear infinite;
-            margin-right: 0.5rem;
+            animation: spin 0.6s linear infinite;
+            margin-right: 0.75rem;
         }
 
         @@keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .scw-container {
+                padding: 1rem;
+                margin: 1rem auto;
+            }
+
+            .scw-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .scw-title {
+                font-size: 2rem;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .form-label {
+                min-width: auto;
+                width: 100%;
+            }
+
+            .form-control, .form-select {
+                width: 100%;
+            }
         }
     </style>
 }
@@ -174,7 +494,7 @@
 
         <form id="scwForm">
             <div class="form-group">
-                <label class="form-label" for="machineSelect">Pilih Mesin</label>
+                <label class="form-label" for="machineSelect"><i class="ph-gear-six"></i> Pilih Mesin</label>
                 <select class="form-select" id="machineSelect" required>
                     <option value="">- Pilih Mesin -</option>
                     @foreach (dynamic machine in ViewBag.Machines)
@@ -185,14 +505,14 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="machineNumberSelect">No Mesin</label>
+                <label class="form-label" for="machineNumberSelect"><i class="ph-hash"></i> No Mesin</label>
                 <select class="form-select" id="machineNumberSelect" required disabled>
                     <option value="">- Pilih No Mesin -</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="statusSelect">Status</label>
+                <label class="form-label" for="statusSelect"><i class="ph-traffic-sign"></i> Status</label>
                 <select class="form-select" id="statusSelect" required>
                     <option value="">- Pilih Status -</option>
                     @foreach (var status in ViewBag.StatusTypes)
@@ -202,13 +522,8 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="remarkInput">Rejection / Material Shortage</label>
-                <textarea class="form-control" id="remarkInput" placeholder="Masukkan keterangan masalah..." required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="fourMSelect">Jenis 4M</label>
+            <div class="form-group vertical">
+                <label class="form-label" for="fourMSelect"><i class="ph-stack"></i> Jenis 4M</label>
                 <select class="form-select" id="fourMSelect" required>
                     <option value="">- Pilih Jenis 4M -</option>
                     @foreach (var fourM in ViewBag.FourMCategories)
@@ -216,6 +531,11 @@
                         <option value="@fourM.CategoryCode">@fourM.CategoryName</option>
                     }
                 </select>
+            </div>
+
+            <div class="form-group vertical">
+                <label class="form-label" for="remarkInput"><i class="ph-note-pencil"></i> Rejection / Material Shortage</label>
+                <textarea class="form-control" id="remarkInput" placeholder="Masukkan keterangan masalah..." required></textarea>
             </div>
 
             <button type="submit" class="btn-submit" id="submitBtn">
@@ -229,9 +549,35 @@
     <script>
         const machineSelect = document.getElementById('machineSelect');
         const machineNumberSelect = document.getElementById('machineNumberSelect');
+        const fourMSelect = document.getElementById('fourMSelect');
+        const remarkInput = document.getElementById('remarkInput');
         const scwForm = document.getElementById('scwForm');
         const submitBtn = document.getElementById('submitBtn');
         const alertContainer = document.getElementById('alertContainer');
+
+        // Auto-fill remark based on 4M selection
+        fourMSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            const selectedText = this.options[this.selectedIndex].text.toUpperCase();
+            
+            // Mapping 4M to default remark
+            let defaultRemark = '';
+            
+            if (selectedText.includes('MATERIAL')) {
+                defaultRemark = 'REJECTION';
+            } else if (selectedText.includes('METHODE') || selectedText.includes('METODE')) {
+                defaultRemark = 'SOP TIDAK SESUAI STANDAR';
+            } else if (selectedText.includes('MACHINE') || selectedText.includes('MESIN')) {
+                defaultRemark = 'PROBLEM MESIN';
+            } else if (selectedText.includes('MAN')) {
+                defaultRemark = 'SAKIT';
+            } else if (selectedText.includes('NO PROBLEM')) {
+                defaultRemark = 'NO PROBLEM';
+            }
+            
+            // Set the remark value
+            remarkInput.value = defaultRemark;
+        });
 
         // Load machine numbers when machine is selected
         machineSelect.addEventListener('change', async function() {
