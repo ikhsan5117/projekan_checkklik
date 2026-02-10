@@ -57,6 +57,7 @@ namespace AMRVI.Data
         public DbSet<StatusType> StatusTypes { get; set; }
         public DbSet<FourMCategory> FourMCategories { get; set; }
         public DbSet<AndonRecord> AndonRecords { get; set; }
+        public DbSet<ScwLog> ScwLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -112,6 +113,9 @@ namespace AMRVI.Data
             // Configure and Seed Andon System
             ConfigureAndon(modelBuilder);
             SeedDataAndon(modelBuilder);
+
+            // Mapping for Production SCW Logs (Cross-Database)
+            modelBuilder.Entity<ScwLog>().ToTable("tb_elwp_produksi_scw_logs", t => t.ExcludeFromMigrations());
         }
 
         private void SeedShiftSettings(ModelBuilder modelBuilder)

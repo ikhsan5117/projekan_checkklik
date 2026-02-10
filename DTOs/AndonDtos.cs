@@ -9,6 +9,8 @@ namespace AMRVI.DTOs
         public string StatusName { get; set; } = string.Empty;
         public string FourMCode { get; set; } = string.Empty;
         public string FourMName { get; set; } = string.Empty;
+        public string AreaName { get; set; } = string.Empty;
+        public string DetailProblem { get; set; } = string.Empty;
         public string? Remark { get; set; }
         public DateTime RecordedAt { get; set; }
         public bool IsResolved { get; set; }

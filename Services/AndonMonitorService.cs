@@ -56,12 +56,12 @@ namespace AMRVI.Services
                 using var scope = _serviceProvider.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                // Check if there are any records updated/created since last check
-                var hasChanges = await context.AndonRecords
-                    .AnyAsync(a => 
-                        (a.RecordedAt > _lastCheckTime || 
-                         (a.UpdatedAt.HasValue && a.UpdatedAt.Value > _lastCheckTime)) &&
-                        !a.IsResolved);
+                // Check production table via Raw SQL for changes
+                var latestLogs = await context.ScwLogs
+                    .FromSqlRaw("SELECT * FROM [ELWP_PRD].[produksi].[tb_elwp_produksi_scw_logs] WHERE [ResolvedAt] IS NULL")
+                    .ToListAsync();
+
+                var hasChanges = latestLogs.Any(a => a.CreatedAt > _lastCheckTime);
 
                 if (hasChanges)
                 {

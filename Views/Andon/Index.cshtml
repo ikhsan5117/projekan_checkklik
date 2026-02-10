@@ -84,15 +84,19 @@
                     <tr>
                         <th style="width: 40px;">NO.</th>
                         <th>PLANT</th>
-                        <th>MACHINE</th>
+                        <th>AREA</th>
+                        <th class="sortable" id="machineHeader" style="cursor: pointer;">
+                            MESIN <i class="ph-arrows-down-up sort-icon"></i>
+                        </th>
                         <th class="sortable" id="statusHeader" style="cursor: pointer;">
                             STATUS <i class="ph-arrows-down-up sort-icon"></i>
                         </th>
                         <th class="sortable" id="kategoriHeader" style="cursor: pointer;">
-                            4M <i class="ph-arrows-down-up sort-icon"></i>
+                            KATEGORI 4M <i class="ph-arrows-down-up sort-icon"></i>
                         </th>
-                        <th>REMARK</th>
-                        <th style="width: 120px;">LOG</th>
+                        <th>PROBLEM</th>
+                        <th>KETERANGAN</th>
+                        <th style="width: 120px;">WAKTU LOG</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -503,6 +507,7 @@
         let selectedPlant = '@ViewBag.CurrentPlant'; // Get plant from server session
         let isSortedByPriority = false; // Track sorting state for STATUS
         let isSortedBy4M = false; // Track sorting state for 4M
+        let isSortedByMachine = true; // Set Machine as default sort to match controller change
 
         async function fetchAndonData() {
             try {
@@ -529,11 +534,12 @@
             // Map JSON response to expected format
             allData = data.map(record => ({
                 plant: record.plantCode || "-",
+                area: record.areaName || "-",
                 machine: record.machineCode || "-",
                 kategori: record.fourMName || "-",
+                problem: record.detailProblem || "-",
                 remark: record.remark || "-",
                 status: (record.statusName || "-").toUpperCase(),
-                alarm: record.fourMName || "-", // Using 4M as alarm
                 timestamp: record.recordedAt ? new Date(record.recordedAt).toLocaleString('id-ID') : "-"
             }));
 
@@ -583,8 +589,12 @@
             });
         }
 
+        function sortDataByMachine(data) {
+            return [...data].sort((a, b) => a.machine.localeCompare(b.machine));
+        }
+
         function applyPlantFilter() {
-            // Filter data by current user's plant
+            // Filter data by current selected plant (HOSE, MOLDED, RVI, etc)
             let filteredData = allData.filter(d => d.plant === selectedPlant);
 
             // Apply sorting if enabled
@@ -592,6 +602,8 @@
                 filteredData = sortDataByPriority(filteredData);
             } else if (isSortedBy4M) {
                 filteredData = sortDataBy4M(filteredData);
+            } else if (isSortedByMachine) {
+                filteredData = sortDataByMachine(filteredData);
             }
 
             renderTable(filteredData);
@@ -608,6 +620,32 @@
         document.addEventListener('DOMContentLoaded', function() {
             const statusHeader = document.getElementById('statusHeader');
             const kategoriHeader = document.getElementById('kategoriHeader');
+            const machineHeader = document.getElementById('machineHeader');
+
+            machineHeader.addEventListener('click', function() {
+                isSortedByMachine = !isSortedByMachine;
+                isSortedByPriority = false;
+                isSortedBy4M = false;
+
+                if (isSortedByMachine) {
+                    this.classList.add('sorted');
+                    this.querySelector('.sort-icon').className = 'ph-sort-ascending sort-icon';
+                    statusHeader.classList.remove('sorted');
+                    kategoriHeader.classList.remove('sorted');
+                    statusHeader.querySelector('.sort-icon').className = 'ph-arrows-down-up sort-icon';
+                    kategoriHeader.querySelector('.sort-icon').className = 'ph-arrows-down-up sort-icon';
+                } else {
+                    this.classList.remove('sorted');
+                    this.querySelector('.sort-icon').className = 'ph-arrows-down-up sort-icon';
+                }
+                applyPlantFilter();
+            });
+
+            // Set machine header to sorted state by default visually
+            if (isSortedByMachine) {
+                machineHeader.classList.add('sorted');
+                machineHeader.querySelector('.sort-icon').className = 'ph-sort-ascending sort-icon';
+            }
             
             statusHeader.addEventListener('click', function() {
                 isSortedByPriority = !isSortedByPriority;
@@ -753,16 +791,16 @@
             data.forEach((m, index) => {
                 let badgeClass = "";
                 let rowClass = "";
-                const status = m.status.replace(/\s+/g, ' ');
+                const statusStr = m.status.toUpperCase();
 
-                if (status.includes("LINE STOP")) {
+                if (statusStr.includes("LINE STOP") || statusStr.includes("LINESTOP")) {
                     rowClass = "row-line-stop";
                     badgeClass = "badge-line-stop";
-                } else if (status.includes("NO LOADING")) {
+                } else if (statusStr.includes("NO LOADING")) {
                     badgeClass = "badge-no-loading";
-                } else if (status.includes("RUNNING") && !status.includes("NO RUNNING")) {
+                } else if (statusStr.includes("RUNNING") && !statusStr.includes("NO RUNNING")) {
                     badgeClass = "badge-running";
-                } else if (status.includes("NO RUNNING")) {
+                } else if (statusStr.includes("NO RUNNING")) {
                     badgeClass = "badge-no-running";
                 }
 
@@ -796,6 +834,7 @@
                 tr.innerHTML = `
                     <td style="color: ${rowClass ? 'white' : '#888'};">${index + 1}.</td>
                     <td>${m.plant}</td>
+                    <td>${m.area}</td>
                     <td style="font-weight: 600;">${m.machine}</td>
                     <td class="badge-cell">
                         <span class="status-badge ${badgeClass}">${m.status}</span>
@@ -803,6 +842,7 @@
                     <td class="${badge4M ? 'badge-cell' : ''}" style="${!badge4M ? `color: ${rowClass ? 'white' : '#bbb'};` : ''}">
                         ${badge4M ? `<span class="badge-4m ${badge4M}">${m.kategori}</span>` : m.kategori}
                     </td>
+                    <td style="color: ${rowClass ? 'white' : '#999'}; font-size: 0.85rem;">${m.problem}</td>
                     <td style="color: ${rowClass ? 'white' : '#999'}; font-size: 0.85rem;">${m.remark}</td>
                     <td style="color: ${rowClass ? 'white' : '#aaa'}; font-size: 0.85rem;">${formattedTime}</td>
                 `;
@@ -814,16 +854,24 @@
 
         function updateStats(data) {
             // Machine Status Counts
-            document.getElementById('countRunning').innerText = data.filter(d => d.status === 'RUNNING').length;
-            document.getElementById('countStop').innerText = data.filter(d => d.status === 'LINE STOP').length;
-            document.getElementById('countNoLoading').innerText = data.filter(d => d.status === 'NO LOADING').length;
-            document.getElementById('countNoRunning').innerText = data.filter(d => d.status === 'NO RUNNING (NO MP)').length;
+            document.getElementById('countRunning').innerText = data.filter(d => {
+                const s = d.status.toUpperCase();
+                return s.includes('RUNNING') && !s.includes('NO RUNNING');
+            }).length;
+            
+            document.getElementById('countStop').innerText = data.filter(d => {
+                const s = d.status.toUpperCase();
+                return s.includes('LINE STOP') || s.includes('LINESTOP');
+            }).length;
+            
+            document.getElementById('countNoLoading').innerText = data.filter(d => d.status.toUpperCase().includes('NO LOADING')).length;
+            document.getElementById('countNoRunning').innerText = data.filter(d => d.status.toUpperCase().includes('NO RUNNING')).length;
 
             // 4M Status Counts (Based on Category)
-            document.getElementById('countMethode').innerText = data.filter(d => d.kategori === 'METHODE' || d.kategori === 'METODE').length;
-            document.getElementById('countMan').innerText = data.filter(d => d.kategori === 'MAN').length;
-            document.getElementById('countMaterial').innerText = data.filter(d => d.kategori === 'MATERIAL').length;
-            document.getElementById('countMachineCat').innerText = data.filter(d => d.kategori === 'MACHINE' || d.kategori === 'MESIN').length;
+            document.getElementById('countMethode').innerText = data.filter(d => d.kategori.toUpperCase().includes('METHODE') || d.kategori.toUpperCase().includes('METODE')).length;
+            document.getElementById('countMan').innerText = data.filter(d => d.kategori.toUpperCase().includes('MAN')).length;
+            document.getElementById('countMaterial').innerText = data.filter(d => d.kategori.toUpperCase().includes('MATERIAL')).length;
+            document.getElementById('countMachineCat').innerText = data.filter(d => d.kategori.toUpperCase().includes('MACHINE') || d.kategori.toUpperCase().includes('MESIN')).length;
         }
 
         // Auto Refresh every 30 seconds

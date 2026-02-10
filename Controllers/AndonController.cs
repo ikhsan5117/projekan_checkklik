@@ -39,46 +39,59 @@ namespace AMRVI.Controllers
         {
             try
             {
-                var query = _context.AndonRecords
-                    .Include(a => a.Plant)
-                    .Include(a => a.AndonMachine)
-                    .Include(a => a.StatusType)
-                    .Include(a => a.FourMCategory)
-                    .Where(a => !a.IsResolved)
-                    .AsQueryable();
+                // Use Raw SQL for cross-database access with proper bracket escaping
+                var allLogs = await _context.ScwLogs
+                    .FromSqlRaw("SELECT * FROM [ELWP_PRD].[produksi].[tb_elwp_produksi_scw_logs] WHERE [ResolvedAt] IS NULL")
+                    .ToListAsync();
 
-                // Filter by plant if specified
+                var records = allLogs
+                    .Select(a => {
+                        // Map PlantId based on ELWP_PRD production database
+                        // 1: Plant Hose, 2: Plant Molded, 3: Plant RVI, 4: Plant BTR
+                        string plantCode = a.PlantId switch {
+                            1 => "HOSE",
+                            2 => "MOLDED",
+                            3 => "RVI",
+                            4 => "BTR",
+                            _ => "UNK"
+                        };
+
+                        return new AndonRecordDto
+                        {
+                            Id = a.Id,
+                            PlantCode = plantCode,
+                            MachineCode = a.MesinId?.ToString() ?? "GENERAL",
+                            StatusCode = a.Status?.ToUpper() ?? "UNKNOWN",
+                            StatusName = a.Status?.ToUpper() ?? "UNKNOWN",
+                            FourMCode = a.Jenis4M?.ToUpper() ?? "NONE",
+                            FourMName = a.Jenis4M?.ToUpper() ?? "NONE",
+                            AreaName = a.AreaId switch {
+                                1 => "AREA A",
+                                2 => "AREA B",
+                                3 => "AREA C",
+                                4 => "AREA D",
+                                _ => "AREA " + a.AreaId
+                            },
+                            DetailProblem = a.DetailProblem,
+                            Remark = a.Keterangan ?? "No Remark",
+                            RecordedAt = a.CreatedAt,
+                            IsResolved = a.ResolvedAt != null
+                        };
+                    })
+                    .OrderBy(a => a.MachineCode)
+                    .ToList();
+
+                // Apply plant filter if specified
                 if (!string.IsNullOrEmpty(plant) && plant != "ALL")
                 {
-                    query = query.Where(a => a.Plant.PlantCode == plant);
+                    records = records.Where(r => r.PlantCode == plant).ToList();
                 }
-
-                var allRecords = await query.ToListAsync();
-
-                var records = allRecords
-                    .GroupBy(a => a.MachineId)
-                    .Select(g => g.OrderByDescending(a => a.RecordedAt).First())
-                    .OrderByDescending(a => a.RecordedAt)
-                    .Select(a => new AndonRecordDto
-                    {
-                        Id = a.Id,
-                        PlantCode = a.Plant.PlantCode,
-                        MachineCode = a.AndonMachine.MachineCode,
-                        StatusCode = a.StatusType.StatusCode,
-                        StatusName = a.StatusType.StatusName,
-                        FourMCode = a.FourMCategory.CategoryCode,
-                        FourMName = a.FourMCategory.CategoryName,
-                        Remark = a.Remark,
-                        RecordedAt = a.RecordedAt,
-                        IsResolved = a.IsResolved
-                    })
-                    .ToList();
 
                 return Ok(records);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new { error = ex.ToString() });
             }
         }
 

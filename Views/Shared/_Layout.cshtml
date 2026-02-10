@@ -24,7 +24,7 @@
                     <i class="ph-atom-bold logo-icon"></i>
                     <span class="sidebar-logo-text">
                         <span style="background: linear-gradient(90deg, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">
-                            Daily Machine Checklist @(User.FindFirst("Plant")?.Value ?? "RVI")
+                            CHECKLIST MESIN @(User.FindFirst("Plant")?.Value ?? "RVI")
                         </span>
                     </span>
                 </div>
@@ -58,34 +58,9 @@
                 }
                 @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
                 {
-                    <!-- Andon System Dropdown for Admins -->
-                    <div class="nav-dropdown">
-                        <!-- Parent Menu -->
-                        <div class="nav-link has-submenu @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" || ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "active" : "")" onclick="toggleDropdown(this)">
-                            <i class="ph-broadcast"></i>
-                            <span class="link-text">ANDON SYSTEM</span>
-                            <i class="ph-caret-down dropdown-arrow"></i>
-                        </div>
-                        
-                        <!-- Submenu -->
-                        <div class="submenu @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" || ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "open" : "")">
-                            <a href="@Url.Action("Index", "Andon")" class="nav-link submenu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" ? "active" : "")" title="Andon Monitoring">
-                                <i class="ph-monitor"></i>
-                                <span class="submenu-text">Monitoring Andon</span>
-                            </a>
-                            <a href="@Url.Action("Index", "SCW")" class="nav-link submenu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "active" : "")" title="Input SCW">
-                                <i class="ph-warning-circle"></i>
-                                <span class="submenu-text">Input SCW</span>
-                            </a>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <!-- Direct SCW Link for Operators (No Dropdown) -->
-                    <a href="@Url.Action("Index", "SCW")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "SCW" ? "active" : "")">
-                        <i class="ph-warning-circle"></i>
-                        <span class="link-text">INPUT SCW</span>
+                    <a href="@Url.Action("Index", "Andon")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Andon" ? "active" : "")">
+                        <i class="ph-monitor"></i>
+                        <span class="link-text">ANDON MONITORING</span>
                     </a>
                 }
                 <div class="nav-divider"></div>
@@ -125,7 +100,7 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="copyright">© 2026 Daily Machine Checklist @(User.FindFirst("Plant")?.Value ?? "RVI")</div>
+                <div class="copyright">© 2026 CHECKLIST MESIN @(User.FindFirst("Plant")?.Value ?? "RVI")</div>
             </div>
         </aside>
 

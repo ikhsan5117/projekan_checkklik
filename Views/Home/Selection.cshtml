@@ -31,7 +31,7 @@
                 <i class="ph-clipboard-text"></i>
             </div>
             <div class="card-body">
-                <h3>DAILY CHECKLIST</h3>
+                <h3>CHECKLIST MESIN</h3>
                 <p>Lakukan pengecekan rutin mesin</p>
             </div>
             <div class="card-arrow">
@@ -39,110 +39,101 @@
             </div>
         </a>
 
-        <!-- SCW Card -->
-        <a href="@Url.Action("Index", "SCW")" class="horizontal-card red animate-slide-left" style="--delay: 0.2s">
-            <div class="card-glow"></div>
-            <div class="card-bg-icon">
-                <i class="ph-warning-circle"></i>
-            </div>
-            <div class="card-icon">
-                <i class="ph-warning-circle"></i>
-            </div>
-            <div class="card-body">
-                <h3>INPUT SCW</h3>
-                <p>Laporan Stop Call Work jika ada problem</p>
-            </div>
-            <div class="card-arrow">
-                <i class="ph-caret-right-bold"></i>
-            </div>
-        </a>
+        @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+        {
+            <!-- Andon Monitoring Card -->
+            <a href="@Url.Action("Index", "Andon")" class="horizontal-card red animate-slide-left" style="--delay: 0.2s">
+                <div class="card-glow"></div>
+                <div class="card-bg-icon">
+                    <i class="ph-monitor"></i>
+                </div>
+                <div class="card-icon">
+                    <i class="ph-monitor"></i>
+                </div>
+                <div class="card-body">
+                    <h3>ANDON MONITORING</h3>
+                    <p>Pantau status mesin secara real-time</p>
+                </div>
+                <div class="card-arrow">
+                    <i class="ph-caret-right-bold"></i>
+                </div>
+            </a>
+        }
     </div>
 </div>
 
 <style>
     .selection-container {
-        min-height: calc(100vh - 100px);
+        min-height: calc(100vh - 120px);
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 2rem 1rem;
+        padding: 3rem 1.5rem;
         width: 100%;
-        max-width: 800px;
+        max-width: 1000px;
         margin: 0 auto;
     }
 
     .selection-header {
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
     }
 
     .welcome-text {
-        font-size: clamp(1.5rem, 4vw, 2.2rem);
+        font-size: clamp(1.8rem, 5vw, 2.5rem);
         font-weight: 800;
         color: #fff;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+        letter-spacing: -1px;
     }
 
     .user-name {
-        background: linear-gradient(90deg, #60a5fa, #c084fc);
+        background: linear-gradient(90deg, #818cf8, #c084fc);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
     .subtitle {
         color: #94a3b8;
-        font-size: 0.95rem;
+        font-size: 1rem;
         font-weight: 500;
+        opacity: 0.8;
     }
 
     /* Machine Visual Style */
     .machine-hero {
         width: 100%;
-        max-width: 320px;
+        max-width: 350px;
         aspect-ratio: 1 / 1;
         margin-bottom: 4rem;
         perspective: 1000px;
+        filter: drop-shadow(0 0 30px rgba(96, 165, 250, 0.2));
     }
 
     .hero-frame {
         position: relative;
         width: 100%;
         height: 100%;
-        border-radius: 20px;
+        border-radius: 32px;
         overflow: hidden;
-        border: 1px solid rgba(96, 165, 250, 0.2);
-        background: radial-gradient(circle at center, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
+        border: 2px solid rgba(96, 165, 250, 0.3);
+        background: radial-gradient(circle at center, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
         box-shadow: 
-            0 20px 50px rgba(0,0,0,0.6),
-            inset 0 0 30px rgba(96, 165, 250, 0.1);
-    }
-
-    .hero-frame.no-image {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .hero-frame.no-image::after {
-        content: 'FUTURISTIC SYSTEM INTERFACE';
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.8rem;
-        color: rgba(96, 165, 250, 0.3);
-        letter-spacing: 5px;
+            0 25px 60px rgba(0,0,0,0.7),
+            inset 0 0 40px rgba(96, 165, 250, 0.1);
     }
 
     .hero-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        opacity: 0.8;
-        filter: saturate(1.2) contrast(1.1);
+        opacity: 0.9;
+        filter: saturate(1.3) contrast(1.1);
+        transition: transform 0.8s ease;
     }
 
-    /* Hologram placeholder effect if image missing */
-    .hero-img[src$="industrial_machine.png"]:not([src*="."]) {
-        opacity: 0;
+    .machine-hero:hover .hero-img {
+        transform: scale(1.05);
     }
 
     .hologram-effect {
@@ -150,10 +141,10 @@
         inset: 0;
         background: repeating-linear-gradient(
             0deg,
-            rgba(96, 165, 250, 0.03) 0px,
-            rgba(96, 165, 250, 0.03) 1px,
+            rgba(96, 165, 250, 0.05) 0px,
+            rgba(96, 165, 250, 0.05) 1px,
             transparent 1px,
-            transparent 2px
+            transparent 3px
         );
         pointer-events: none;
     }
@@ -163,15 +154,15 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: 4px;
+        height: 6px;
         background: linear-gradient(90deg, transparent, #60a5fa, transparent);
-        box-shadow: 0 0 15px #60a5fa, 0 0 30px rgba(96, 165, 250, 0.5);
-        animation: scan 4s infinite ease-in-out;
+        box-shadow: 0 0 20px #60a5fa;
+        animation: scan 4s infinite cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 5;
     }
 
     @@keyframes scan {
-        0% { top: -4px; opacity: 0; }
+        0% { top: -6px; opacity: 0; }
         10% { opacity: 1; }
         90% { opacity: 1; }
         100% { top: 100%; opacity: 0; }
@@ -180,9 +171,10 @@
     /* Horizontal Card Style */
     .selection-list {
         width: 100%;
+        max-width: 600px; /* Limit width for tablet ergonomics */
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: 1.5rem;
     }
 
     .horizontal-card {
@@ -190,76 +182,76 @@
         position: relative;
         display: flex;
         align-items: center;
-        padding: 1.5rem 2rem;
+        padding: 2rem;
         background: rgba(30, 41, 59, 0.4);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
     }
 
     .horizontal-card:hover {
         background: rgba(30, 41, 59, 0.6);
-        border-color: rgba(96, 165, 250, 0.3);
-        transform: translateX(12px) translateY(-2px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        border-color: rgba(96, 165, 250, 0.4);
+        transform: translateX(15px) translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     }
 
     /* Background Icon Effect */
     .card-bg-icon {
         position: absolute;
-        right: 8%;
+        right: 5%;
         top: 50%;
-        transform: translateY(-50%) scale(3);
-        font-size: 4rem;
-        opacity: 0.12;
-        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateY(-50%) scale(4);
+        font-size: 5rem;
+        opacity: 0.08;
+        transition: all 0.8s ease;
         pointer-events: none;
         z-index: 0;
     }
 
-    .blue .card-bg-icon { color: #60a5fa; }
-    .red .card-bg-icon { color: #f87171; }
+    .blue .card-bg-icon { color: #818cf8; }
+    .red .card-bg-icon { color: #fb7185; }
 
     .horizontal-card:hover .card-bg-icon {
-        opacity: 0.2;
-        transform: translateY(-50%) scale(3.5) rotate(-10deg);
-        right: 5%;
+        opacity: 0.15;
+        transform: translateY(-50%) scale(4.5) rotate(-15deg);
+        right: 0%;
     }
 
     .card-icon {
-        width: 64px;
-        height: 64px;
-        border-radius: 16px;
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
-        margin-right: 1.5rem;
+        font-size: 2.2rem;
+        margin-right: 2rem;
         flex-shrink: 0;
         position: relative;
         z-index: 1;
-        transition: all 0.4s ease;
+        transition: all 0.5s ease;
     }
 
     .blue .card-icon { 
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1)); 
-        color: #60a5fa;
-        border: 1px solid rgba(59, 130, 246, 0.3);
-        box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(67, 56, 202, 0.1)); 
+        color: #818cf8;
+        border: 1px solid rgba(129, 140, 248, 0.3);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
     }
     
     .red .card-icon { 
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1)); 
-        color: #f87171;
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(185, 28, 28, 0.1)); 
+        color: #fb7185;
+        border: 1px solid rgba(248, 113, 113, 0.3);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2);
     }
 
     .horizontal-card:hover .card-icon {
-        transform: scale(1.1);
+        transform: scale(1.1) rotate(5deg);
         filter: brightness(1.2);
     }
 
@@ -272,29 +264,30 @@
 
     .card-body h3 {
         color: #fff;
-        font-size: 1.25rem;
+        font-size: 1.4rem;
         font-weight: 800;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.4rem;
         letter-spacing: 0.5px;
     }
 
     .card-body p {
         color: #94a3b8;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         font-weight: 500;
+        line-height: 1.4;
     }
 
     .card-arrow {
-        color: #475569;
-        font-size: 1.25rem;
-        transition: all 0.3s ease;
+        color: rgba(255, 255, 255, 0.2);
+        font-size: 1.5rem;
+        transition: all 0.4s ease;
         position: relative;
         z-index: 1;
     }
 
     .horizontal-card:hover .card-arrow {
         color: #fff;
-        transform: translateX(5px);
+        transform: translateX(8px);
     }
 
     .card-glow {
@@ -303,9 +296,9 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background: radial-gradient(circle at 0px 50%, rgba(96, 165, 250, 0.15), transparent 50%);
+        background: radial-gradient(circle at 0px 50%, rgba(129, 140, 248, 0.2), transparent 60%);
         opacity: 0;
-        transition: opacity 0.4s;
+        transition: opacity 0.5s;
     }
 
     .horizontal-card:hover .card-glow { opacity: 1; }
@@ -318,19 +311,20 @@
     }
 
     @@keyframes slideLeft {
-        from { opacity: 0; transform: translateX(-30px); }
+        from { opacity: 0; transform: translateX(-40px); }
         to { opacity: 1; transform: translateX(0); }
     }
 
-    .animate-fade-in { animation: fadeIn 1s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 1.2s ease-out forwards; }
     @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    @@media (max-width: 640px) {
-        .horizontal-card { padding: 1.25rem; }
-        .card-icon { width: 52px; height: 52px; font-size: 1.6rem; margin-right: 1.25rem; }
-        .card-body h3 { font-size: 1.1rem; }
+    @@media (max-width: 768px) {
+        .selection-container { padding: 2rem 1rem; }
+        .welcome-text { font-size: 2rem; }
+        .machine-hero { max-width: 280px; margin-bottom: 3rem; }
+        .horizontal-card { padding: 1.5rem; border-radius: 20px; }
+        .card-icon { width: 60px; height: 60px; font-size: 1.8rem; margin-right: 1.5rem; }
+        .card-body h3 { font-size: 1.2rem; }
         .card-body p { font-size: 0.85rem; }
-        .machine-hero { height: 180px; }
-        .card-bg-icon { font-size: 3rem; }
     }
 </style>

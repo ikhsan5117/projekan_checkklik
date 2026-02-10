@@ -21,9 +21,14 @@ public class HomeController : Controller
         _plantService = plantService;
     }
 
-    [Authorize(Roles = "Administrator,Admin,Supervisor")]
     public IActionResult Index()
     {
+        // If not admin/supervisor, redirect to Selection
+        if (!User.IsInRole("Administrator") && !User.IsInRole("Admin") && !User.IsInRole("Supervisor"))
+        {
+            return RedirectToAction("Selection");
+        }
+
         var viewModel = GetDashboardViewModel();
         return View(viewModel);
     }
