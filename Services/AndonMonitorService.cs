@@ -54,11 +54,11 @@ namespace AMRVI.Services
             {
                 // Create a scope to get scoped services
                 using var scope = _serviceProvider.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var context = scope.ServiceProvider.GetRequiredService<ProductionDbContext>();
 
                 // Check production table via Raw SQL for changes
                 var latestLogs = await context.ScwLogs
-                    .FromSqlRaw("SELECT * FROM [ELWP_PRD].[produksi].[tb_elwp_produksi_scw_logs] WHERE [ResolvedAt] IS NULL")
+                    .FromSqlRaw("SELECT * FROM [produksi].[tb_elwp_produksi_scw_logs] WHERE [ResolvedAt] IS NULL")
                     .ToListAsync();
 
                 var hasChanges = latestLogs.Any(a => a.CreatedAt > _lastCheckTime);

@@ -17,11 +17,17 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
-// Add DbContext with conditional provider
+// Add DbContexts with conditional provider
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    // Always use SQL Server (Local or Production)
+    // Primary Application Database
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+builder.Services.AddDbContext<ProductionDbContext>(options =>
+{
+    // Secondary Production Database (ELWP_PRD)
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ELWPConnection"));
 });
 
 // Add HttpContextAccessor (diperlukan untuk PlantService)

@@ -14,15 +14,18 @@ namespace AMRVI.Controllers
     public class AndonController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ProductionDbContext _prodContext;
         private readonly PlantService _plantService;
         private readonly IHubContext<NotificationHub> _hubContext;
 
         public AndonController(
             ApplicationDbContext context,
+            ProductionDbContext prodContext,
             PlantService plantService,
             IHubContext<NotificationHub> hubContext)
         {
             _context = context;
+            _prodContext = prodContext;
             _plantService = plantService;
             _hubContext = hubContext;
         }
@@ -39,15 +42,23 @@ namespace AMRVI.Controllers
         {
             try
             {
-                // Use Raw SQL for cross-database access with proper bracket escaping
-                var allLogs = await _context.ScwLogs
-                    .FromSqlRaw("SELECT * FROM [ELWP_PRD].[produksi].[tb_elwp_produksi_scw_logs] WHERE [ResolvedAt] IS NULL")
+                // Ambil semua data hari ini agar sinkron dengan spreadsheets (termasuk yang sudah RUNNING/Resolved)
+                // Filter by date (today) in SQL to improve performance
+                var allLogs = await _prodContext.ScwLogs
+                    .FromSqlRaw("SELECT * FROM [produksi].[tb_elwp_produksi_scw_logs] WHERE CAST([CreatedAt] AS DATE) = CAST(GETDATE() AS DATE)")
                     .ToListAsync();
+
+                if (allLogs == null || !allLogs.Any())
+                {
+                    // If no data today, try fetching the last 50 records as fallback to verify connectivity
+                    allLogs = await _prodContext.ScwLogs
+                        .FromSqlRaw("SELECT TOP 50 * FROM [produksi].[tb_elwp_produksi_scw_logs] ORDER BY [CreatedAt] DESC")
+                        .ToListAsync();
+                }
 
                 var records = allLogs
                     .Select(a => {
                         // Map PlantId based on ELWP_PRD production database
-                        // 1: Plant Hose, 2: Plant Molded, 3: Plant RVI, 4: Plant BTR
                         string plantCode = a.PlantId switch {
                             1 => "HOSE",
                             2 => "MOLDED",
@@ -65,33 +76,29 @@ namespace AMRVI.Controllers
                             StatusName = a.Status?.ToUpper() ?? "UNKNOWN",
                             FourMCode = a.Jenis4M?.ToUpper() ?? "NONE",
                             FourMName = a.Jenis4M?.ToUpper() ?? "NONE",
-                            AreaName = a.AreaId switch {
-                                1 => "AREA A",
-                                2 => "AREA B",
-                                3 => "AREA C",
-                                4 => "AREA D",
-                                _ => "AREA " + a.AreaId
-                            },
+                            AreaName = a.AreaId.ToString(),
                             DetailProblem = a.DetailProblem,
-                            Remark = a.Keterangan ?? "No Remark",
+                            Remark = a.Keterangan ?? "-",
                             RecordedAt = a.CreatedAt,
                             IsResolved = a.ResolvedAt != null
                         };
                     })
-                    .OrderBy(a => a.MachineCode)
+                    .OrderByDescending(a => a.RecordedAt)
                     .ToList();
 
                 // Apply plant filter if specified
                 if (!string.IsNullOrEmpty(plant) && plant != "ALL")
                 {
-                    records = records.Where(r => r.PlantCode == plant).ToList();
+                    var filtered = records.Where(r => r.PlantCode.Equals(plant, StringComparison.OrdinalIgnoreCase)).ToList();
+                    return Ok(filtered);
                 }
 
                 return Ok(records);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = ex.ToString() });
+                // Return detailed error for debugging in console
+                return StatusCode(500, new { error = "Database Error", details = ex.Message });
             }
         }
 
