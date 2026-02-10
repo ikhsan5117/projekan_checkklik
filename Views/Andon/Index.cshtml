@@ -22,13 +22,15 @@
             <h1 id="headerTitle">ANDON CONTROL SYSTEM @ViewBag.CurrentPlant</h1>
         </div>
         <div class="header-right">
-            <div class="sync-status" style="margin-right: 20px;">
+            <div class="sync-status">
                 <i class="ph-calendar" style="color: #00d9ff;"></i>
                 <span id="todayDate">TODAY: Loading...</span>
             </div>
-            <div class="sync-status" id="liveIndicator">
-                <div class="dot"></div>
-                <span id="signalrStatus">CONNECTING...</span>
+            
+            <!-- Auto Scroll Toggle -->
+            <div class="scroll-toggle active" id="btnAutoScroll" title="Toggle Auto Scroll">
+                <div class="toggle-dot"></div>
+                <span>AUTO SCROLL</span>
             </div>
         </div>
     </div>
@@ -83,19 +85,16 @@
                 <thead>
                     <tr>
                         <th style="width: 40px;">NO.</th>
-                        <th>PLANT</th>
-                        <th>AREA</th>
                         <th class="sortable" id="machineHeader" style="cursor: pointer;">
-                            MESIN <i class="ph-arrows-down-up sort-icon"></i>
+                            MACHINE <i class="ph-arrows-down-up sort-icon"></i>
                         </th>
                         <th class="sortable" id="statusHeader" style="cursor: pointer;">
                             STATUS <i class="ph-arrows-down-up sort-icon"></i>
                         </th>
                         <th class="sortable" id="kategoriHeader" style="cursor: pointer;">
-                            KATEGORI 4M <i class="ph-arrows-down-up sort-icon"></i>
+                            4M <i class="ph-arrows-down-up sort-icon"></i>
                         </th>
-                        <th>PROBLEM</th>
-                        <th>KETERANGAN</th>
+                        <th>REMARK</th>
                         <th style="width: 120px;">WAKTU LOG</th>
                     </tr>
                 </thead>
@@ -198,6 +197,12 @@
         font-weight: 500;
         margin: 0;
         letter-spacing: 1px;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 25px;
     }
 
     .sync-status {
@@ -330,17 +335,18 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        background: #0a0a0a;
+        background: linear-gradient(90deg, #1e3a8a 0%, #0f172a 100%); /* Deep Navy Blue Gradient */
+        border-bottom: 2px solid #3b82f6;
     }
 
     .andon-table th {
-        color: var(--box-blue);
+        color: #ffffff; /* Putih agar kontras dengan biru */
         text-align: left;
-        padding: 12px 15px;
-        border-bottom: 1px solid #333;
-        font-weight: 500;
+        padding: 14px 15px;
+        border-bottom: 1px solid #3b82f6;
+        font-weight: 700;
         text-transform: uppercase;
-        background: #0a0a0a;
+        background: transparent; /* Biarkan gradiasi thead yang muncul */
         position: sticky;
         top: 0;
     }
@@ -494,6 +500,58 @@
         text-shadow: 0 0 15px rgba(255,255,255,0.1);
     }
 
+    /* Auto Scroll Toggle */
+    .scroll-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 217, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        user-select: none;
+    }
+    
+    .scroll-toggle:hover {
+        background: rgba(0, 217, 255, 0.1);
+        border-color: #00d9ff;
+        transform: translateY(-1px);
+    }
+    
+    .scroll-toggle.active {
+        background: rgba(0, 255, 136, 0.1);
+        border-color: #00ff88;
+    }
+    
+    .scroll-toggle .toggle-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #555;
+        transition: all 0.3s ease;
+    }
+    
+    .scroll-toggle.active .toggle-dot {
+        background: #00ff88;
+        box-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+    }
+    
+    .scroll-toggle span {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    
+    .scroll-toggle.active span {
+        color: #00ff88;
+        text-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+    }
+
     /* Responsive adjustments */
     @@media (max-width: 1200px) {
         .dashboard-body { grid-template-columns: 1fr; }
@@ -507,9 +565,44 @@
         let selectedPlant = '@ViewBag.CurrentPlant'; // Get plant from server session
         let isSortedByPriority = false; // Track sorting state for STATUS
         let isSortedBy4M = false; // Track sorting state for 4M
-        let isSortedByMachine = true; // Set Machine as default sort to match controller change
+        let isSortedByMachine = true; // Set Machine as default sort
 
         async function fetchAndonData() {
+            // Simulasi Data Google Sheets untuk Ujicoba (Sesuai Gambar User)
+            const simulationData = [
+                // Contoh Data RVI disesuaikan ke Tanggal Hari Ini (Waktu Lokal)
+                { plantCode: "RVI", machineCode: "Machine 1", fourMName: "NO PROBLEM", detailProblem: "-", remark: "NO PROBLEM", statusName: "RUNNING", recordedAt: new Date().toISOString() },
+                { plantCode: "RVI", machineCode: "Machine 2", fourMName: "MATERIAL", detailProblem: "Material Shortage", remark: "MATERIAL SHORTAGE", statusName: "LINE STOP", recordedAt: new Date().toISOString() },
+                { plantCode: "RVI", machineCode: "Machine 3", fourMName: "MATERIAL", detailProblem: "Material Shortage", remark: "MATERIAL SHORTAGE", statusName: "LINE STOP", recordedAt: new Date().toISOString() },
+                { plantCode: "RVI", machineCode: "Machine 4", fourMName: "MATERIAL", detailProblem: "Material Shortage", remark: "MATERIAL SHORTAGE", statusName: "LINE STOP", recordedAt: new Date().toISOString() },
+                { plantCode: "RVI", machineCode: "Machine 5", fourMName: "NO PROBLEM", detailProblem: "-", remark: "NO PROBLEM", statusName: "RUNNING", recordedAt: new Date().toISOString() },
+                { plantCode: "MOLDED", machineCode: "Machine 1", fourMName: "-JENIS 4M-", detailProblem: "-", remark: "-JENIS REMARK-", statusName: "RUNNING", recordedAt: new Date().toISOString() },
+                { plantCode: "MOLDED", machineCode: "Machine 2", fourMName: "NO PROBLEM", detailProblem: "-", remark: "NO PROBLEM", statusName: "RUNNING", recordedAt: new Date().toISOString() }
+            ];
+
+            // Tambahkan data dummy tambahan bervariasi (Gunakan waktu lokal saat ini)
+            const extraDataCount = 40;
+            const possibleRemarks = ["NO PROBLEM", "MATERIAL SHORTAGE", "BREAKDOWN", "MAINTENANCE", "OPERATOR ABSENT", "CHANGE MODEL"];
+            const possibleCats = ["NO PROBLEM", "MATERIAL", "MACHINE", "MAN", "METHODE"];
+
+            for (let i = 10; i <= extraDataCount + 10; i++) {
+                const isIssue = i % 4 === 0;
+                // Buat waktu hari ini dengan variasi menit saja agar tetap "Today" secara lokal
+                const simulatedDate = new Date(Date.now() - (i * 60000)).toISOString(); 
+                
+                simulationData.push({
+                    plantCode: selectedPlant,
+                    machineCode: "Machine " + i, // Nomor berurutan 10, 11, 12...
+                    fourMName: isIssue ? possibleCats[i % possibleCats.length] : "NO PROBLEM",
+                    detailProblem: isIssue ? "Technical Issue detected" : "-",
+                    remark: isIssue ? possibleRemarks[i % possibleRemarks.length] : "NO PROBLEM",
+                    statusName: isIssue ? (i % 8 === 0 ? "LINE STOP" : "NO LOADING") : "RUNNING",
+                    recordedAt: simulatedDate
+                });
+            }
+
+            // Fungsi asli (sementara dinonaktifkan untuk ujicoba)
+            /*
             try {
                 const response = await fetch('@Url.Action("GetData", "Andon")');
                 if (!response.ok) throw new Error('Network response was not ok');
@@ -518,6 +611,10 @@
             } catch (error) {
                 console.error("Error fetching Andon data:", error);
             }
+            */
+
+            console.log("Using Simulation Data for Scroll Test");
+            parseAndRender(simulationData);
         }
 
         function parseAndRender(data) {
@@ -540,6 +637,7 @@
                 problem: record.detailProblem || "-",
                 remark: record.remark || "-",
                 status: (record.statusName || "-").toUpperCase(),
+                recordedAt: record.recordedAt, // Simpan untuk filter tanggal
                 timestamp: record.recordedAt ? new Date(record.recordedAt).toLocaleString('id-ID') : "-"
             }));
 
@@ -590,12 +688,32 @@
         }
 
         function sortDataByMachine(data) {
-            return [...data].sort((a, b) => a.machine.localeCompare(b.machine));
+            return [...data].sort((a, b) => a.machine.localeCompare(b.machine, undefined, { numeric: true, sensitivity: 'base' }));
         }
 
         function applyPlantFilter() {
-            // Filter data by current selected plant (HOSE, MOLDED, RVI, etc)
-            let filteredData = allData.filter(d => d.plant === selectedPlant);
+            // Dapatkan tanggal hari ini dalam format lokal (YYYY-MM-DD)
+            const now = new Date();
+            const todayStr = now.getFullYear() + '-' + 
+                           String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(now.getDate()).padStart(2, '0');
+
+            // Filter data by current selected plant AND Today's local date
+            let filteredData = allData.filter(d => {
+                const isSamePlant = d.plant === selectedPlant;
+                
+                // Cek apakah recordedAt ada pada hari yang sama secara lokal
+                let isToday = false;
+                if (d.recordedAt) {
+                    const recordDate = new Date(d.recordedAt);
+                    const recordDateStr = recordDate.getFullYear() + '-' + 
+                                       String(recordDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                                       String(recordDate.getDate()).padStart(2, '0');
+                    isToday = recordDateStr === todayStr;
+                }
+                
+                return isSamePlant && isToday;
+            });
 
             // Apply sorting if enabled
             if (isSortedByPriority) {
@@ -609,6 +727,54 @@
             renderTable(filteredData);
             updateStats(filteredData);
             updateHeaderTitle();
+        }
+
+        let isAutoScrollEnabled = true;
+        let scrollInterval;
+        let isScrollPaused = false;
+
+        function initAutoScroll() {
+            const container = document.querySelector('.table-container-v2');
+            if (!container) return;
+
+            // Clear interval if already exists
+            if (scrollInterval) clearInterval(scrollInterval);
+
+            scrollInterval = setInterval(() => {
+                if (!isAutoScrollEnabled || isScrollPaused) return;
+
+                const maxScroll = container.scrollHeight - container.clientHeight;
+                if (maxScroll <= 0) return;
+
+                // Reset to top if reached bottom
+                if (container.scrollTop >= maxScroll - 1) {
+                    isScrollPaused = true;
+                    setTimeout(() => {
+                        container.scrollTo({ top: 0, behavior: 'smooth' });
+                        setTimeout(() => {
+                            isScrollPaused = false;
+                        }, 2000); // 2 seconds wait at top
+                    }, 3000); // 3 seconds wait at bottom
+                } else {
+                    container.scrollTop += 1;
+                }
+            }, 40); // 40ms speed
+
+            // Pause on hover
+            container.onmouseenter = () => isScrollPaused = true;
+            container.onmouseleave = () => isScrollPaused = false;
+
+            // Toggle logic
+            const btnToggle = document.getElementById('btnAutoScroll');
+            if (btnToggle) {
+                btnToggle.onclick = () => {
+                    isAutoScrollEnabled = !isAutoScrollEnabled;
+                    btnToggle.classList.toggle('active', isAutoScrollEnabled);
+                    if (isAutoScrollEnabled) {
+                        isScrollPaused = false;
+                    }
+                };
+            }
         }
 
         function updateHeaderTitle() {
@@ -766,6 +932,8 @@
             const indicator = document.getElementById('liveIndicator');
             const statusText = document.getElementById('signalrStatus');
             
+            if (!indicator || !statusText) return;
+
             // Remove all status classes
             indicator.classList.remove('connected', 'connecting', 'disconnected');
             
@@ -778,6 +946,8 @@
 
         function showLiveIndicator() {
             const indicator = document.getElementById('liveIndicator');
+            if (!indicator) return;
+
             indicator.classList.add('pulse');
             setTimeout(() => {
                 indicator.classList.remove('pulse');
@@ -833,8 +1003,7 @@
                 
                 tr.innerHTML = `
                     <td style="color: ${rowClass ? 'white' : '#888'};">${index + 1}.</td>
-                    <td>${m.plant}</td>
-                    <td>${m.area}</td>
+
                     <td style="font-weight: 600;">${m.machine}</td>
                     <td class="badge-cell">
                         <span class="status-badge ${badgeClass}">${m.status}</span>
@@ -842,7 +1011,7 @@
                     <td class="${badge4M ? 'badge-cell' : ''}" style="${!badge4M ? `color: ${rowClass ? 'white' : '#bbb'};` : ''}">
                         ${badge4M ? `<span class="badge-4m ${badge4M}">${m.kategori}</span>` : m.kategori}
                     </td>
-                    <td style="color: ${rowClass ? 'white' : '#999'}; font-size: 0.85rem;">${m.problem}</td>
+
                     <td style="color: ${rowClass ? 'white' : '#999'}; font-size: 0.85rem;">${m.remark}</td>
                     <td style="color: ${rowClass ? 'white' : '#aaa'}; font-size: 0.85rem;">${formattedTime}</td>
                 `;
@@ -878,6 +1047,9 @@
         setInterval(fetchAndonData, 30000);
 
         // Initial Load
-        document.addEventListener('DOMContentLoaded', fetchAndonData);
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAndonData();
+            initAutoScroll();
+        });
     </script>
 }
