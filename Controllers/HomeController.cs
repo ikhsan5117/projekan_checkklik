@@ -186,7 +186,7 @@ public class HomeController : Controller
         var inspectionsToday = _plantService.GetInspectionSessions()
             .Where(s => s.InspectionDate >= shiftStartTime && s.IsCompleted)
             .Select(s => s.MachineNumberId)
-            .Distinct()
+            .GroupBy(id => id)
             .Count();
 
         var issuesToday = _plantService.GetInspectionResults()

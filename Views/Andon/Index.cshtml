@@ -568,53 +568,18 @@
         let isSortedByMachine = true; // Set Machine as default sort
 
         async function fetchAndonData() {
-            // Simulasi Data Google Sheets untuk Ujicoba (Sesuai Gambar User)
-            const simulationData = [
-                // Contoh Data RVI disesuaikan ke Tanggal Hari Ini (Waktu Lokal)
-                { plantCode: "RVI", machineCode: "Machine 1", fourMName: "NO PROBLEM", detailProblem: "-", remark: "NO PROBLEM", statusName: "RUNNING", recordedAt: new Date().toISOString() },
-                { plantCode: "RVI", machineCode: "Machine 2", fourMName: "MATERIAL", detailProblem: "Material Shortage", remark: "MATERIAL SHORTAGE", statusName: "LINE STOP", recordedAt: new Date().toISOString() },
-                { plantCode: "RVI", machineCode: "Machine 3", fourMName: "MATERIAL", detailProblem: "Material Shortage", remark: "MATERIAL SHORTAGE", statusName: "LINE STOP", recordedAt: new Date().toISOString() },
-                { plantCode: "RVI", machineCode: "Machine 4", fourMName: "MATERIAL", detailProblem: "Material Shortage", remark: "MATERIAL SHORTAGE", statusName: "LINE STOP", recordedAt: new Date().toISOString() },
-                { plantCode: "RVI", machineCode: "Machine 5", fourMName: "NO PROBLEM", detailProblem: "-", remark: "NO PROBLEM", statusName: "RUNNING", recordedAt: new Date().toISOString() },
-                { plantCode: "MOLDED", machineCode: "Machine 1", fourMName: "-JENIS 4M-", detailProblem: "-", remark: "-JENIS REMARK-", statusName: "RUNNING", recordedAt: new Date().toISOString() },
-                { plantCode: "MOLDED", machineCode: "Machine 2", fourMName: "NO PROBLEM", detailProblem: "-", remark: "NO PROBLEM", statusName: "RUNNING", recordedAt: new Date().toISOString() }
-            ];
-
-            // Tambahkan data dummy tambahan bervariasi (Gunakan waktu lokal saat ini)
-            const extraDataCount = 40;
-            const possibleRemarks = ["NO PROBLEM", "MATERIAL SHORTAGE", "BREAKDOWN", "MAINTENANCE", "OPERATOR ABSENT", "CHANGE MODEL"];
-            const possibleCats = ["NO PROBLEM", "MATERIAL", "MACHINE", "MAN", "METHODE"];
-
-            for (let i = 10; i <= extraDataCount + 10; i++) {
-                const isIssue = i % 4 === 0;
-                // Buat waktu hari ini dengan variasi menit saja agar tetap "Today" secara lokal
-                const simulatedDate = new Date(Date.now() - (i * 60000)).toISOString(); 
-                
-                simulationData.push({
-                    plantCode: selectedPlant,
-                    machineCode: "Machine " + i, // Nomor berurutan 10, 11, 12...
-                    fourMName: isIssue ? possibleCats[i % possibleCats.length] : "NO PROBLEM",
-                    detailProblem: isIssue ? "Technical Issue detected" : "-",
-                    remark: isIssue ? possibleRemarks[i % possibleRemarks.length] : "NO PROBLEM",
-                    statusName: isIssue ? (i % 8 === 0 ? "LINE STOP" : "NO LOADING") : "RUNNING",
-                    recordedAt: simulatedDate
-                });
-            }
-
-            // Fungsi asli (sementara dinonaktifkan untuk ujicoba)
-            /*
             try {
-                const response = await fetch('@Url.Action("GetData", "Andon")');
+                const response = await fetch('@Url.Action("GetData", "Andon")?plant=' + selectedPlant);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const jsonData = await response.json();
+                console.log("Real Data fetched:", jsonData);
                 parseAndRender(jsonData);
             } catch (error) {
                 console.error("Error fetching Andon data:", error);
+                // Fallback sederhana jika API belum siap
+                allData = [];
+                applyPlantFilter();
             }
-            */
-
-            console.log("Using Simulation Data for Scroll Test");
-            parseAndRender(simulationData);
         }
 
         function parseAndRender(data) {
