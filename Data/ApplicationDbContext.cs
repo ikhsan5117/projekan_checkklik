@@ -58,6 +58,8 @@ namespace AMRVI.Data
         public DbSet<FourMCategory> FourMCategories { get; set; }
         public DbSet<AndonRecord> AndonRecords { get; set; }
         public DbSet<ScwLog> ScwLogs { get; set; }
+        public DbSet<HenkatenProblem> HenkatenProblems { get; set; }
+        public DbSet<ManPower> ManPowers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -294,6 +296,37 @@ namespace AMRVI.Data
             modelBuilder.Entity<AndonRecord>()
                 .HasOne(a => a.FourMCategory)
                 .WithMany(f => f.AndonRecords)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure HenkatenProblem
+            modelBuilder.Entity<HenkatenProblem>()
+                .HasIndex(h => h.PlantId);
+
+            modelBuilder.Entity<HenkatenProblem>()
+                .HasIndex(h => h.TanggalUpdate);
+
+            modelBuilder.Entity<HenkatenProblem>()
+                .HasIndex(h => h.Status);
+
+            modelBuilder.Entity<HenkatenProblem>()
+                .HasOne(h => h.Plant)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure ManPower
+            modelBuilder.Entity<ManPower>()
+                .HasIndex(m => m.NIK)
+                .IsUnique();
+
+            modelBuilder.Entity<ManPower>()
+                .HasIndex(m => m.PlantId);
+
+            modelBuilder.Entity<ManPower>()
+                .HasIndex(m => m.IsActive);
+
+            modelBuilder.Entity<ManPower>()
+                .HasOne(m => m.Plant)
+                .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
         }
 

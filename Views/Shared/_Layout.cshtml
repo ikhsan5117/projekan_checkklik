@@ -63,6 +63,17 @@
                         <span class="link-text">ANDON MONITORING</span>
                     </a>
                 }
+                @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
+                {
+                    <a href="@Url.Action("Index", "Henkaten")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Henkaten" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                        <i class="ph-warning-circle"></i>
+                        <span class="link-text">HENKATEN PROBLEM</span>
+                    </a>
+                    <a href="@Url.Action("Analytics", "Henkaten")" class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Henkaten" && ViewContext.RouteData.Values["Action"]?.ToString() == "Analytics" ? "active" : "")">
+                        <i class="ph-chart-bar"></i>
+                        <span class="link-text">ANALYTIC HENKATEN</span>
+                    </a>
+                }
                 <div class="nav-divider"></div>
                 
                 @if (User.IsInRole("Administrator") || User.IsInRole("Admin") || User.IsInRole("Supervisor"))
@@ -93,6 +104,10 @@
                             <a href="@Url.Action("ImportVelasto", "ChecklistData")" class="nav-link submenu-item" title="Smart Import Velasto">
                                 <i class="ph-file-xls"></i>
                                 <span class="submenu-text">Smart Import Velasto</span>
+                            </a>
+                            <a href="@Url.Action("Index", "ManPower")" class="nav-link submenu-item" title="Master Data ManPower">
+                                <i class="ph-users"></i>
+                                <span class="submenu-text">Master Data ManPower</span>
                             </a>
                         </div>
                     </div>

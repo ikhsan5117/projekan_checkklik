@@ -1,0 +1,154 @@
+@{
+    ViewData["Title"] = "Master Data ManPower";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/henkaten.css" asp-append-version="true" />
+}
+
+<div class="henkaten-container">
+    <!-- Header Section -->
+    <div class="page-header-henkaten">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="ph-users header-icon" style="color: #22d3ee;"></i>
+                <div>
+                    <h1 class="page-title">Master Data <span class="gradient-text" style="background: linear-gradient(90deg, #22d3ee, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ManPower</span></h1>
+                    <p class="page-subtitle">Data Karyawan dan Operator</p>
+                </div>
+            </div>
+            <button class="btn-add-new" onclick="openCreateModal()">
+                <i class="ph-user-plus"></i>
+                <span>Tambah ManPower</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="table-container-henkaten">
+        <div class="table-header">
+            <div class="search-box">
+                <i class="ph-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Cari NIK, nama, jabatan..." />
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="henkaten-table" id="manPowerTable">
+                <thead>
+                    <tr>
+                        <th>NIK</th>
+                        <th>NAMA LENGKAP</th>
+                        <th>JABATAN</th>
+                        <th>DEPARTMENT</th>
+                        <th>SHIFT</th>
+                        <th>AREA/LINE</th>
+                        <th>NO. TELEPON</th>
+                        <th>STATUS</th>
+                        <th>AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be loaded here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Create/Edit -->
+<div class="modal-overlay" id="formModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 id="modalTitle">Tambah Data ManPower</h2>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="ph-x"></i>
+            </button>
+        </div>
+
+        <form id="manPowerForm">
+            <input type="hidden" id="manPowerId" name="Id" />
+
+            <div class="modal-body">
+                <!-- Data Karyawan Section -->
+                <div class="form-section">
+                    <h3 class="section-title">Data Karyawan</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nik">NIK</label>
+                            <input type="text" id="nik" name="NIK" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="namaLengkap">NAMA LENGKAP</label>
+                            <input type="text" id="namaLengkap" name="NamaLengkap" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="jabatan">JABATAN</label>
+                            <input type="text" id="jabatan" name="Jabatan" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="department">DEPARTMENT</label>
+                            <input type="text" id="department" name="Department" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="shift">SHIFT</label>
+                            <select id="shift" name="Shift" required>
+                                <option value="">-- Pilih Shift --</option>
+                                <option value="Shift 1">Shift 1</option>
+                                <option value="Shift 2">Shift 2</option>
+                                <option value="Shift 3">Shift 3</option>
+                                <option value="Non-Shift">Non-Shift</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="areaLine">AREA/LINE</label>
+                            <input type="text" id="areaLine" name="AreaLine" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kontak Section -->
+                <div class="form-section">
+                    <h3 class="section-title">Informasi Kontak</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="noTelepon">NO. TELEPON</label>
+                            <input type="tel" id="noTelepon" name="NoTelepon" placeholder="08xxxxxxxxxx" />
+                        </div>
+                        <div class="form-group">
+                            <label for="email">EMAIL</label>
+                            <input type="email" id="email" name="Email" placeholder="nama@example.com" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                            <input type="checkbox" id="isActive" name="IsActive" checked style="width: 20px; height: 20px; cursor: pointer;" />
+                            <span style="color: #f1f5f9; font-size: 0.95rem;">Karyawan Aktif</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
+                <button type="submit" class="btn-submit">
+                    <i class="ph-floppy-disk"></i>
+                    <span>Simpan Data</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/manpower.js" asp-append-version="true"></script>
+}

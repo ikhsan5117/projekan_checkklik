@@ -101,6 +101,13 @@ namespace AMRVI.Services
             };
         }
 
+        public int GetPlantId()
+        {
+            var plantCode = GetCurrentPlant();
+            var plant = _context.Plants.FirstOrDefault(p => p.PlantCode == plantCode);
+            return plant?.Id ?? 1; // Default to RVI (Id = 1)
+        }
+
         public string GetPlantName()
         {
             return GetCurrentPlant();

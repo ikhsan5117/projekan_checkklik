@@ -1,0 +1,220 @@
+@{
+    ViewData["Title"] = "Henkaten Problem";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/henkaten.css" asp-append-version="true" />
+}
+
+<div class="henkaten-container">
+    <!-- Header Section -->
+    <div class="page-header-henkaten">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="ph-warning-circle header-icon"></i>
+                <div class="header-text">
+                    <h1 class="page-title">Data Temuan <span class="gradient-text">Problem Henkaten</span></h1>
+                    <p class="page-subtitle">Sistem Manajemen Problem dan Perbaikan</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="table-container-henkaten">
+        <div class="table-header">
+            <div class="header-tools">
+                <div class="search-box">
+                    <i class="ph-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Cari data..." />
+                </div>
+                <div class="filter-group">
+                    <button class="btn-filter active" data-filter="all">Semua</button>
+                    <button class="btn-filter" data-filter="pending">Pending</button>
+                    <button class="btn-filter" data-filter="selesai">Selesai</button>
+                </div>
+                <button class="btn-add-new-subtle" onclick="openCreateModal()">
+                    <i class="ph-plus-circle"></i>
+                    <span>Tambah Temuan</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="henkaten-table" id="henkatenTable">
+                <thead>
+                    <tr>
+                        <th>TGL UPDATE</th>
+                        <th>SHIFT</th>
+                        <th>PIC (LEADER)</th>
+                        <th>AREA/LINE</th>
+                        <th>OPERATOR</th>
+                        <th>JENIS 4M</th>
+                        <th>MEDIA</th>
+                        <th>TGL RENCANA</th>
+                        <th>STATUS</th>
+                        <th>AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be loaded here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Create/Edit -->
+<div class="modal-overlay" id="formModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 id="modalTitle">Input Temuan Problem Henkaten</h2>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="ph-x"></i>
+            </button>
+        </div>
+
+        <form id="henkatenForm" enctype="multipart/form-data">
+            <input type="hidden" id="problemId" name="Id" />
+
+            <div class="modal-body">
+                <!-- Data Temuan Section -->
+                <div class="form-section">
+                    <h3 class="section-title">Data Temuan Problem</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tanggalUpdate">TANGGAL UPDATE</label>
+                            <input type="date" id="tanggalUpdate" name="TanggalUpdate" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="shift">SHIFT</label>
+                            <select id="shift" name="Shift" required>
+                                <option value="">-- Pilih Shift --</option>
+                                <option value="Shift 1">Shift 1</option>
+                                <option value="Shift 2">Shift 2</option>
+                                <option value="Shift 3">Shift 3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="picLeader">PIC UPDATE (LEADER)</label>
+                            <input type="text" id="picLeader" name="PicLeader" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="namaAreaLine">NAMA AREA/LINE</label>
+                            <input type="text" id="namaAreaLine" name="NamaAreaLine" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="namaOperator">NAMA OPERATOR</label>
+                            <input type="text" id="namaOperator" name="NamaOperator" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="jenis4M">JENIS 4M</label>
+                            <select id="jenis4M" name="Jenis4M" required>
+                                <option value="">-- Pilih Jenis 4M --</option>
+                                <option value="Man">Man</option>
+                                <option value="Machine">Machine</option>
+                                <option value="Material">Material</option>
+                                <option value="Method">Method</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="keteranganProblem">KETERANGAN PROBLEM</label>
+                        <textarea id="keteranganProblem" name="KeteranganProblem" rows="3" required></textarea>
+                    </div>
+                </div>
+
+                <!-- Rencana Perbaikan Section -->
+                <div class="form-section">
+                    <h3 class="section-title">Rencana Perbaikan</h3>
+                    
+                    <div class="form-group">
+                        <label for="rencanaPerbaikan">RENCANA PERBAIKAN</label>
+                        <textarea id="rencanaPerbaikan" name="RencanaPerbaikan" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tanggalRencanaPerbaikan">TANGGAL RENCANA PERBAIKAN</label>
+                            <input type="date" id="tanggalRencanaPerbaikan" name="TanggalRencanaPerbaikan" required />
+                        </div>
+                        <div class="form-group">
+                            <label>FOTO TEMUAN</label>
+                            <div class="custom-file-upload" onclick="document.getElementById('fotoTemuan').click()">
+                                <input type="file" id="fotoTemuan" name="fotoTemuan" accept="image/*" onchange="previewImage(this, 'previewTemuan')" style="display: none;" />
+                                <div class="upload-placeholder">
+                                    <i class="ph-cloud-arrow-up"></i>
+                                    <span>Klik atau Drop Gambar di Sini</span>
+                                </div>
+                                <div class="image-preview" id="previewTemuan"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Aktual Section (Optional) -->
+                <div class="form-section">
+                    <h3 class="section-title">Data Aktual (Opsional)</h3>
+                    
+                    <div class="form-group">
+                        <label for="aktualPerbaikan">AKTUAL PERBAIKAN</label>
+                        <textarea id="aktualPerbaikan" name="AktualPerbaikan" rows="3" placeholder="Isi jika sudah ada perbaikan aktual..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tanggalAktualPerbaikan">TANGGAL AKTUAL PERBAIKAN</label>
+                            <input type="date" id="tanggalAktualPerbaikan" name="TanggalAktualPerbaikan" />
+                        </div>
+                        <div class="form-group">
+                            <label>FOTO AKTUAL (OPSIONAL)</label>
+                            <div class="custom-file-upload" onclick="document.getElementById('fotoAktual').click()">
+                                <input type="file" id="fotoAktual" name="fotoAktual" accept="image/*" onchange="previewImage(this, 'previewAktual')" style="display: none;" />
+                                <div class="upload-placeholder">
+                                    <i class="ph-camera"></i>
+                                    <span>Upload Foto Sesudah Perbaikan</span>
+                                </div>
+                                <div class="image-preview" id="previewAktual"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
+                <button type="submit" class="btn-submit">
+                    <i class="ph-floppy-disk"></i>
+                    <span>Simpan Temuan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-container modal-detail">
+        <div class="modal-header">
+            <h2>Detail Problem Henkaten</h2>
+            <button class="modal-close" onclick="closeDetailModal()">
+                <i class="ph-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="detailContent">
+            <!-- Detail content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/henkaten.js" asp-append-version="true"></script>
+}
