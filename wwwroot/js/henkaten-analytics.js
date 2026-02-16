@@ -1,20 +1,48 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Event listeners for filters
+    document.getElementById('filterMonth').addEventListener('change', filterData);
+    document.getElementById('filterYear').addEventListener('change', filterData);
+
     // Initial data load
     loadAnalyticsData();
 });
 
 let charts = {};
+let allAnalyticsData = [];
 
 async function loadAnalyticsData() {
     try {
         const response = await fetch('/Henkaten/GetData');
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
+        allAnalyticsData = data;
 
         processAnalytics(data);
     } catch (error) {
         console.error('Error loading analytics data:', error);
     }
+}
+
+function filterData() {
+    const month = document.getElementById('filterMonth').value;
+    const year = document.getElementById('filterYear').value;
+
+    let filtered = allAnalyticsData;
+
+    if (month || year) {
+        filtered = allAnalyticsData.filter(item => {
+            const parts = item.tanggalUpdate.split('/');
+            const itemMonth = parts[1];
+            const itemYear = parts[2];
+
+            const matchMonth = month ? itemMonth === month : true;
+            const matchYear = year ? itemYear === year : true;
+
+            return matchMonth && matchYear;
+        });
+    }
+
+    processAnalytics(filtered);
 }
 
 function processAnalytics(data) {
