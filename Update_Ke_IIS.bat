@@ -3,57 +3,100 @@ setlocal
 pushd "%~dp0"
 
 :: ==========================================
-:: CONFIGURATION
+:: KONFIGURASI
 :: ==========================================
-set "SERVER_IP=10.14.173.54"
-set "DEST_PATH=\\%SERVER_IP%\c$\inetpub\wwwroot\DailyChecklistMachine_Andon"
+set "DEST_PATH=D:\WebApps\DailyCheckMechine"
+set "TEMP_DIR=___UPDATE_TEMP___"
 :: ==========================================
 
-echo.
+cls
 echo ============================================================
-echo      FORCE UPDATE ANDON SYSTEM TO IIS (%SERVER_IP%)
+echo      PROSES UPDATE KE DRIVE D: (DEBUG MODE)
 echo ============================================================
 echo.
 
-:: 1. Build project
-echo [1/4] Memproses Kode C# (Building)...
-dotnet build -c Release /p:Optimize=true
+:: 0. Pembersihan Folder Sisa
+echo [Langkah 0] Membersihkan sisa-sisa update lama...
+if exist "DailyCheckMechine_Update" rd /s /q "DailyCheckMechine_Update"
+if exist "DailyCheckMechine_TEMP" rd /s /q "DailyCheckMechine_TEMP"
+if exist "%TEMP_DIR%" rd /s /q "%TEMP_DIR%"
+echo Pembersihan selesai.
+echo.
+
+:: 1. Jalankan Publish
+echo [Langkah 1] Membangun paket aplikasi (.NET Publish)...
+call dotnet publish -c Release -o "%TEMP_DIR%" --no-restore
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo [INFO] Mencoba build ulang dengan restore otomatis...
+    call dotnet publish -c Release -o "%TEMP_DIR%"
+)
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo [ERROR] Gagal memproses kode.
-    popd
-    pause
-    exit /b %ERRORLEVEL%
+    echo [ERROR] Build Gagal! Cek apakah ada error di kode program.
+    goto :FAILED_PROCESS
+)
+echo [OK] Paket aplikasi berhasil dibuat di folder %TEMP_DIR%.
+echo Silakan tekan tombol apa saja untuk lanjut ke Step 2...
+pause
+
+:: 2. Masuk ke mode Offline
+echo.
+echo [Langkah 2] Menidurkan aplikasi di server (Maintenance)...
+if not exist "%DEST_PATH%" (
+    echo [ERROR] Folder TUJUAN tidak ditemukan: %DEST_PATH%
+    goto :FAILED_PROCESS
 )
 
-:: 2. Masuk ke mode Offline (PENTING)
-echo [2/4] Menidurkan aplikasi di server...
-echo ^<html^>^<body overflow:hidden;background:#0f172a;color:white;font-family:sans-serif^>^<div style="text-align:center;padding-top:20%%"^>^<h2 style="color:#3b82f6"^>System Update in Progress^</h2^>^<p^>Please wait for 10 seconds...^</p^>^</div^>^</body^>^</html^> > "%DEST_PATH%\app_offline.htm"
+:: Membuat file offline
+echo Update sedang berlangsung... > "%DEST_PATH%\app_offline.htm"
+if errorlevel 1 (
+    echo [ERROR] Gagal menulis ke Drive D. Cek izin akses folder!
+    goto :FAILED_PROCESS
+)
+echo [OK] Aplikasi sudah dalam mode maintenance.
+timeout /t 3 /nobreak
 
-:: Menunggu 5 detik (Lebih lama agar IIS benar-benar melepaskan file)
-echo Menunggu IIS melepaskan file (5 detik)...
-timeout /t 5 /nobreak > nul
+:: 3. Jalankan Sinkronisasi File
+echo.
+echo [Langkah 3] Menyalin file baru ke folder IIS...
+:: Perintah Robocopy: /E (Subfolder), /XO (Hanya yang baru), /XF (Kecuali DB dan Config)
+robocopy "%TEMP_DIR%" "%DEST_PATH%" /E /R:3 /W:2 /MT:8 /XF appsettings.json appsettings.Development.json app.db
 
-:: 3. Jalankan Update (Gunakan Robocopy untuk fitur Retry)
-echo [3/4] Mengirim file terbaru (Force Overwrite)...
-
-:: Kirim DLL & PDB (Gunakan Robocopy agar ada usaha retry jika masih terkunci sebentar)
-robocopy "bin\Release\net8.0" "%DEST_PATH%" AMRVI.dll AMRVI.pdb /R:3 /W:2 /NJH /NJS
-
-:: Update Tampilan & Static Files
-robocopy "Views" "%DEST_PATH%\Views" /E /XO /NJH /NJS /NDL /NC /NS /R:3 /W:2
-robocopy "wwwroot" "%DEST_PATH%\wwwroot" /E /XO /NJH /NJS /NDL /NC /NS /R:3 /W:2
+:: Robocopy exit code 8 ke atas artinya ERROR
+if %ERRORLEVEL% GEQ 8 (
+    echo.
+    echo [ERROR] Gagal menyalin file. Kemungkinan ada file yang sedang dibuka atau izin ditolak.
+    goto :FAILED_PROCESS
+)
+echo [OK] File berhasil diperbarui.
+echo Silakan tekan tombol apa saja untuk lanjut ke Step 4...
+pause
 
 :: 4. Hidupkan Kembali
-echo [4/4] Membangunkan kembali aplikasi...
+echo.
+echo [Langkah 4] Menghidupkan kembali aplikasi...
 if exist "%DEST_PATH%\app_offline.htm" del "%DEST_PATH%\app_offline.htm"
+echo [OK] Aplikasi sudah aktif kembali.
+
+:: Bersihkan folder temp
+rd /s /q "%TEMP_DIR%"
 
 echo.
 echo ============================================================
-echo   SELESAI! Silakan cek web di browser.
-echo   (Jika masih duplikat, tekan Ctrl+F5 di browser)
+echo   BERHASIL! Update Dashboard Henkaten sudah terkirim.
 echo ============================================================
+goto :END_PROCESS
+
+:FAILED_PROCESS
 echo.
-popd
+echo [MAAF] Ada kendala pada proses di atas. 
+echo Mohon jangan ditutup, silakan foto/screenshot pesan error di atas.
 pause
+
+:END_PROCESS
+echo.
+echo Selesai. Tekan tombol apa saja untuk tutup.
+pause
+popd

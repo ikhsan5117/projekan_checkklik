@@ -72,10 +72,13 @@ function setupStatusFilters() {
     });
 }
 
-function applyFilters(status) {
+function applyFilters(filterValue) {
     let filtered = allData;
-    if (status !== 'all') {
-        filtered = allData.filter(item => item.status.toLowerCase() === status);
+    if (filterValue !== 'all') {
+        filtered = allData.filter(item => {
+            const calculatedStatus = getItemStatus(item).toLowerCase();
+            return calculatedStatus === filterValue;
+        });
     }
     renderTable(filtered);
 }
