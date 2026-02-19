@@ -284,6 +284,12 @@
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
+.status-delay {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 .status-dot {
     width: 8px;
     height: 8px;
@@ -299,6 +305,11 @@
 .status-selesai .status-dot {
     background: #10b981;
     box-shadow: 0 0 10px #10b981;
+}
+
+.status-delay .status-dot {
+    background: #ef4444;
+    box-shadow: 0 0 10px #ef4444;
 }
 
 /* Shift Badges */

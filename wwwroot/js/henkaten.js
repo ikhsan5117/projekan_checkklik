@@ -5,6 +5,36 @@
 // Global data store for filtering
 let allData = [];
 
+// Helper to determine status
+function getItemStatus(item) {
+    if (!item) return 'Pending';
+
+    // 1. Case-insensitive check for Selesai
+    const dbStatus = (item.status || "").toLowerCase();
+    if (dbStatus === 'selesai') return 'Selesai';
+
+    // 2. Determine target date (fallback to update date if target is missing)
+    const dateStr = item.tanggalRencanaPerbaikan || item.tanggalUpdate;
+
+    if (dateStr && dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+
+            const targetDate = new Date(year, month, day);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (targetDate.getTime() < today.getTime()) {
+                return 'Delay';
+            }
+        }
+    }
+    return 'Pending';
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function () {
     loadData();
@@ -66,7 +96,11 @@ function renderTable(data) {
         return;
     }
 
-    tbody.innerHTML = data.map(item => `
+    tbody.innerHTML = data.map(item => {
+        const currentStatus = getItemStatus(item);
+        const statusClass = currentStatus.toLowerCase();
+
+        return `
         <tr>
             <td>${item.tanggalUpdate}</td>
             <td><span class="badge-shift ${getShiftClass(item.shift)}">${item.shift}</span></td>
@@ -83,9 +117,9 @@ function renderTable(data) {
             </td>
             <td>${item.tanggalRencanaPerbaikan}</td>
             <td>
-                <span class="status-badge status-${item.status.toLowerCase()}">
+                <span class="status-badge status-${statusClass}">
                     <span class="status-dot"></span>
-                    ${item.status}
+                    ${currentStatus}
                 </span>
             </td>
             <td>
@@ -102,7 +136,8 @@ function renderTable(data) {
                 </div>
             </td>
         </tr>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // View Detail Problem

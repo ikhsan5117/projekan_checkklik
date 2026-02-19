@@ -8,138 +8,137 @@
 
 <div class="analytics-container">
     <!-- Header Section -->
-    <div class="page-header-analytics">
-        <div class="header-content">
-            <div class="header-left">
-                <i class="ph-chart-bar header-icon"></i>
-                <div class="header-text">
-                    <h1 class="page-title">Analytics <span class="gradient-text">Problem Henkaten</span></h1>
-                    <p class="page-subtitle">Visualisasi Data Temuan dan Performa Perbaikan</p>
-                </div>
-            </div>
-            <div class="header-right" style="display: flex; gap: 1rem; align-items: center;">
-                <div class="filter-group-analytics">
-                    <select id="filterMonth" class="filter-select">
-                        <option value="">Semua Bulan</option>
-                        <option value="01">Januari</option>
-                        <option value="02">Februari</option>
-                        <option value="03">Maret</option>
-                        <option value="04">April</option>
-                        <option value="05">Mei</option>
-                        <option value="06">Juni</option>
-                        <option value="07">Juli</option>
-                        <option value="08">Agustus</option>
-                        <option value="09">September</option>
-                        <option value="10">Oktober</option>
-                        <option value="11">November</option>
-                        <option value="12">Desember</option>
-                    </select>
-                    <select id="filterYear" class="filter-select">
-                        <option value="">Semua Tahun</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                        <option value="2026">2026</option>
-                    </select>
-                </div>
-                <a href="@Url.Action("Index", "Henkaten")" class="btn-add-new-subtle" style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255,255,255,0.1); color: #fff; text-decoration: none;">
-                    <i class="ph-table"></i>
-                    <span>Tabel Temuan</span>
+    <!-- Page Header & Filter Section -->
+    <header class="page-header-analytics">
+        <div class="header-left">
+            <h1 class="page-title">Analytics <span class="gradient-text">Problem Henkaten</span></h1>
+            <p class="page-subtitle">Visualisasi Data Temuan dan Performa Perbaikan</p>
+            <div id="activeFiltersContainer" class="active-filters-list"></div>
+        </div>
+        
+        <div class="header-right">
+            <div class="filter-group-analytics">
+                <input type="date" id="filterDate">
+                
+                <button id="btnResetFilter" class="btn-reset-analytics" title="Reset ke Hari Ini">
+                    <i class="ph-arrows-counter-clockwise"></i> Reset
+                </button>
+
+                <div class="header-divider"></div>
+
+                <a href="@Url.Action("Index", "Henkaten")" class="btn-list-analytics">
+                    <i class="ph-list-bullets"></i> List Temuan
                 </a>
             </div>
         </div>
+    </header>
+
+    <div class="analytics-dashboard-wrapper">
+        <!-- Sidebar Stats (Left) -->
+        <aside class="analytics-sidebar">
+            <div class="sidebar-stat-card card-total">
+                <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa;">
+                    <i class="ph-database"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Total Temuan</div>
+                    <div class="stat-value" id="totalTemuan">0</div>
+                    <div class="stat-desc" id="totalDesc">Semua data terinput</div>
+                </div>
+            </div>
+
+            <div class="sidebar-stat-card card-pending">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24;">
+                    <i class="ph-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value" id="pendingTemuan">0</div>
+                    <div class="stat-desc" id="pendingDesc">Menunggu perbaikan</div>
+                </div>
+            </div>
+
+            <div class="sidebar-stat-card card-selesai">
+                <div class="stat-icon" style="background: rgba(52, 211, 153, 0.1); color: #34d399;">
+                    <i class="ph-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Selesai</div>
+                    <div class="stat-value" id="selesaiTemuan">0</div>
+                    <div class="stat-desc" id="selesaiDesc">Selesai diperbaiki</div>
+                </div>
+            </div>
+
+            <div class="sidebar-stat-card card-delay">
+                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #f87171;">
+                    <i class="ph-warning"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">Delay</div>
+                    <div class="stat-value" id="delayTemuan">0</div>
+                    <div class="stat-desc" id="delayDesc">Melewati target</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Area (Right) -->
+        <main class="analytics-main">
+            <div class="charts-grid upper-charts">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <i class="ph-chart-pie"></i> Status Penyelesaian
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <i class="ph-chart-bar"></i> Kategori 4M
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Full Width Trend Chart -->
+            <div class="chart-card trend-card">
+                <div class="chart-header">
+                    <i class="ph-chart-line"></i> Tren Temuan Bulanan (Performa Input)
+                </div>
+                <div class="chart-body trend-body">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <!-- Stats Overview -->
-    <div class="stats-overview">
-        <div class="stat-item">
-            <div class="stat-icon icon-blue">
-                <i class="ph-database"></i>
-            </div>
-            <div class="stat-info">
-                <div class="stat-label">Total Temuan</div>
-                <div class="stat-value" id="totalTemuan">0</div>
-            </div>
+    <!-- Table Global Section (Full Width Bottom) -->
+    <div class="table-card">
+        <div class="chart-header" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="ph-list-bullets" style="color: #f59e0b; font-size: 1.25rem;"></i>
+            <span style="font-size: 1.1rem; color: #fff;">Tabel Temuan Masalah</span>
         </div>
-        <div class="stat-item">
-            <div class="stat-icon icon-orange">
-                <i class="ph-clock"></i>
-            </div>
-            <div class="stat-info">
-                <div class="stat-label">Pending</div>
-                <div class="stat-value" id="pendingTemuan">0</div>
-            </div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-icon icon-green">
-                <i class="ph-check-circle"></i>
-            </div>
-            <div class="stat-info">
-                <div class="stat-label">Selesai</div>
-                <div class="stat-value" id="selesaiTemuan">0</div>
-            </div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-icon icon-red">
-                <i class="ph-trend-up"></i>
-            </div>
-            <div class="stat-info">
-                <div class="stat-label">Ratio Selesai</div>
-                <div class="stat-value" id="ratioSelesai">0%</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Analytics Charts Grid -->
-    <div class="dashboard-grid">
-        <!-- Chart 1: Problem Status -->
-        <div class="chart-card span-2">
-            <div class="chart-header">
-                <div class="chart-title">
-                    <i class="ph-chart-pie"></i>
-                    <span>Status Penyelesaian</span>
-                </div>
-            </div>
-            <div class="chart-body">
-                <canvas id="statusChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Chart 2: 4M Distribution -->
-        <div class="chart-card span-2">
-            <div class="chart-header">
-                <div class="chart-title">
-                    <i class="ph-cube"></i>
-                    <span>Kategori 4M</span>
-                </div>
-            </div>
-            <div class="chart-body">
-                <canvas id="categoryChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Chart 3: Shift Analysis -->
-        <div class="chart-card span-2">
-            <div class="chart-header">
-                <div class="chart-title">
-                    <i class="ph-clock-afternoon"></i>
-                    <span>Distribusi Per Shift</span>
-                </div>
-            </div>
-            <div class="chart-body">
-                <canvas id="shiftChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Chart 4: Monthly Trend -->
-        <div class="chart-card span-2">
-            <div class="chart-header">
-                <div class="chart-title">
-                    <i class="ph-chart-line"></i>
-                    <span>Tren Temuan Masalah</span>
-                </div>
-            </div>
-            <div class="chart-body">
-                <canvas id="trendChart"></canvas>
+        <div style="overflow-x: auto;">
+            <div class="table-responsive-wrapper">
+                <table class="modern-table" id="analyticsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Tanggal</th>
+                            <th>Shift</th>
+                            <th>Problem</th>
+                            <th>Target</th>
+                            <th>4M</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
