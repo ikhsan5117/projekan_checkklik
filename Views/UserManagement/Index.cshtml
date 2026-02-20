@@ -75,7 +75,7 @@
                         <th width="20%">FULL NAME</th>
                         <th width="20%">EMAIL</th>
                         <th width="10%">ROLE</th>
-                        <th width="15%">DEPARTMENT</th>
+                        <th width="15%">PLANT</th>
                         <th width="10%" class="text-center">STATUS</th>
                         <th width="5%" class="text-right">AKSI</th>
                     </tr>
@@ -141,7 +141,10 @@
                 </div>
                 <div class="form-group" style="flex: 1;">
                     <label class="form-label">Department</label>
-                    <input type="text" id="department" name="department" class="form-input" placeholder="e.g. Production">
+                    <select id="department" name="department" class="form-select">
+                        <option value="">-- Pilih Departemen --</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
                 </div>
             </div>
 
@@ -555,7 +558,29 @@
     <script>
     $(document).ready(function() {
         loadUsers();
+        loadDepartmentOptions(); // Load master data departments
     });
+
+    function loadDepartmentOptions() {
+        $.get('@Url.Action("GetAll", "Department")', function(response) {
+            if (response.success) {
+                const select = $('#department');
+                // Simpan nilai lama jika ada (untuk edit)
+                const currentValue = select.val();
+                
+                select.empty();
+                select.append('<option value="">-- Pilih Departemen --</option>');
+                
+                response.data.forEach(dept => {
+                    select.append(`<option value="${dept.name}">${dept.name}</option>`);
+                });
+
+                if (currentValue) {
+                    select.val(currentValue);
+                }
+            }
+        });
+    }
 
     function loadUsers() {
         const role = $('#roleFilter').val();
@@ -585,7 +610,7 @@
                             <td style="color: #cbd5e1;">${item.fullName}</td>
                             <td style="color: #94a3b8;">${item.email}</td>
                             <td style="color: #818cf8;">${item.role}</td>
-                            <td style="color: #94a3b8;">${item.department || '-'}</td>
+                            <td style="font-weight: bold; color: #e2e8f0;">${item.plant || '-'}</td>
                             <td class="text-center">${statusBadge}</td>
                             <td class="text-right">
                                 <button onclick="editUser(${item.id})" class="btn-icon btn-indigo" title="Edit user" style="margin-right: 0.5rem;">✏️</button>

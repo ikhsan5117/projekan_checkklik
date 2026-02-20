@@ -55,6 +55,7 @@ namespace AMRVI.Controllers
                     u.Email,
                     u.Role,
                     u.Department,
+                    Plant = _plantService.GetPlantName(), // Tambahkan Plant Name
                     u.IsActive,
                     u.CreatedAt,
                     u.LastLogin

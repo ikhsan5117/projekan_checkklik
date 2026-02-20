@@ -36,6 +36,9 @@ namespace AMRVI.Models
         [StringLength(1000)]
         public string KeteranganProblem { get; set; } = string.Empty;
 
+        [StringLength(100)]
+        public string Department { get; set; } = string.Empty;
+
         [Required]
         [StringLength(1000)]
         public string RencanaPerbaikan { get; set; } = string.Empty;

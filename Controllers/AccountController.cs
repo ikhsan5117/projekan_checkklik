@@ -21,6 +21,12 @@ namespace AMRVI.Controllers
         public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
+            // Load Dynamic Departments from Master Data
+            ViewBag.Departments = _context.Departments
+                .Where(d => d.IsActive)
+                .OrderBy(d => d.Name)
+                .ToList();
+
             return View();
         }
 
@@ -49,7 +55,7 @@ namespace AMRVI.Controllers
                         new Claim(ClaimTypes.Name, user.Username),
                         new Claim(ClaimTypes.Role, user.Role),
                         new Claim("FullName", user.FullName),
-                        new Claim("Department", user.Department ?? "N/A"),
+                        new Claim("Department", model.Department), // Gunakan Departemen yang dipilih saat Login
                         new Claim(ClaimTypes.Email, user.Email ?? "No Email"),
                         new Claim("NIK", user.Id.ToString()),
                         new Claim("Plant", model.Plant) // PENTING: Simpan Plant di Claim
@@ -124,6 +130,10 @@ namespace AMRVI.Controllers
             }
 
             ViewData["ReturnUrl"] = returnUrl;
+            ViewBag.Departments = _context.Departments
+                .Where(d => d.IsActive)
+                .OrderBy(d => d.Name)
+                .ToList();
             return View(model);
         }
 

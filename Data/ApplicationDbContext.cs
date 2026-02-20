@@ -60,6 +60,7 @@ namespace AMRVI.Data
         public DbSet<ScwLog> ScwLogs { get; set; }
         public DbSet<HenkatenProblem> HenkatenProblems { get; set; }
         public DbSet<ManPower> ManPowers { get; set; }
+        public DbSet<Department> Departments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -115,6 +116,7 @@ namespace AMRVI.Data
             // Configure and Seed Andon System
             ConfigureAndon(modelBuilder);
             SeedDataAndon(modelBuilder);
+            SeedDepartments(modelBuilder); // Tambahan Seed Department
 
             // Mapping for Production SCW Logs (Cross-Database)
             modelBuilder.Entity<ScwLog>().ToTable("tb_elwp_produksi_scw_logs", t => t.ExcludeFromMigrations());
@@ -356,6 +358,19 @@ namespace AMRVI.Data
                 new FourMCategory { Id = 3, CategoryCode = "MAN", CategoryName = "MAN", ColorCode = "#22d3ee", Priority = 3 },
                 new FourMCategory { Id = 4, CategoryCode = "METHODE", CategoryName = "METHODE", ColorCode = "#a855f7", Priority = 4 },
                 new FourMCategory { Id = 5, CategoryCode = "NO_PROBLEM", CategoryName = "NO PROBLEM", ColorCode = "#6b7280", Priority = 5 }
+            );
+        }
+
+        private void SeedDepartments(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Department>().HasData(
+                new Department { Id = 1, Name = "Produksi", Description = "Bagian Produksi Utama" },
+                new Department { Id = 2, Name = "Engineering & R&D", Description = "Research and Development" },
+                new Department { Id = 3, Name = "Quality Control & Assurance (QA/QC)", Description = "Jaminan Mutu Produk" },
+                new Department { Id = 4, Name = "Logistik & Supply Chain", Description = "Gudang dan Pengiriman" },
+                new Department { Id = 5, Name = "Plant Administration (HR/GA)", Description = "Sumber Daya Manusia dan Umum" },
+                new Department { Id = 6, Name = "Sales & Marketing", Description = "Penjualan dan Pemasaran" },
+                new Department { Id = 7, Name = "Maintenance", Description = "Perawatan Mesin dan Fasilitas" }
             );
         }
     }

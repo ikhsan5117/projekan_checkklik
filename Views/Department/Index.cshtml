@@ -1,0 +1,407 @@
+@{
+    ViewData["Title"] = "Manajemen Departemen";
+}
+
+<div class="container-fluid" style="padding: 2rem 3rem;">
+    <div class="dark-card">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="title-block">
+                <div class="icon-wrapper">
+                    <span style="font-size: 2rem;">🏢</span>
+                </div>
+                <div>
+                    <h1 class="page-title">Manajemen Departemen</h1>
+                    <p class="subtitle">Kelola daftar departemen/unit kerja di perusahaan</p>
+                </div>
+            </div>
+            
+            <button onclick="showCreateModal()" class="btn-primary">
+                <i class="ph-plus-bold"></i> Tambah Departemen
+            </button>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th width="5%" class="text-center">NO</th>
+                        <th width="25%">NAMA DEPARTEMEN</th>
+                        <th width="40%">DESKRIPSI</th>
+                        <th width="15%" class="text-center">STATUS</th>
+                        <th width="15%" class="text-right">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="deptTableBody">
+                    <tr>
+                        <td colspan="5" style="text-align:center;">Memuat data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create/Edit Default -->
+<div id="deptModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header-row">
+            <h2 class="modal-title" id="modalTitle">Tambah Departemen</h2>
+            <button type="button" class="btn-close-modal" onclick="closeModal()">
+                <i class="ph-x-bold"></i>
+            </button>
+        </div>
+
+        <form id="deptForm" class="modal-form">
+            <input type="hidden" id="deptId" name="Id">
+            
+            <div class="form-group">
+                <label class="form-label">Nama Departemen</label>
+                <input type="text" id="name" name="Name" class="form-input" required autocomplete="off" placeholder="Contoh: Produksi">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Deskripsi</label>
+                <textarea id="description" name="Description" class="form-input" rows="3" placeholder="Keterangan singkat tentang departemen ini..."></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" onclick="closeModal()" class="btn-secondary">Batal</button>
+                <button type="submit" class="btn-primary" id="btnSubmit">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Reuse styles from UserManagement/Index.cshtml via site.css or verify consistency */
+    /* For standalone, I'll copy essential styles here just in case */
+    
+    .dark-card {
+        background: rgba(30, 32, 45, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 100%;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .title-block {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .icon-wrapper {
+        width: 64px;
+        height: 64px;
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #e2e8f0;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin: 0.25rem 0 0 0;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        color: #e2e8f0;
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        background: rgba(15, 23, 42, 0.8);
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        background: rgba(15, 23, 42, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        overflow: auto;
+        position: relative;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: #e2e8f0;
+    }
+
+    .custom-table thead tr {
+        background: linear-gradient(90deg, #4338ca 0%, #3730a3 100%);
+    }
+
+    .custom-table th {
+        padding: 1rem 1.5rem;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #e2e8f0;
+        text-align: left;
+    }
+
+    .custom-table td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        font-size: 0.95rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+
+    /* Buttons */
+    .btn-primary {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-secondary {
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.03);
+        color: #94a3b8;
+        font-size: 1.1rem;
+        margin-left: 0.5rem;
+    }
+    
+    .btn-indigo:hover { background: #6366f1; color: white; }
+    .btn-red:hover { background: #ef4444; color: white; }
+
+    /* Modal */
+    .modal-backdrop {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: rgba(30, 32, 45, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 2rem;
+        width: 90%;
+        max-width: 500px;
+    }
+
+    .modal-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin: 0;
+    }
+
+    .btn-close-modal {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.25rem;
+        cursor: pointer;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+    }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .badge-active {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+</style>
+
+@section Scripts {
+    <script>
+    $(document).ready(function() {
+        loadDepartments();
+    });
+
+    function loadDepartments() {
+        $.get('@Url.Action("GetAll", "Department")', function(response) {
+            if (response.success) {
+                const tbody = $('#deptTableBody');
+                tbody.empty();
+                
+                if (response.data.length === 0) {
+                     tbody.html('<tr><td colspan="5" style="text-align:center; color: #64748b;">Belum ada data departemen.</td></tr>');
+                     return;
+                }
+
+                response.data.forEach((item, index) => {
+                    const statusBadge = item.isActive 
+                        ? '<span class="badge badge-active">Active</span>' 
+                        : '<span class="badge badge-inactive">Inactive</span>';
+
+                    tbody.append(`
+                        <tr>
+                            <td class="text-center" style="color: #64748b;">${index + 1}</td>
+                            <td style="font-weight:bold; color: #e2e8f0;">${item.name}</td>
+                            <td style="color: #cbd5e1;">${item.description || '-'}</td>
+                            <td class="text-center">${statusBadge}</td>
+                            <td class="text-right">
+                                <button onclick="editDept(${item.id})" class="btn-icon btn-indigo" title="Edit">✏️</button>
+                                <button onclick="deleteDept(${item.id}, '${item.name}')" class="btn-icon btn-red" title="Hapus">🗑️</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+        });
+    }
+
+    function showCreateModal() {
+        $('#deptId').val('');
+        $('#name').val('');
+        $('#description').val('');
+        $('#modalTitle').text('Tambah Departemen');
+        $('#btnSubmit').text('Simpan');
+        $('#deptModal').fadeIn(200);
+    }
+
+    function editDept(id) {
+        $.get('@Url.Action("GetById", "Department")', { id: id }, function(response) {
+            if (response.success) {
+                const item = response.data;
+                $('#deptId').val(item.id);
+                $('#name').val(item.name);
+                $('#description').val(item.description);
+                $('#modalTitle').text('Edit Departemen');
+                $('#btnSubmit').text('Update');
+                $('#deptModal').fadeIn(200);
+            }
+        });
+    }
+
+    function closeModal() {
+        $('#deptModal').fadeOut(200);
+    }
+
+    function deleteDept(id, name) {
+        if(confirm(`Hapus departemen '${name}'?`)) {
+            $.post('@Url.Action("Delete", "Department")', { id: id }, function(response) {
+                if (response.success) {
+                    loadDepartments();
+                } else {
+                    alert('Gagal menghapus: ' + response.message);
+                }
+            });
+        }
+    }
+
+    $('#deptForm').submit(function(e) {
+        e.preventDefault();
+        const id = $('#deptId').val();
+        const url = id ? '@Url.Action("Edit", "Department")' : '@Url.Action("Create", "Department")';
+        
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: $(this).serialize(), // Use serialize because it's simpler for plain form
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    loadDepartments();
+                } else {
+                    alert('Gagal: ' + response.message);
+                }
+            }
+        });
+    });
+    </script>
+}

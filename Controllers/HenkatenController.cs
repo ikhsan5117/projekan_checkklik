@@ -56,6 +56,7 @@ namespace AMRVI.Controllers
                         TanggalUpdate = h.TanggalUpdate.ToString("dd/MM/yyyy"),
                         h.Shift,
                         h.PicLeader,
+                        h.Department,
                         h.NamaAreaLine,
                         h.NamaOperator,
                         h.Jenis4M,
@@ -88,6 +89,7 @@ namespace AMRVI.Controllers
                 var plantId = _plantService.GetPlantId();
                 model.PlantId = plantId;
                 model.CreatedAt = DateTime.Now;
+                model.Department = User.FindFirst("Department")?.Value ?? "Produksi"; // Default ke Produksi jika null
 
                 // Handle Foto Temuan upload
                 if (fotoTemuan != null && fotoTemuan.Length > 0)

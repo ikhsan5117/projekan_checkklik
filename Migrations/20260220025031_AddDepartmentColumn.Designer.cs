@@ -4,6 +4,7 @@ using AMRVI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AMRVI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260220025031_AddDepartmentColumn")]
+    partial class AddDepartmentColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -459,82 +462,6 @@ namespace AMRVI.Migrations
                     b.HasIndex("MachineId");
 
                     b.ToTable("ChecklistItems_MOLDED");
-                });
-
-            modelBuilder.Entity("AMRVI.Models.Department", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Departments");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Bagian Produksi Utama",
-                            IsActive = true,
-                            Name = "Produksi"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Research and Development",
-                            IsActive = true,
-                            Name = "Engineering & R&D"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Jaminan Mutu Produk",
-                            IsActive = true,
-                            Name = "Quality Control & Assurance (QA/QC)"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Gudang dan Pengiriman",
-                            IsActive = true,
-                            Name = "Logistik & Supply Chain"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Description = "Sumber Daya Manusia dan Umum",
-                            IsActive = true,
-                            Name = "Plant Administration (HR/GA)"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Description = "Penjualan dan Pemasaran",
-                            IsActive = true,
-                            Name = "Sales & Marketing"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Description = "Perawatan Mesin dan Fasilitas",
-                            IsActive = true,
-                            Name = "Maintenance"
-                        });
                 });
 
             modelBuilder.Entity("AMRVI.Models.FourMCategory", b =>
@@ -1689,7 +1616,7 @@ namespace AMRVI.Migrations
                             Plant = "RVI",
                             ShiftNumber = 1,
                             StartTime = new TimeSpan(0, 5, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5929)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2321)
                         },
                         new
                         {
@@ -1698,7 +1625,7 @@ namespace AMRVI.Migrations
                             Plant = "RVI",
                             ShiftNumber = 2,
                             StartTime = new TimeSpan(0, 14, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5935)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2325)
                         },
                         new
                         {
@@ -1707,7 +1634,7 @@ namespace AMRVI.Migrations
                             Plant = "RVI",
                             ShiftNumber = 3,
                             StartTime = new TimeSpan(0, 22, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5936)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2327)
                         },
                         new
                         {
@@ -1716,7 +1643,7 @@ namespace AMRVI.Migrations
                             Plant = "BTR",
                             ShiftNumber = 1,
                             StartTime = new TimeSpan(0, 5, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5950)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2337)
                         },
                         new
                         {
@@ -1725,7 +1652,7 @@ namespace AMRVI.Migrations
                             Plant = "BTR",
                             ShiftNumber = 2,
                             StartTime = new TimeSpan(0, 14, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5951)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2338)
                         },
                         new
                         {
@@ -1734,7 +1661,7 @@ namespace AMRVI.Migrations
                             Plant = "BTR",
                             ShiftNumber = 3,
                             StartTime = new TimeSpan(0, 22, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5951)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2338)
                         },
                         new
                         {
@@ -1743,7 +1670,7 @@ namespace AMRVI.Migrations
                             Plant = "HOSE",
                             ShiftNumber = 1,
                             StartTime = new TimeSpan(0, 5, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5963)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2348)
                         },
                         new
                         {
@@ -1752,7 +1679,7 @@ namespace AMRVI.Migrations
                             Plant = "HOSE",
                             ShiftNumber = 2,
                             StartTime = new TimeSpan(0, 14, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5964)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2349)
                         },
                         new
                         {
@@ -1761,7 +1688,7 @@ namespace AMRVI.Migrations
                             Plant = "HOSE",
                             ShiftNumber = 3,
                             StartTime = new TimeSpan(0, 22, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5964)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2349)
                         },
                         new
                         {
@@ -1770,7 +1697,7 @@ namespace AMRVI.Migrations
                             Plant = "MOLDED",
                             ShiftNumber = 1,
                             StartTime = new TimeSpan(0, 5, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5976)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2359)
                         },
                         new
                         {
@@ -1779,7 +1706,7 @@ namespace AMRVI.Migrations
                             Plant = "MOLDED",
                             ShiftNumber = 2,
                             StartTime = new TimeSpan(0, 14, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5976)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2359)
                         },
                         new
                         {
@@ -1788,7 +1715,7 @@ namespace AMRVI.Migrations
                             Plant = "MOLDED",
                             ShiftNumber = 3,
                             StartTime = new TimeSpan(0, 22, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5977)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2360)
                         },
                         new
                         {
@@ -1797,7 +1724,7 @@ namespace AMRVI.Migrations
                             Plant = "MIXING",
                             ShiftNumber = 1,
                             StartTime = new TimeSpan(0, 5, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5986)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2368)
                         },
                         new
                         {
@@ -1806,7 +1733,7 @@ namespace AMRVI.Migrations
                             Plant = "MIXING",
                             ShiftNumber = 2,
                             StartTime = new TimeSpan(0, 14, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5987)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2369)
                         },
                         new
                         {
@@ -1815,7 +1742,7 @@ namespace AMRVI.Migrations
                             Plant = "MIXING",
                             ShiftNumber = 3,
                             StartTime = new TimeSpan(0, 22, 0, 0, 0),
-                            UpdatedAt = new DateTime(2026, 2, 20, 10, 6, 26, 837, DateTimeKind.Local).AddTicks(5987)
+                            UpdatedAt = new DateTime(2026, 2, 20, 9, 50, 30, 283, DateTimeKind.Local).AddTicks(2369)
                         });
                 });
 

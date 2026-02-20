@@ -41,7 +41,29 @@ document.addEventListener('DOMContentLoaded', function () {
     setupSearchFilter();
     setupStatusFilters();
     setupFormSubmit();
+    loadDepartmentOptions(); // Tambahan: Load Master Departemen
 });
+
+async function loadDepartmentOptions() {
+    try {
+        const response = await fetch('/Department/GetAll');
+        const result = await response.json();
+
+        if (result.success) {
+            const select = document.getElementById('department');
+            // Biarkan -- Pilih Departemen -- (option pertama) tetap ada
+
+            result.data.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept.name;
+                option.textContent = dept.name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading departments:', error);
+    }
+}
 
 // Load data from server
 async function loadData() {
@@ -90,7 +112,7 @@ function renderTable(data) {
     if (!data || data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="10" style="text-align: center; padding: 3rem; color: #64748b;">
+                <td colspan="11" style="text-align: center; padding: 3rem; color: #64748b;">
                     <i class="ph-database" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
                     Belum ada data temuan
                 </td>
@@ -107,13 +129,14 @@ function renderTable(data) {
         <tr>
             <td>${item.tanggalUpdate}</td>
             <td><span class="badge-shift ${getShiftClass(item.shift)}">${item.shift}</span></td>
+            <td><span class="badge-dept ${getDeptClass(item.department)}">${item.department || '-'}</span></td>
             <td>${item.picLeader}</td>
             <td>${item.namaAreaLine}</td>
             <td>${item.namaOperator}</td>
             <td><span class="badge-4m badge-${item.jenis4M.toLowerCase()}">${item.jenis4M}</span></td>
             <td>
                 ${item.fotoTemuan ? `
-                    <div class="media-icon" onclick="viewImage('${item.fotoTemuan}')">
+                    <div class="media-icon" onclick="viewImage('${fixImagePath(item.fotoTemuan)}')">
                         <i class="ph-image"></i>
                     </div>
                 ` : '-'}
@@ -205,14 +228,14 @@ async function viewDetail(id) {
                 <div class="detail-section">
                     <h4 class="detail-label">Foto Temuan</h4>
                     <div class="detail-photo-container">
-                        ${data.fotoTemuan ? `<img src="${data.fotoTemuan}" alt="Temuan">` : '<div class="no-photo">Tidak ada foto</div>'}
+                        ${data.fotoTemuan ? `<img src="${fixImagePath(data.fotoTemuan)}" alt="Temuan" onerror="this.src='/images/no-image.png'; this.classList.add('broken');">` : '<div class="no-photo">Tidak ada foto</div>'}
                     </div>
                 </div>
 
                 <div class="detail-section">
                     <h4 class="detail-label">Foto Aktual</h4>
                     <div class="detail-photo-container">
-                        ${data.fotoAktual ? `<img src="${data.fotoAktual}" alt="Aktual">` : '<div class="no-photo">Tidak ada foto</div>'}
+                        ${data.fotoAktual ? `<img src="${fixImagePath(data.fotoAktual)}" alt="Aktual" onerror="this.src='/images/no-image.png'; this.classList.add('broken');">` : '<div class="no-photo">Tidak ada foto</div>'}
                     </div>
                 </div>
             </div>
@@ -231,7 +254,19 @@ function getShiftClass(shiftText) {
     if (shiftText.includes('1')) return 'shift-1';
     if (shiftText.includes('2')) return 'shift-2';
     if (shiftText.includes('3')) return 'shift-3';
+    if (shiftText.includes('3')) return 'shift-3';
     return 'shift-1';
+}
+
+// Helper for Dept Class
+function getDeptClass(dept) {
+    if (!dept) return 'dept-general';
+    const d = dept.toLowerCase();
+    if (d.includes('produksi')) return 'dept-produksi';
+    if (d.includes('engineering')) return 'dept-eng';
+    if (d.includes('quality')) return 'dept-qc';
+    if (d.includes('logistik')) return 'dept-logistik';
+    return 'dept-general';
 }
 
 // Search filter
@@ -278,6 +313,7 @@ async function editData(id) {
 
         // Fill form with data
         document.getElementById('tanggalUpdate').value = formatDateForInput(data.tanggalUpdate);
+        document.getElementById('department').value = data.department || '';
         document.getElementById('shift').value = data.shift;
         document.getElementById('picLeader').value = data.picLeader;
         document.getElementById('namaAreaLine').value = data.namaAreaLine;
@@ -423,13 +459,22 @@ function viewImage(imagePath) {
     const modal = document.getElementById('detailModal');
     const content = document.getElementById('detailContent');
 
+    const fullPath = fixImagePath(imagePath);
+
     content.innerHTML = `
         <div style="text-align: center;">
-            <img src="${imagePath}" alt="Foto" style="max-width: 100%; max-height: 70vh; border-radius: 12px;">
+            <img src="${fullPath}" alt="Foto" style="max-width: 100%; max-height: 70vh; border-radius: 12px;" onerror="this.src='/images/no-image.png';">
+            <div style="margin-top: 10px; color: #94a3b8; font-size: 0.8rem;">${imagePath}</div>
         </div>
     `;
 
     modal.classList.add('active');
+}
+
+function fixImagePath(path) {
+    if (!path) return '';
+    if (path.startsWith('http') || path.startsWith('/') || path.startsWith('data:')) return path;
+    return '/uploads/henkaten/' + path;
 }
 
 // Format date for input field (YYYY-MM-DD)

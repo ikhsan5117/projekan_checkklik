@@ -145,6 +145,13 @@ function processAnalytics(data) {
     renderCategoryChart(categoryData);
     renderTrendChart(trendData);
 
+    // Make fixImagePath globally available or just inside this file
+    window.fixImagePath = function (path) {
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('/') || path.startsWith('data:')) return path;
+        return '/uploads/henkaten/' + path;
+    };
+
     // 4. Render Table
     renderTable(data);
 }
@@ -178,6 +185,18 @@ function renderTable(data) {
                 <span style="background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; color: #94a3b8; border: 1px solid rgba(255,255,255,0.05);">
                     ${item.shift || '-'}
                 </span>
+            </td>
+            <td>
+                <span style="color: #94a3b8; font-weight: 600; font-size: 0.85rem;">
+                    ${item.department || '-'}
+                </span>
+            </td>
+            <td>
+                ${item.fotoTemuan ? `
+                    <div class="media-icon" onclick="viewImage('${fixImagePath(item.fotoTemuan)}')">
+                        <i class="ph-image"></i>
+                    </div>
+                ` : '-'}
             </td>
             <td style="max-width: 300px;" title="${problemText}">
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
@@ -745,3 +764,30 @@ function renderTrendChart(trendData) {
         }]
     });
 }
+
+function viewImage(imagePath) {
+    const modal = document.getElementById('detailModal');
+    const content = document.getElementById('detailContent');
+    const fullPath = window.fixImagePath ? window.fixImagePath(imagePath) : imagePath;
+
+    content.innerHTML = `
+        <div style="text-align: center; padding: 1rem;">
+            <img src="${fullPath}" alt="Foto" style="max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" onerror="this.src='/images/no-image.png';">
+            <div style="margin-top: 15px; color: #94a3b8; font-size: 0.85rem; font-family: monospace;">${imagePath}</div>
+        </div>
+    `;
+
+    modal.classList.add('active');
+}
+
+function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('active');
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function (e) {
+    const detailModal = document.getElementById('detailModal');
+    if (e.target === detailModal) {
+        closeDetailModal();
+    }
+});
