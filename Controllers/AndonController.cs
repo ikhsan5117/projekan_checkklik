@@ -17,17 +17,20 @@ namespace AMRVI.Controllers
         private readonly ProductionDbContext _prodContext;
         private readonly PlantService _plantService;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly ILogger<AndonController> _logger;
 
         public AndonController(
             ApplicationDbContext context,
             ProductionDbContext prodContext,
             PlantService plantService,
-            IHubContext<NotificationHub> hubContext)
+            IHubContext<NotificationHub> hubContext,
+            ILogger<AndonController> logger)
         {
             _context = context;
             _prodContext = prodContext;
             _plantService = plantService;
             _hubContext = hubContext;
+            _logger = logger;
         }
 
         public IActionResult Index()
@@ -98,8 +101,63 @@ namespace AMRVI.Controllers
             catch (Exception ex)
             {
                 // Return detailed error for debugging in console
-                return StatusCode(500, new { error = "Database Error", details = ex.Message });
+                var innerMsg = ex.InnerException?.Message ?? "(no inner exception)";
+                _logger.LogError(ex, "[AndonController.GetData] Error fetching ELWP_PRD data. Plant={Plant}", plant);
+                return StatusCode(500, new
+                {
+                    error = "Database Error",
+                    details = ex.Message,
+                    innerDetails = innerMsg,
+                    source = ex.Source,
+                    hint = "Periksa koneksi ke ELWP_PRD dan pastikan tabel [produksi].[tb_elwp_produksi_scw_logs] ada. Coba endpoint /Andon/TestConnection untuk diagnosa."
+                });
             }
+        }
+
+        /// <summary>
+        /// Endpoint diagnostik: cek koneksi ke ELWP_PRD dan validasi tabel SCW Logs.
+        /// Akses via browser: /Andon/TestConnection
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> TestConnection()
+        {
+            var result = new System.Text.StringBuilder();
+            result.AppendLine("=== ANDON DB CONNECTION TEST ===");
+
+            try
+            {
+                // 1. Test basic connectivity
+                bool canConnect = await _prodContext.Database.CanConnectAsync();
+                result.AppendLine($"[1] Koneksi ke ELWP_PRD: {(canConnect ? "✅ BERHASIL" : "❌ GAGAL")}");
+
+                if (!canConnect)
+                {
+                    return Ok(result.ToString());
+                }
+
+                // 2. Test query ke tabel
+                var count = await _prodContext.ScwLogs
+                    .FromSqlRaw("SELECT TOP 1 * FROM [produksi].[tb_elwp_produksi_scw_logs]")
+                    .CountAsync();
+                result.AppendLine($"[2] Query tabel tb_elwp_produksi_scw_logs: ✅ OK (row count TOP 1 = {count})");
+
+                // 3. Test data hari ini
+                var todayCount = await _prodContext.ScwLogs
+                    .FromSqlRaw("SELECT * FROM [produksi].[tb_elwp_produksi_scw_logs] WHERE CAST([CreatedAt] AS DATE) = CAST(GETDATE() AS DATE)")
+                    .CountAsync();
+                result.AppendLine($"[3] Data hari ini ({DateTime.Now:dd-MM-yyyy}): {todayCount} record(s)");
+
+                result.AppendLine("\n✅ Semua tes LULUS. Koneksi dan tabel normal.");
+            }
+            catch (Exception ex)
+            {
+                result.AppendLine($"\n❌ ERROR: {ex.Message}");
+                result.AppendLine($"Inner: {ex.InnerException?.Message}");
+                result.AppendLine($"Source: {ex.Source}");
+                _logger.LogError(ex, "[AndonController.TestConnection] Connection test failed");
+            }
+
+            return Content(result.ToString(), "text/plain");
         }
 
         [HttpPost]

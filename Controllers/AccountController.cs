@@ -34,8 +34,10 @@ namespace AMRVI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
+            Console.WriteLine($"[LOGIN DEBUG] Request received for User: {model.Username}, Plant: {model.Plant}");
             if (ModelState.IsValid)
             {
+                Console.WriteLine("[LOGIN DEBUG] ModelState is Valid.");
                 // Cari user di tabel yang sesuai dengan Plant yang dipilih (Case-Insensitive)
                 Models.Interfaces.IUser? user = model.Plant switch
                 {
@@ -45,6 +47,8 @@ namespace AMRVI.Controllers
                     "MIXING" => await _context.Users_MIXING.FirstOrDefaultAsync(u => u.Username.ToLower() == model.Username.ToLower() && u.IsActive),
                     _ => await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == model.Username.ToLower() && u.IsActive) // RVI default
                 };
+                
+                Console.WriteLine($"[LOGIN DEBUG] User found in DB? {(user != null ? "YES" : "NO")}");
 
                 // Password comparison (Case-Insensitive based on user request)
                 if (user != null && string.Equals(user.Password, model.Password, StringComparison.OrdinalIgnoreCase))
@@ -126,7 +130,17 @@ namespace AMRVI.Controllers
                     }
                 }
 
+                Console.WriteLine("[LOGIN DEBUG] Password match failed or User null.");
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            }
+            else 
+            {
+                Console.WriteLine("[LOGIN DEBUG] ModelState is INVALID.");
+                foreach (var modelState in ModelState.Values) {
+                    foreach (var error in modelState.Errors) {
+                        Console.WriteLine($"[LOGIN DEBUG] Error: {error.ErrorMessage}");
+                    }
+                }
             }
 
             ViewData["ReturnUrl"] = returnUrl;

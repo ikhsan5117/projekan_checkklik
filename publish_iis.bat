@@ -1,6 +1,6 @@
 @echo off
 set "PROJECT_NAME=checklistMechine"
-set "PUBLISH_DIR=checklistAM"
+set "PUBLISH_DIR=checklist"
 cd /d "%~dp0"
 
 echo ==========================================
