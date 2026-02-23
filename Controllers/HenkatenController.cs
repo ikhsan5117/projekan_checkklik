@@ -60,7 +60,10 @@ namespace AMRVI.Controllers
                         h.NamaAreaLine,
                         h.NamaOperator,
                         h.Jenis4M,
+                        h.Standard4M,
+                        h.Actual4M,
                         h.KeteranganProblem,
+                        h.TemporaryAction,
                         h.RencanaPerbaikan,
                         TanggalRencanaPerbaikan = h.TanggalRencanaPerbaikan.ToString("dd/MM/yyyy"),
                         h.FotoTemuan,
@@ -179,7 +182,10 @@ namespace AMRVI.Controllers
                 existing.NamaAreaLine = model.NamaAreaLine;
                 existing.NamaOperator = model.NamaOperator;
                 existing.Jenis4M = model.Jenis4M;
+                existing.Standard4M = model.Standard4M;
+                existing.Actual4M = model.Actual4M;
                 existing.KeteranganProblem = model.KeteranganProblem;
+                existing.TemporaryAction = model.TemporaryAction;
                 existing.RencanaPerbaikan = model.RencanaPerbaikan;
                 existing.TanggalRencanaPerbaikan = model.TanggalRencanaPerbaikan;
                 existing.AktualPerbaikan = model.AktualPerbaikan;

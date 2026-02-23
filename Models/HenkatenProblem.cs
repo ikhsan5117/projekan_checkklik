@@ -32,6 +32,15 @@ namespace AMRVI.Models
         [StringLength(50)]
         public string Jenis4M { get; set; } = string.Empty;
 
+        [StringLength(500)]
+        public string? Standard4M { get; set; }
+
+        [StringLength(500)]
+        public string? Actual4M { get; set; }
+
+        [StringLength(1000)]
+        public string? TemporaryAction { get; set; }
+
         [Required]
         [StringLength(1000)]
         public string KeteranganProblem { get; set; } = string.Empty;
@@ -39,6 +48,7 @@ namespace AMRVI.Models
         [StringLength(100)]
         public string Department { get; set; } = string.Empty;
 
+        // PermanentAction = RencanaPerbaikan (label baru)
         [Required]
         [StringLength(1000)]
         public string RencanaPerbaikan { get; set; } = string.Empty;

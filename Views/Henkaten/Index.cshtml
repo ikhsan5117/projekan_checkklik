@@ -45,15 +45,16 @@
             <table class="henkaten-table" id="henkatenTable">
                 <thead>
                     <tr>
-                        <th>TGL UPDATE</th>
+                        <th>TANGGAL</th>
                         <th>SHIFT</th>
-                        <th>DEPARTEMEN</th>
-                        <th>PIC LEADER</th>
-                        <th>AREA/LINE</th>
-                        <th>OPERATOR</th>
-                        <th>JENIS 4M</th>
-                        <th>MEDIA</th>
-                        <th>TGL RENCANA</th>
+                        <th>JENIS HENKATEN (4M)</th>
+                        <th>4M STANDARD</th>
+                        <th>4M ACTUAL</th>
+                        <th>ALASAN HENKATEN</th>
+                        <th>TEMPORARY ACTION</th>
+                        <th>PERMANENT ACTION</th>
+                        <th>PIC (LEADER)</th>
+                        <th>DUE DATE</th>
                         <th>STATUS</th>
                         <th>AKSI</th>
                     </tr>
@@ -124,7 +125,7 @@
                             <input type="text" id="namaOperator" name="NamaOperator" required />
                         </div>
                         <div class="form-group">
-                            <label for="jenis4M">JENIS 4M</label>
+                            <label for="jenis4M">JENIS HENKATEN (4M)</label>
                             <select id="jenis4M" name="Jenis4M" required>
                                 <option value="">-- Pilih Jenis 4M --</option>
                                 <option value="Man">Man</option>
@@ -135,24 +136,40 @@
                         </div>
                     </div>
 
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="standard4M">4M STANDARD</label>
+                            <input type="text" id="standard4M" name="Standard4M" placeholder="Masukkan standar 4M..." />
+                        </div>
+                        <div class="form-group">
+                            <label for="actual4M">4M ACTUAL</label>
+                            <input type="text" id="actual4M" name="Actual4M" placeholder="Masukkan aktual 4M..." />
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label for="keteranganProblem">KETERANGAN PROBLEM</label>
-                        <textarea id="keteranganProblem" name="KeteranganProblem" rows="3" required></textarea>
+                        <label for="keteranganProblem">ALASAN HENKATEN (PROBLEM)</label>
+                        <textarea id="keteranganProblem" name="KeteranganProblem" rows="2" required></textarea>
                     </div>
                 </div>
 
-                <!-- Rencana Perbaikan Section -->
+                <!-- Action Section -->
                 <div class="form-section">
-                    <h3 class="section-title">Rencana Perbaikan</h3>
+                    <h3 class="section-title">Action & Perbaikan</h3>
                     
                     <div class="form-group">
-                        <label for="rencanaPerbaikan">RENCANA PERBAIKAN</label>
-                        <textarea id="rencanaPerbaikan" name="RencanaPerbaikan" rows="3" required></textarea>
+                        <label for="temporaryAction">TEMPORARY ACTION</label>
+                        <textarea id="temporaryAction" name="TemporaryAction" rows="2" placeholder="Tindakan sementara..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rencanaPerbaikan">PERMANENT ACTION</label>
+                        <textarea id="rencanaPerbaikan" name="RencanaPerbaikan" rows="2" required placeholder="Tindakan permanen..."></textarea>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="tanggalRencanaPerbaikan">TANGGAL RENCANA PERBAIKAN</label>
+                            <label for="tanggalRencanaPerbaikan">DUE DATE (TARGET)</label>
                             <input type="date" id="tanggalRencanaPerbaikan" name="TanggalRencanaPerbaikan" required />
                         </div>
                         <div class="form-group">

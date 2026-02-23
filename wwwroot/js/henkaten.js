@@ -4,6 +4,7 @@
 
 // Global data store for filtering
 let allData = [];
+let currentEditId = null;
 
 // Helper to determine status
 function getItemStatus(item) {
@@ -41,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupSearchFilter();
     setupStatusFilters();
     setupFormSubmit();
-    loadDepartmentOptions(); // Tambahan: Load Master Departemen
+    loadDepartmentOptions();
 });
 
 async function loadDepartmentOptions() {
@@ -51,7 +52,7 @@ async function loadDepartmentOptions() {
 
         if (result.success) {
             const select = document.getElementById('department');
-            // Biarkan -- Pilih Departemen -- (option pertama) tetap ada
+            // Biarkan -- Pilih Departemen -- tetap ada
 
             result.data.forEach(dept => {
                 const option = document.createElement('option');
@@ -112,7 +113,7 @@ function renderTable(data) {
     if (!data || data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="11" style="text-align: center; padding: 3rem; color: #64748b;">
+                <td colspan="12" style="text-align: center; padding: 3rem; color: #64748b;">
                     <i class="ph-database" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
                     Belum ada data temuan
                 </td>
@@ -129,18 +130,13 @@ function renderTable(data) {
         <tr>
             <td>${item.tanggalUpdate}</td>
             <td><span class="badge-shift ${getShiftClass(item.shift)}">${item.shift}</span></td>
-            <td><span class="badge-dept ${getDeptClass(item.department)}">${item.department || '-'}</span></td>
-            <td>${item.picLeader}</td>
-            <td>${item.namaAreaLine}</td>
-            <td>${item.namaOperator}</td>
             <td><span class="badge-4m badge-${item.jenis4M.toLowerCase()}">${item.jenis4M}</span></td>
-            <td>
-                ${item.fotoTemuan ? `
-                    <div class="media-icon" onclick="viewImage('${fixImagePath(item.fotoTemuan)}')">
-                        <i class="ph-image"></i>
-                    </div>
-                ` : '-'}
-            </td>
+            <td>${item.standard4M || '-'}</td>
+            <td>${item.actual4M || '-'}</td>
+            <td>${item.keteranganProblem}</td>
+            <td>${item.temporaryAction || '-'}</td>
+            <td>${item.rencanaPerbaikan}</td>
+            <td>${item.picLeader}</td>
             <td>${item.tanggalRencanaPerbaikan}</td>
             <td>
                 <span class="status-badge status-${statusClass}">
@@ -181,15 +177,15 @@ async function viewDetail(id) {
                     <div class="detail-header-info">
                         <span class="badge-4m badge-${data.jenis4M.toLowerCase()}">${data.jenis4M}</span>
                         <span class="badge-shift ${getShiftClass(data.shift)}">${data.shift}</span>
-                        <span class="status-badge status-${data.status.toLowerCase()}">
-                            <span class="status-dot"></span> ${data.status}
+                        <span class="status-badge status-${getItemStatus(data).toLowerCase()}">
+                            <span class="status-dot"></span> ${getItemStatus(data)}
                         </span>
                     </div>
                 </div>
 
                 <div class="detail-col">
-                    <h4 class="detail-label">Tanggal Update</h4>
-                    <p class="detail-value">${data.tanggalUpdate}</p>
+                    <h4 class="detail-label">Tanggal</h4>
+                    <p class="detail-value">${data.tanggalUpdate ? new Date(data.tanggalUpdate).toLocaleDateString('id-ID') : '-'}</p>
                 </div>
                 <div class="detail-col">
                     <h4 class="detail-label">PIC Leader</h4>
@@ -204,24 +200,30 @@ async function viewDetail(id) {
                     <p class="detail-value">${data.namaOperator}</p>
                 </div>
 
+                <div class="detail-section">
+                    <h4 class="detail-label">4M Standard</h4>
+                    <div class="detail-box">${data.standard4M || '-'}</div>
+                </div>
+                <div class="detail-section">
+                    <h4 class="detail-label">4M Actual</h4>
+                    <div class="detail-box">${data.actual4M || '-'}</div>
+                </div>
+
                 <div class="detail-section full-width">
-                    <h4 class="detail-label">Keterangan Problem</h4>
+                    <h4 class="detail-label">Alasan Henkaten (Problem)</h4>
                     <div class="detail-box problem-msg">${data.keteranganProblem}</div>
                 </div>
 
                 <div class="detail-section">
-                    <h4 class="detail-label">Rencana Perbaikan</h4>
-                    <div class="detail-box">${data.rencanaPerbaikan}</div>
-                    <div class="detail-sub-info">
-                        <span>Target: ${data.tanggalRencanaPerbaikan}</span>
-                    </div>
+                    <h4 class="detail-label">Temporary Action</h4>
+                    <div class="detail-box">${data.temporaryAction || '-'}</div>
                 </div>
 
                 <div class="detail-section">
-                    <h4 class="detail-label">Aktual Perbaikan</h4>
-                    <div class="detail-box">${data.aktualPerbaikan || 'Belum ada data aktual'}</div>
+                    <h4 class="detail-label">Permanent Action</h4>
+                    <div class="detail-box">${data.rencanaPerbaikan}</div>
                     <div class="detail-sub-info">
-                        <span>Selesai: ${data.tanggalAktualPerbaikan || '-'}</span>
+                        <span>Due Date: ${data.tanggalRencanaPerbaikan ? new Date(data.tanggalRencanaPerbaikan).toLocaleDateString('id-ID') : '-'}</span>
                     </div>
                 </div>
 
@@ -254,19 +256,7 @@ function getShiftClass(shiftText) {
     if (shiftText.includes('1')) return 'shift-1';
     if (shiftText.includes('2')) return 'shift-2';
     if (shiftText.includes('3')) return 'shift-3';
-    if (shiftText.includes('3')) return 'shift-3';
     return 'shift-1';
-}
-
-// Helper for Dept Class
-function getDeptClass(dept) {
-    if (!dept) return 'dept-general';
-    const d = dept.toLowerCase();
-    if (d.includes('produksi')) return 'dept-produksi';
-    if (d.includes('engineering')) return 'dept-eng';
-    if (d.includes('quality')) return 'dept-qc';
-    if (d.includes('logistik')) return 'dept-logistik';
-    return 'dept-general';
 }
 
 // Search filter
@@ -319,7 +309,10 @@ async function editData(id) {
         document.getElementById('namaAreaLine').value = data.namaAreaLine;
         document.getElementById('namaOperator').value = data.namaOperator;
         document.getElementById('jenis4M').value = data.jenis4M;
+        document.getElementById('standard4M').value = data.standard4M || '';
+        document.getElementById('actual4M').value = data.actual4M || '';
         document.getElementById('keteranganProblem').value = data.keteranganProblem;
+        document.getElementById('temporaryAction').value = data.temporaryAction || '';
         document.getElementById('rencanaPerbaikan').value = data.rencanaPerbaikan;
         document.getElementById('tanggalRencanaPerbaikan').value = formatDateForInput(data.tanggalRencanaPerbaikan);
         document.getElementById('aktualPerbaikan').value = data.aktualPerbaikan || '';
@@ -504,7 +497,6 @@ function formatDateForInput(dateString) {
 function showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     if (!container) {
-        // Create container if it doesn't exist
         const newContainer = document.createElement('div');
         newContainer.id = 'toastContainer';
         newContainer.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; z-index: 99999; display: flex; flex-direction: column; gap: 0.75rem;';
@@ -529,10 +521,10 @@ function showToast(message, type = 'info') {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         min-width: 250px;
         animation: slideIn 0.4s ease forwards;
-    `;
+        `;
 
     toast.innerHTML = `
         <i class="${iconClass}" style="font-size: 1.25rem; color: ${iconColor};"></i>
@@ -560,4 +552,3 @@ document.addEventListener('click', function (e) {
         closeDetailModal();
     }
 });
-
