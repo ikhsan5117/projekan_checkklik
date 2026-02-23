@@ -101,6 +101,7 @@
                             4M <i class="ph-arrows-down-up sort-icon"></i>
                         </th>
                         <th>REMARK</th>
+                        <th>DETAIL</th>
                         <th style="width: 120px;">WAKTU LOG</th>
                     </tr>
                 </thead>
@@ -1032,6 +1033,7 @@
                     </td>
 
                     <td style="color: ${rowClass ? 'white' : '#999'}; font-size: 0.85rem;">${m.remark}</td>
+                    <td style="color: ${rowClass ? 'white' : '#bbb'}; font-size: 0.85rem;">${m.problem || '-'}</td>
                     <td style="color: ${rowClass ? 'white' : '#aaa'}; font-size: 0.85rem;">${formattedTime}</td>
                 `;
                 tbody.appendChild(tr);

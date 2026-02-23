@@ -34,6 +34,10 @@
                     <button class="btn-filter" data-filter="selesai">Selesai</button>
                     <button class="btn-filter" data-filter="delay">Delay</button>
                 </div>
+                <button class="btn-export" onclick="exportToExcel()" title="Export ke Excel">
+                    <i class="ph-file-xls"></i>
+                    <span>Ekspor</span>
+                </button>
                 <button class="btn-add-new-subtle" onclick="openCreateModal()">
                     <i class="ph-plus-circle"></i>
                     <span>Tambah Temuan</span>
@@ -78,7 +82,7 @@
         </div>
 
         <form id="henkatenForm" enctype="multipart/form-data">
-            <input type="hidden" id="problemId" name="Id" />
+            <input type="hidden" id="problemId" name="Id" value="0" />
 
             <div class="modal-body">
                 <!-- Data Temuan Section -->

@@ -70,13 +70,35 @@ async function loadDepartmentOptions() {
 async function loadData() {
     try {
         const response = await fetch('/Henkaten/GetData');
+        
+        // Check if response is OK before parsing
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.error('Error loading data:', errorData);
+            showToast(errorData.error || 'Gagal memuat data', 'error');
+            allData = [];
+            renderTable([]);
+            return;
+        }
+
         const data = await response.json();
+        
+        // Ensure data is an array
+        if (!Array.isArray(data)) {
+            console.error('Invalid data format:', data);
+            showToast('Format data tidak valid', 'error');
+            allData = [];
+            renderTable([]);
+            return;
+        }
 
         allData = data;
         renderTable(data);
     } catch (error) {
         console.error('Error loading data:', error);
         showToast('Gagal memuat data', 'error');
+        allData = [];
+        renderTable([]);
     }
 }
 
@@ -110,7 +132,21 @@ function applyFilters(filterValue) {
 function renderTable(data) {
     const tbody = document.getElementById('tableBody');
 
-    if (!data || data.length === 0) {
+    // Ensure data is an array
+    if (!Array.isArray(data)) {
+        console.error('renderTable: data is not an array', data);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="12" style="text-align: center; padding: 3rem; color: #64748b;">
+                    <i class="ph-database" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
+                    Belum ada data temuan
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    if (data.length === 0) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="12" style="text-align: center; padding: 3rem; color: #64748b;">
@@ -166,6 +202,15 @@ function renderTable(data) {
 async function viewDetail(id) {
     try {
         const response = await fetch(`/Henkaten/GetById/${id}`);
+        
+        // Check if response is OK before parsing
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.error('Error loading detail:', errorData);
+            showToast(errorData.error || 'Gagal memuat detail data', 'error');
+            return;
+        }
+
         const data = await response.json();
 
         const modal = document.getElementById('detailModal');
@@ -278,7 +323,13 @@ function openCreateModal() {
     currentEditId = null;
     document.getElementById('modalTitle').textContent = 'Input Temuan Problem Henkaten';
     document.getElementById('henkatenForm').reset();
-    document.getElementById('problemId').value = '';
+    
+    // Remove Id field for create (or set to empty)
+    const problemIdField = document.getElementById('problemId');
+    if (problemIdField) {
+        problemIdField.remove(); // Remove the field completely for create
+    }
+    
     document.getElementById('previewTemuan').innerHTML = '';
     document.getElementById('previewAktual').innerHTML = '';
     document.getElementById('previewTemuan').classList.remove('active');
@@ -295,11 +346,32 @@ function openCreateModal() {
 async function editData(id) {
     try {
         const response = await fetch(`/Henkaten/GetById/${id}`);
+        
+        // Check if response is OK before parsing
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.error('Error loading data:', errorData);
+            showToast(errorData.error || 'Gagal memuat data', 'error');
+            return;
+        }
+
         const data = await response.json();
 
         currentEditId = id;
         document.getElementById('modalTitle').textContent = 'Edit Temuan Problem Henkaten';
-        document.getElementById('problemId').value = data.id;
+        
+        // Ensure Id field exists for edit
+        let problemIdField = document.getElementById('problemId');
+        if (!problemIdField) {
+            // Create the hidden field if it doesn't exist
+            const form = document.getElementById('henkatenForm');
+            problemIdField = document.createElement('input');
+            problemIdField.type = 'hidden';
+            problemIdField.id = 'problemId';
+            problemIdField.name = 'Id';
+            form.insertBefore(problemIdField, form.firstChild);
+        }
+        problemIdField.value = data.id;
 
         // Fill form with data
         document.getElementById('tanggalUpdate').value = formatDateForInput(data.tanggalUpdate);
@@ -359,17 +431,25 @@ async function deleteData(id) {
             method: 'DELETE'
         });
 
+        // Check if response is OK before parsing
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.error('Error deleting data:', errorData);
+            showToast(errorData.error || 'Gagal menghapus data', 'error');
+            return;
+        }
+
         const result = await response.json();
 
         if (result.success) {
             showToast('Data berhasil dihapus', 'success');
             loadData();
         } else {
-            showToast('Gagal menghapus data', 'error');
+            showToast(result.error || 'Gagal menghapus data', 'error');
         }
     } catch (error) {
         console.error('Error deleting data:', error);
-        showToast('Gagal menghapus data', 'error');
+        showToast('Gagal menghapus data: ' + error.message, 'error');
     }
 }
 
@@ -379,14 +459,86 @@ function setupFormSubmit() {
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
+        // Client-side validation
+        const requiredFields = {
+            'TanggalUpdate': 'Tanggal Update',
+            'Shift': 'Shift',
+            'PicLeader': 'PIC Leader',
+            'NamaAreaLine': 'Nama Area/Line',
+            'NamaOperator': 'Nama Operator',
+            'Jenis4M': 'Jenis 4M',
+            'KeteranganProblem': 'Keterangan Problem',
+            'RencanaPerbaikan': 'Rencana Perbaikan',
+            'TanggalRencanaPerbaikan': 'Tanggal Rencana Perbaikan'
+        };
+
+        const missingFields = [];
+        for (const [fieldName, fieldLabel] of Object.entries(requiredFields)) {
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            if (field && !field.value.trim()) {
+                missingFields.push(fieldLabel);
+            }
+        }
+
+        if (missingFields.length > 0) {
+            showToast(`Mohon lengkapi field: ${missingFields.join(', ')}`, 'error');
+            return;
+        }
+
         const formData = new FormData(form);
         const url = currentEditId ? '/Henkaten/Edit' : '/Henkaten/Create';
 
         try {
+            // Log form data for debugging
+            console.log('Submitting form data...');
+            const formDataEntries = {};
+            for (let pair of formData.entries()) {
+                formDataEntries[pair[0]] = pair[1];
+            }
+            console.log('Form data:', formDataEntries);
+
             const response = await fetch(url, {
                 method: 'POST',
                 body: formData
             });
+
+            // Check if response is OK before parsing
+            if (!response.ok) {
+                let errorData;
+                try {
+                    const responseText = await response.text();
+                    console.error('Raw response text:', responseText);
+                    errorData = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Failed to parse error response:', e);
+                    errorData = { error: `Server error: ${response.status} ${response.statusText}` };
+                }
+                console.error('Error submitting form:', errorData);
+                console.error('Response status:', response.status);
+                console.error('Response statusText:', response.statusText);
+                
+                // Build error message
+                let errorMessage = errorData.error || `Gagal menyimpan data (${response.status})`;
+                if (errorData.details) {
+                    if (Array.isArray(errorData.details)) {
+                        const fieldErrors = errorData.details.map(d => {
+                            if (d.Errors && Array.isArray(d.Errors)) {
+                                return `${d.Field || d.field || 'Unknown'}: ${d.Errors.join(', ')}`;
+                            } else if (d.Errors) {
+                                return `${d.Field || d.field || 'Unknown'}: ${d.Errors}`;
+                            } else {
+                                return `${d.Field || d.field || 'Unknown'}: ${JSON.stringify(d)}`;
+                            }
+                        }).join('; ');
+                        errorMessage += ' - ' + fieldErrors;
+                    } else {
+                        errorMessage += ' - ' + (typeof errorData.details === 'string' ? errorData.details : JSON.stringify(errorData.details));
+                    }
+                }
+                
+                showToast(errorMessage, 'error');
+                return;
+            }
 
             const result = await response.json();
 
@@ -395,11 +547,28 @@ function setupFormSubmit() {
                 closeModal();
                 loadData();
             } else {
-                showToast(result.error || 'Gagal menyimpan data', 'error');
+                let errorMessage = result.error || 'Gagal menyimpan data';
+                if (result.details) {
+                    if (Array.isArray(result.details)) {
+                        const fieldErrors = result.details.map(d => {
+                            if (d.Errors && Array.isArray(d.Errors)) {
+                                return `${d.Field || d.field || 'Unknown'}: ${d.Errors.join(', ')}`;
+                            } else if (d.Errors) {
+                                return `${d.Field || d.field || 'Unknown'}: ${d.Errors}`;
+                            } else {
+                                return `${d.Field || d.field || 'Unknown'}: ${JSON.stringify(d)}`;
+                            }
+                        }).join('; ');
+                        errorMessage += ' - ' + fieldErrors;
+                    } else {
+                        errorMessage += ' - ' + (typeof result.details === 'string' ? result.details : JSON.stringify(result.details));
+                    }
+                }
+                showToast(errorMessage, 'error');
             }
         } catch (error) {
             console.error('Error submitting form:', error);
-            showToast('Gagal menyimpan data', 'error');
+            showToast('Gagal menyimpan data: ' + error.message, 'error');
         }
     });
 }
@@ -537,6 +706,30 @@ function showToast(message, type = 'info') {
         toast.style.animation = 'slideOut 0.4s ease forwards';
         setTimeout(() => toast.remove(), 400);
     }, 3000);
+}
+
+// Export to Excel
+function exportToExcel() {
+    try {
+        // Show loading indicator
+        showToast('Mengekspor data ke Excel...', 'info');
+        
+        // Create a link to download the file
+        const link = document.createElement('a');
+        link.href = '/Henkaten/ExportToExcel';
+        link.download = 'Henkaten_Export.xlsx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message after a short delay
+        setTimeout(() => {
+            showToast('Data berhasil diekspor', 'success');
+        }, 1000);
+    } catch (error) {
+        console.error('Error exporting to Excel:', error);
+        showToast('Gagal mengekspor data', 'error');
+    }
 }
 
 // Close modal when clicking outside
