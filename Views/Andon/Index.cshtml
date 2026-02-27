@@ -38,6 +38,12 @@
                 <div class="toggle-dot"></div>
                 <span>AUTO SCROLL</span>
             </div>
+
+            <!-- Auto Plant Rotation Toggle -->
+            <div class="scroll-toggle active" id="btnAutoPlant" title="Toggle Auto Plant Rotation">
+                <div class="toggle-dot" style="background: #eab308;"></div>
+                <span style="color: #eab308;">AUTO PLANT</span>
+            </div>
         </div>
     </div>
 
@@ -1067,11 +1073,57 @@
         // Auto Refresh every 30 seconds
         setInterval(fetchAndonData, 30000);
 
+        let isAutoPlantEnabled = true;
+        let plantRotationInterval;
+        const plants = ["MOLDED", "HOSE", "RVI", "BTR"];
+
+        function initAutoPlantRotation() {
+            const btnToggle = document.getElementById('btnAutoPlant');
+            const select = document.getElementById('plantSelect');
+
+            if (plantRotationInterval) clearInterval(plantRotationInterval);
+
+            plantRotationInterval = setInterval(() => {
+                if (!isAutoPlantEnabled || isScrollPaused) return;
+
+                // Find next plant
+                let currentIndex = plants.indexOf(selectedPlant);
+                let nextIndex = (currentIndex + 1) % plants.length;
+                let nextPlant = plants[nextIndex];
+
+                console.log(`Auto rotating to plant: ${nextPlant}`);
+                
+                // Switch plant
+                if (select) select.value = nextPlant;
+                switchPlant(nextPlant);
+            }, 30000); // Rotate every 30 seconds
+
+            if (btnToggle) {
+                btnToggle.onclick = () => {
+                    isAutoPlantEnabled = !isAutoPlantEnabled;
+                    btnToggle.classList.toggle('active', isAutoPlantEnabled);
+                    const dot = btnToggle.querySelector('.toggle-dot');
+                    const span = btnToggle.querySelector('span');
+                    
+                    if (isAutoPlantEnabled) {
+                        dot.style.background = "#eab308";
+                        dot.style.boxShadow = "0 0 10px rgba(234, 179, 8, 0.8)";
+                        span.style.color = "#eab308";
+                    } else {
+                        dot.style.background = "#555";
+                        dot.style.boxShadow = "none";
+                        span.style.color = "#555";
+                    }
+                };
+            }
+        }
+
         // Initial Load
         document.addEventListener('DOMContentLoaded', () => {
             initPlantTabs();
             fetchAndonData();
             initAutoScroll();
+            initAutoPlantRotation();
         });
     </script>
 }

@@ -43,7 +43,29 @@ document.addEventListener('DOMContentLoaded', function () {
     setupStatusFilters();
     setupFormSubmit();
     loadDepartmentOptions();
+    initSignalR();
 });
+
+// SignalR Real-time Update Logic
+let connection;
+function initSignalR() {
+    connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("HenkatenDataUpdated", function (plantName) {
+        console.log(`SignalR: Data Henkaten updated for plant ${plantName}`);
+
+        // Refresh data (filter by current plant if applicable, usually handled in GetData backend)
+        loadData();
+
+        // Custom notification (optional but helpful)
+        showToast(`Data Henkaten ${plantName} baru saja diperbarui`, 'info');
+    });
+
+    connection.start().catch(err => console.error("SignalR Connection Error: ", err));
+}
 
 async function loadDepartmentOptions() {
     try {
@@ -70,7 +92,7 @@ async function loadDepartmentOptions() {
 async function loadData() {
     try {
         const response = await fetch('/Henkaten/GetData');
-        
+
         // Check if response is OK before parsing
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -82,7 +104,7 @@ async function loadData() {
         }
 
         const data = await response.json();
-        
+
         // Ensure data is an array
         if (!Array.isArray(data)) {
             console.error('Invalid data format:', data);
@@ -137,7 +159,7 @@ function renderTable(data) {
         console.error('renderTable: data is not an array', data);
         tbody.innerHTML = `
             <tr>
-                <td colspan="12" style="text-align: center; padding: 3rem; color: #64748b;">
+                <td colspan="12" class="empty-state" style="text-align: center; padding: 3rem; color: #64748b;">
                     <i class="ph-database" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
                     Belum ada data temuan
                 </td>
@@ -149,7 +171,7 @@ function renderTable(data) {
     if (data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="12" style="text-align: center; padding: 3rem; color: #64748b;">
+                <td colspan="12" class="empty-state" style="text-align: center; padding: 3rem; color: #64748b;">
                     <i class="ph-database" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
                     Belum ada data temuan
                 </td>
@@ -164,23 +186,23 @@ function renderTable(data) {
 
         return `
         <tr>
-            <td>${item.tanggalUpdate}</td>
-            <td><span class="badge-shift ${getShiftClass(item.shift)}">${item.shift}</span></td>
-            <td><span class="badge-4m badge-${item.jenis4M.toLowerCase()}">${item.jenis4M}</span></td>
-            <td>${item.standard4M || '-'}</td>
-            <td>${item.actual4M || '-'}</td>
-            <td>${item.keteranganProblem}</td>
-            <td>${item.temporaryAction || '-'}</td>
-            <td>${item.rencanaPerbaikan}</td>
-            <td>${item.picLeader}</td>
-            <td>${item.tanggalRencanaPerbaikan}</td>
-            <td>
+            <td data-label="TANGGAL">${item.tanggalUpdate}</td>
+            <td data-label="SHIFT"><span class="badge-shift ${getShiftClass(item.shift)}">${item.shift}</span></td>
+            <td data-label="JENIS HENKATEN (4M)"><span class="badge-4m badge-${item.jenis4M.toLowerCase()}">${item.jenis4M}</span></td>
+            <td data-label="4M STANDARD">${item.standard4M || '-'}</td>
+            <td data-label="4M ACTUAL">${item.actual4M || '-'}</td>
+            <td data-label="ALASAN HENKATEN">${item.keteranganProblem}</td>
+            <td data-label="TEMPORARY ACTION">${item.temporaryAction || '-'}</td>
+            <td data-label="PERMANENT ACTION">${item.rencanaPerbaikan}</td>
+            <td data-label="PIC (LEADER)">${item.picLeader}</td>
+            <td data-label="DUE DATE">${item.tanggalRencanaPerbaikan}</td>
+            <td data-label="STATUS">
                 <span class="status-badge status-${statusClass}">
                     <span class="status-dot"></span>
                     ${currentStatus}
                 </span>
             </td>
-            <td>
+            <td data-label="AKSI">
                 <div class="action-buttons">
                     <button class="btn-action btn-edit" onclick="editData(${item.id})" title="Edit">
                         <i class="ph-pencil-simple"></i>
@@ -202,7 +224,7 @@ function renderTable(data) {
 async function viewDetail(id) {
     try {
         const response = await fetch(`/Henkaten/GetById/${id}`);
-        
+
         // Check if response is OK before parsing
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -323,13 +345,13 @@ function openCreateModal() {
     currentEditId = null;
     document.getElementById('modalTitle').textContent = 'Input Temuan Problem Henkaten';
     document.getElementById('henkatenForm').reset();
-    
+
     // Remove Id field for create (or set to empty)
     const problemIdField = document.getElementById('problemId');
     if (problemIdField) {
         problemIdField.remove(); // Remove the field completely for create
     }
-    
+
     document.getElementById('previewTemuan').innerHTML = '';
     document.getElementById('previewAktual').innerHTML = '';
     document.getElementById('previewTemuan').classList.remove('active');
@@ -346,7 +368,7 @@ function openCreateModal() {
 async function editData(id) {
     try {
         const response = await fetch(`/Henkaten/GetById/${id}`);
-        
+
         // Check if response is OK before parsing
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -359,7 +381,7 @@ async function editData(id) {
 
         currentEditId = id;
         document.getElementById('modalTitle').textContent = 'Edit Temuan Problem Henkaten';
-        
+
         // Ensure Id field exists for edit
         let problemIdField = document.getElementById('problemId');
         if (!problemIdField) {
@@ -516,7 +538,7 @@ function setupFormSubmit() {
                 console.error('Error submitting form:', errorData);
                 console.error('Response status:', response.status);
                 console.error('Response statusText:', response.statusText);
-                
+
                 // Build error message
                 let errorMessage = errorData.error || `Gagal menyimpan data (${response.status})`;
                 if (errorData.details) {
@@ -535,7 +557,7 @@ function setupFormSubmit() {
                         errorMessage += ' - ' + (typeof errorData.details === 'string' ? errorData.details : JSON.stringify(errorData.details));
                     }
                 }
-                
+
                 showToast(errorMessage, 'error');
                 return;
             }
@@ -713,7 +735,7 @@ function exportToExcel() {
     try {
         // Show loading indicator
         showToast('Mengekspor data ke Excel...', 'info');
-        
+
         // Create a link to download the file
         const link = document.createElement('a');
         link.href = '/Henkaten/ExportToExcel';
@@ -721,7 +743,7 @@ function exportToExcel() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Show success message after a short delay
         setTimeout(() => {
             showToast('Data berhasil diekspor', 'success');

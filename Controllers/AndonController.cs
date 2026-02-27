@@ -45,7 +45,6 @@ namespace AMRVI.Controllers
         {
             try
             {
-                // Ambil semua data hari ini agar sinkron dengan spreadsheets (termasuk yang sudah RUNNING/Resolved)
                 // Filter by date (today) in SQL to improve performance
                 var allLogs = await _prodContext.ScwLogs
                     .FromSqlRaw("SELECT * FROM [produksi].[tb_elwp_produksi_scw_logs] WHERE CAST([CreatedAt] AS DATE) = CAST(GETDATE() AS DATE)")

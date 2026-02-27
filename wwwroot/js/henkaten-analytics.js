@@ -35,7 +35,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     loadAnalyticsData();
+    initSignalR();
 });
+
+// SignalR Real-time Update Logic
+let connection;
+function initSignalR() {
+    connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("HenkatenDataUpdated", function (plantName) {
+        console.log(`SignalR: Analytics update triggered by change in plant ${plantName}`);
+
+        // Refresh data while preserving current UI filters
+        refreshAnalyticsSync();
+    });
+
+    connection.start().catch(err => console.error("SignalR Connection Error: ", err));
+}
+
+async function refreshAnalyticsSync() {
+    try {
+        const response = await fetch('/Henkaten/GetData');
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        allAnalyticsData = data;
+
+        // Re-apply current filters to the new data
+        filterData();
+
+        console.log("Analytics data synchronized via SignalR");
+    } catch (error) {
+        console.error('Error syncing analytics data:', error);
+    }
+}
 
 let charts = {};
 let allAnalyticsData = [];
