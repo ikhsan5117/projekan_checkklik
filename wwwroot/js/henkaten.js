@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function () {
     loadDepartmentOptions(); // Tambahan: Load Master Departemen
 });
 
+// Expose to window for SignalR auto-update
+window.loadData = loadData;
+
 async function loadDepartmentOptions() {
     try {
         const response = await fetch('/Department/GetAll');

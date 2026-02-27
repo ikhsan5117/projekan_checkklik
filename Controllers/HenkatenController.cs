@@ -7,6 +7,8 @@ using AMRVI.Services;
 using System.Linq;
 using OfficeOpenXml;
 using System.Drawing;
+using Microsoft.AspNetCore.SignalR;
+using AMRVI.Hubs;
 
 namespace AMRVI.Controllers
 {
@@ -17,15 +19,18 @@ namespace AMRVI.Controllers
         private readonly ApplicationDbContext _context;
         private readonly PlantService _plantService;
         private readonly IWebHostEnvironment _environment;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         public HenkatenController(
             ApplicationDbContext context,
             PlantService plantService,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _plantService = plantService;
             _environment = environment;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -239,6 +244,9 @@ namespace AMRVI.Controllers
                 _context.HenkatenProblems.Add(model);
                 await _context.SaveChangesAsync();
 
+                // Broadcast real-time update
+                await _hubContext.Clients.All.SendAsync("HenkatenDataUpdated", "Sistem: Temuan baru oleh " + model.PicLeader);
+
                 return Ok(new { success = true, message = "Data berhasil disimpan" });
             }
             catch (DbUpdateException dbEx)
@@ -369,6 +377,9 @@ namespace AMRVI.Controllers
 
                 await _context.SaveChangesAsync();
 
+                // Broadcast real-time update
+                await _hubContext.Clients.All.SendAsync("HenkatenDataUpdated", "Sistem: Perubahan pada Id #" + model.Id);
+
                 return Ok(new { success = true, message = "Data berhasil diupdate" });
             }
             catch (Exception ex)
@@ -403,6 +414,9 @@ namespace AMRVI.Controllers
 
                 _context.HenkatenProblems.Remove(problem);
                 await _context.SaveChangesAsync();
+
+                // Broadcast real-time update
+                await _hubContext.Clients.All.SendAsync("HenkatenDataUpdated", "Sistem: Data Id #" + id + " telah dihapus");
 
                 return Ok(new { success = true, message = "Data berhasil dihapus" });
             }

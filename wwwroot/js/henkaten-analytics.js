@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAnalyticsData();
 });
 
+// Expose to window for SignalR auto-update
+window.loadAnalyticsData = loadAnalyticsData;
+
 let charts = {};
 let allAnalyticsData = [];
 let activeFilterStatus = null;
