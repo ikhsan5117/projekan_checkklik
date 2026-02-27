@@ -14,8 +14,14 @@
     <!-- Header -->
     <div class="andon-header-v2">
         <div class="header-left">
-            <div class="filter-box">
-                <span class="filter-label">PLANT: @ViewBag.CurrentPlant</span>
+            <div class="plant-selector">
+                <span class="plant-selector-label">PLANT:</span>
+                <select id="plantSelect" class="plant-select" onchange="switchPlant(this.value)">
+                    <option value="MOLDED">MOLDED</option>
+                    <option value="HOSE">HOSE</option>
+                    <option value="RVI">RVI</option>
+                    <option value="BTR">BTR</option>
+                </select>
             </div>
         </div>
         <div class="header-center">
@@ -95,6 +101,7 @@
                             4M <i class="ph-arrows-down-up sort-icon"></i>
                         </th>
                         <th>REMARK</th>
+                        <th>DETAIL</th>
                         <th style="width: 120px;">WAKTU LOG</th>
                     </tr>
                 </thead>
@@ -181,15 +188,48 @@
         margin-bottom: 25px;
     }
 
-    .filter-box {
-        border: 1px solid var(--box-blue);
-        padding: 8px 15px;
-        border-radius: 4px;
+    .plant-selector {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 0.8rem;
+    }
+
+    .plant-selector-label {
+        font-size: 0.75rem;
         color: var(--box-blue);
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .plant-select {
+        background: #0d1117;
+        border: 1px solid var(--box-blue);
+        color: var(--box-blue);
+        padding: 6px 30px 6px 12px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        font-family: inherit;
+        letter-spacing: 0.8px;
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%233b82f6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        transition: all 0.2s ease;
+    }
+
+    .plant-select:hover {
+        border-color: #60a5fa;
+        box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .plant-select option {
+        background: #0d1117;
+        color: #fff;
+        font-weight: 600;
     }
 
     .andon-header-v2 h1 {
@@ -567,6 +607,20 @@
         let isSortedByPriority = false; // Track sorting state for STATUS
         let isSortedBy4M = false; // Track sorting state for 4M
         let isSortedByMachine = true; // Set Machine as default sort
+
+        // ===== PLANT SWITCHER =====
+        function switchPlant(plant) {
+            selectedPlant = plant;
+            // Re-fetch data for the new plant
+            fetchAndonData();
+        }
+
+        // Set select value on load
+        function initPlantTabs() {
+            const sel = document.getElementById('plantSelect');
+            if (sel) sel.value = selectedPlant;
+        }
+        // ===========================
 
         async function fetchAndonData() {
             try {
@@ -979,6 +1033,7 @@
                     </td>
 
                     <td style="color: ${rowClass ? 'white' : '#999'}; font-size: 0.85rem;">${m.remark}</td>
+                    <td style="color: ${rowClass ? 'white' : '#bbb'}; font-size: 0.85rem;">${m.problem || '-'}</td>
                     <td style="color: ${rowClass ? 'white' : '#aaa'}; font-size: 0.85rem;">${formattedTime}</td>
                 `;
                 tbody.appendChild(tr);
@@ -1014,6 +1069,7 @@
 
         // Initial Load
         document.addEventListener('DOMContentLoaded', () => {
+            initPlantTabs();
             fetchAndonData();
             initAutoScroll();
         });

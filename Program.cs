@@ -11,10 +11,12 @@ builder.Services.AddSignalR();
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-        options.SlidingExpiration = true;
-        options.AccessDeniedPath = "/Account/AccessDenied";
+        // Konfigurasi Cookie Khusus untuk Chrome HTTP Support
+        options.Cookie.Name = "AMRVI_Session"; // Ganti nama cookie biar fresh
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; 
     });
 
 // Add DbContexts with conditional provider

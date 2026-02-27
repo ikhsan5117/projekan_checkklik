@@ -191,13 +191,6 @@ function renderTable(data) {
                     ${item.department || '-'}
                 </span>
             </td>
-            <td>
-                ${item.fotoTemuan ? `
-                    <div class="media-icon" onclick="viewImage('${fixImagePath(item.fotoTemuan)}')">
-                        <i class="ph-image"></i>
-                    </div>
-                ` : '-'}
-            </td>
             <td style="max-width: 300px;" title="${problemText}">
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                     <div style="width: 3px; height: 18px; background: ${accentColor}; border-radius: 10px; margin-top: 2px; box-shadow: 0 0 10px ${accentColor}44;"></div>
@@ -772,8 +765,17 @@ function viewImage(imagePath) {
 
     content.innerHTML = `
         <div style="text-align: center; padding: 1rem;">
-            <img src="${fullPath}" alt="Foto" style="max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" onerror="this.src='/images/no-image.png';">
-            <div style="margin-top: 15px; color: #94a3b8; font-size: 0.85rem; font-family: monospace;">${imagePath}</div>
+            <div id="imageLoader" style="color: #64748b; padding: 2rem;">
+                <i class="ph-circle-notch ph-spin" style="font-size: 2rem;"></i>
+                <p>Loading Media...</p>
+            </div>
+            <img src="${fullPath}" alt="Foto" 
+                style="display: none; max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" 
+                onload="this.style.display='block'; document.getElementById('imageLoader').style.display='none';"
+                onerror="this.style.display='none'; document.getElementById('imageLoader').innerHTML='<i class=\'ph-image-break\' style=\'font-size: 3rem; opacity: 0.3;\'></i><p>Media tidak ditemukan</p>';">
+            <div style="margin-top: 15px; color: #64748b; font-size: 0.75rem; font-family: 'monospace'; opacity: 0.8; letter-spacing: 0.5px;">
+                ${imagePath}
+            </div>
         </div>
     `;
 
