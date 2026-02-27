@@ -8,6 +8,7 @@ using System.Linq;
 using OfficeOpenXml;
 using System.Drawing;
 using Microsoft.AspNetCore.SignalR;
+using AMRVI.Hubs;
 
 namespace AMRVI.Controllers
 {
@@ -18,13 +19,13 @@ namespace AMRVI.Controllers
         private readonly ApplicationDbContext _context;
         private readonly PlantService _plantService;
         private readonly IWebHostEnvironment _environment;
-        private readonly IHubContext<AMRVI.Hubs.NotificationHub> _hubContext;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         public HenkatenController(
             ApplicationDbContext context,
             PlantService plantService,
             IWebHostEnvironment environment,
-            IHubContext<AMRVI.Hubs.NotificationHub> hubContext)
+            IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _plantService = plantService;
@@ -243,9 +244,8 @@ namespace AMRVI.Controllers
                 _context.HenkatenProblems.Add(model);
                 await _context.SaveChangesAsync();
 
-                // Broadcast SignalR update
-                var plantName = _plantService.GetPlantName();
-                await _hubContext.Clients.All.SendAsync("HenkatenDataUpdated", plantName);
+                // Broadcast real-time update
+                await _hubContext.Clients.All.SendAsync("HenkatenDataUpdated", "Sistem: Temuan baru oleh " + model.PicLeader);
 
                 return Ok(new { success = true, message = "Data berhasil disimpan" });
             }
@@ -377,9 +377,8 @@ namespace AMRVI.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // Broadcast SignalR update
-                var plantName = _plantService.GetPlantName();
-                await _hubContext.Clients.All.SendAsync("HenkatenDataUpdated", plantName);
+                // Broadcast real-time update
+                await _hubContext.Clients.All.SendAsync("HenkatenDataUpdated", "Sistem: Perubahan pada Id #" + model.Id);
 
                 return Ok(new { success = true, message = "Data berhasil diupdate" });
             }
@@ -416,9 +415,8 @@ namespace AMRVI.Controllers
                 _context.HenkatenProblems.Remove(problem);
                 await _context.SaveChangesAsync();
 
-                // Broadcast SignalR update
-                var plantName = _plantService.GetPlantName();
-                await _hubContext.Clients.All.SendAsync("HenkatenDataUpdated", plantName);
+                // Broadcast real-time update
+                await _hubContext.Clients.All.SendAsync("HenkatenDataUpdated", "Sistem: Data Id #" + id + " telah dihapus");
 
                 return Ok(new { success = true, message = "Data berhasil dihapus" });
             }

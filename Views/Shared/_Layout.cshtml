@@ -622,6 +622,28 @@
             }
         });
 
+        // Henkaten Specific Refresh Signal
+        connection.on("HenkatenDataUpdated", (msg) => {
+            console.log("Henkaten Update Signal:", msg);
+            flashStatus();
+            
+            const path = window.location.pathname.toLowerCase();
+            
+            if (path.includes("/henkaten")) {
+                if (path.includes("/analytics")) {
+                    if (window.loadAnalyticsData) {
+                        showToast("Analitik diperbarui otomatis!", "success");
+                        window.loadAnalyticsData();
+                    }
+                } else {
+                    if (window.loadData) {
+                        showToast("Tabel Henkaten diperbarui otomatis!", "success");
+                        window.loadData();
+                    }
+                }
+            }
+        });
+
         // Start Connection
         async function startSignalR() {
             try {

@@ -2,85 +2,84 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AMRVI.Models
+namespace AMRVI.Models;
+
+public class HenkatenProblem
 {
-    public class HenkatenProblem
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        [Required]
-        public DateTime TanggalUpdate { get; set; } = DateTime.Now;
+    [Required]
+    public DateTime TanggalUpdate { get; set; } = DateTime.Now;
 
-        [Required]
-        [StringLength(50)]
-        public string Shift { get; set; } = string.Empty;
+    [Required]
+    [StringLength(50)]
+    public string Shift { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100)]
-        public string PicLeader { get; set; } = string.Empty;
+    [Required]
+    [StringLength(100)]
+    public string PicLeader { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100)]
-        public string NamaAreaLine { get; set; } = string.Empty;
+    [Required]
+    [StringLength(100)]
+    public string NamaAreaLine { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100)]
-        public string NamaOperator { get; set; } = string.Empty;
+    [Required]
+    [StringLength(100)]
+    public string NamaOperator { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(50)]
-        public string Jenis4M { get; set; } = string.Empty;
+    [Required]
+    [StringLength(50)]
+    public string Jenis4M { get; set; } = string.Empty;
 
-        [StringLength(500)]
-        public string? Standard4M { get; set; }
+    [StringLength(500)]
+    public string? Standard4M { get; set; }
 
-        [StringLength(500)]
-        public string? Actual4M { get; set; }
+    [StringLength(500)]
+    public string? Actual4M { get; set; }
 
-        [StringLength(1000)]
-        public string? TemporaryAction { get; set; }
+    [StringLength(1000)]
+    public string? TemporaryAction { get; set; }
 
-        [Required]
-        [StringLength(1000)]
-        public string KeteranganProblem { get; set; } = string.Empty;
+    [Required]
+    [StringLength(1000)]
+    public string KeteranganProblem { get; set; } = string.Empty;
 
-        [StringLength(100)]
-        public string Department { get; set; } = string.Empty;
+    [StringLength(100)]
+    public string Department { get; set; } = string.Empty;
 
-        // PermanentAction = RencanaPerbaikan (label baru)
-        [Required]
-        [StringLength(1000)]
-        public string RencanaPerbaikan { get; set; } = string.Empty;
+    // PermanentAction = RencanaPerbaikan (label baru)
+    [Required]
+    [StringLength(1000)]
+    public string RencanaPerbaikan { get; set; } = string.Empty;
 
-        [Required]
-        public DateTime TanggalRencanaPerbaikan { get; set; }
+    [Required]
+    public DateTime TanggalRencanaPerbaikan { get; set; }
 
-        [StringLength(500)]
-        public string? FotoTemuan { get; set; }
+    [StringLength(500)]
+    public string? FotoTemuan { get; set; }
 
-        [StringLength(1000)]
-        public string? AktualPerbaikan { get; set; }
+    [StringLength(1000)]
+    public string? AktualPerbaikan { get; set; }
 
-        public DateTime? TanggalAktualPerbaikan { get; set; }
+    public DateTime? TanggalAktualPerbaikan { get; set; }
 
-        [StringLength(500)]
-        public string? FotoAktual { get; set; }
+    [StringLength(500)]
+    public string? FotoAktual { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Status { get; set; } = "Pending";
+    [Required]
+    [StringLength(50)]
+    public string Status { get; set; } = "Pending";
 
-        [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    [Required]
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public DateTime? UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
-        [Required]
-        [ForeignKey("Plant")]
-        public int PlantId { get; set; }
+    [Required]
+    [ForeignKey("Plant")]
+    public int PlantId { get; set; }
 
-        // Navigation property
-        public virtual Plant Plant { get; set; } = null!;
-    }
+    // Navigation property
+    public virtual Plant Plant { get; set; } = null!;
 }

@@ -46,8 +46,8 @@ function initSignalR() {
         .withAutomaticReconnect()
         .build();
 
-    connection.on("HenkatenDataUpdated", function (plantName) {
-        console.log(`SignalR: Analytics update triggered by change in plant ${plantName}`);
+    connection.on("HenkatenDataUpdated", function (info) {
+        console.log(`SignalR: Analytics update triggered - ${info}`);
 
         // Refresh data while preserving current UI filters
         refreshAnalyticsSync();
@@ -71,6 +71,9 @@ async function refreshAnalyticsSync() {
         console.error('Error syncing analytics data:', error);
     }
 }
+
+// Expose to window for SignalR auto-update
+window.loadAnalyticsData = loadAnalyticsData;
 
 let charts = {};
 let allAnalyticsData = [];
@@ -179,6 +182,13 @@ function processAnalytics(data) {
     renderStatusChart(statusData);
     renderCategoryChart(categoryData);
     renderTrendChart(trendData);
+
+    // Make fixImagePath globally available or just inside this file
+    window.fixImagePath = function (path) {
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('/') || path.startsWith('data:')) return path;
+        return '/uploads/henkaten/' + path;
+    };
 
     // 4. Render Table
     renderTable(data);
@@ -786,3 +796,38 @@ function renderTrendChart(trendData) {
     });
 }
 
+function viewImage(imagePath) {
+    const modal = document.getElementById('detailModal');
+    const content = document.getElementById('detailContent');
+    const fullPath = window.fixImagePath ? window.fixImagePath(imagePath) : imagePath;
+
+    content.innerHTML = `
+        <div style="text-align: center; padding: 1rem;">
+            <div id="imageLoader" style="color: #64748b; padding: 2rem;">
+                <i class="ph-circle-notch ph-spin" style="font-size: 2rem;"></i>
+                <p>Loading Media...</p>
+            </div>
+            <img src="${fullPath}" alt="Foto" 
+                style="display: none; max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" 
+                onload="this.style.display='block'; document.getElementById('imageLoader').style.display='none';"
+                onerror="this.style.display='none'; document.getElementById('imageLoader').innerHTML='<i class=\'ph-image-break\' style=\'font-size: 3rem; opacity: 0.3;\'></i><p>Media tidak ditemukan</p>';">
+            <div style="margin-top: 15px; color: #64748b; font-size: 0.75rem; font-family: 'monospace'; opacity: 0.8; letter-spacing: 0.5px;">
+                ${imagePath}
+            </div>
+        </div>
+    `;
+
+    modal.classList.add('active');
+}
+
+function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('active');
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function (e) {
+    const detailModal = document.getElementById('detailModal');
+    if (e.target === detailModal) {
+        closeDetailModal();
+    }
+});

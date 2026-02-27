@@ -54,18 +54,21 @@ function initSignalR() {
         .withAutomaticReconnect()
         .build();
 
-    connection.on("HenkatenDataUpdated", function (plantName) {
-        console.log(`SignalR: Data Henkaten updated for plant ${plantName}`);
+    connection.on("HenkatenDataUpdated", function (info) {
+        console.log(`SignalR: Update triggered - ${info}`);
 
-        // Refresh data (filter by current plant if applicable, usually handled in GetData backend)
+        // Refresh data
         loadData();
 
-        // Custom notification (optional but helpful)
-        showToast(`Data Henkaten ${plantName} baru saja diperbarui`, 'info');
+        // Show fancy notification
+        showToast(info, 'info');
     });
 
     connection.start().catch(err => console.error("SignalR Connection Error: ", err));
 }
+
+// Expose to window for SignalR auto-update
+window.loadData = loadData;
 
 async function loadDepartmentOptions() {
     try {
@@ -74,7 +77,7 @@ async function loadDepartmentOptions() {
 
         if (result.success) {
             const select = document.getElementById('department');
-            // Biarkan -- Pilih Departemen -- tetap ada
+            // Biarkan -- Pilih Departemen -- (option pertama) tetap ada
 
             result.data.forEach(dept => {
                 const option = document.createElement('option');
@@ -186,17 +189,27 @@ function renderTable(data) {
 
         return `
         <tr>
-            <td data-label="TANGGAL">${item.tanggalUpdate}</td>
-            <td data-label="SHIFT"><span class="badge-shift ${getShiftClass(item.shift)}">${item.shift}</span></td>
-            <td data-label="JENIS HENKATEN (4M)"><span class="badge-4m badge-${item.jenis4M.toLowerCase()}">${item.jenis4M}</span></td>
-            <td data-label="4M STANDARD">${item.standard4M || '-'}</td>
-            <td data-label="4M ACTUAL">${item.actual4M || '-'}</td>
-            <td data-label="ALASAN HENKATEN">${item.keteranganProblem}</td>
-            <td data-label="TEMPORARY ACTION">${item.temporaryAction || '-'}</td>
-            <td data-label="PERMANENT ACTION">${item.rencanaPerbaikan}</td>
-            <td data-label="PIC (LEADER)">${item.picLeader}</td>
-            <td data-label="DUE DATE">${item.tanggalRencanaPerbaikan}</td>
-            <td data-label="STATUS">
+            <td>${item.tanggalUpdate}</td>
+            <td><span class="badge-shift ${getShiftClass(item.shift)}">${item.shift}</span></td>
+            <td><span class="badge-dept ${getDeptClass(item.department)}">${item.department || '-'}</span></td>
+            <td>${item.picLeader}</td>
+            <td>${item.namaAreaLine}</td>
+            <td>${item.namaOperator}</td>
+            <td><span class="badge-4m badge-${item.jenis4M.toLowerCase()}">${item.jenis4M}</span></td>
+            <td title="${item.standard4M || '-'}">${item.standard4M || '-'}</td>
+            <td title="${item.actual4M || '-'}">${item.actual4M || '-'}</td>
+            <td title="${item.keteranganProblem}">${item.keteranganProblem}</td>
+            <td title="${item.temporaryAction || '-'}">${item.temporaryAction || '-'}</td>
+            <td title="${item.rencanaPerbaikan}">${item.rencanaPerbaikan}</td>
+            <td>${item.tanggalRencanaPerbaikan}</td>
+            <td>
+                ${item.fotoTemuan ? `
+                    <div class="media-icon" onclick="viewImage('${fixImagePath(item.fotoTemuan)}')">
+                        <i class="ph-image"></i>
+                    </div>
+                ` : '-'}
+            </td>
+            <td>
                 <span class="status-badge status-${statusClass}">
                     <span class="status-dot"></span>
                     ${currentStatus}
@@ -323,7 +336,19 @@ function getShiftClass(shiftText) {
     if (shiftText.includes('1')) return 'shift-1';
     if (shiftText.includes('2')) return 'shift-2';
     if (shiftText.includes('3')) return 'shift-3';
+    if (shiftText.includes('3')) return 'shift-3';
     return 'shift-1';
+}
+
+// Helper for Dept Class
+function getDeptClass(dept) {
+    if (!dept) return 'dept-general';
+    const d = dept.toLowerCase();
+    if (d.includes('produksi')) return 'dept-produksi';
+    if (d.includes('engineering')) return 'dept-eng';
+    if (d.includes('quality')) return 'dept-qc';
+    if (d.includes('logistik')) return 'dept-logistik';
+    return 'dept-general';
 }
 
 // Search filter
