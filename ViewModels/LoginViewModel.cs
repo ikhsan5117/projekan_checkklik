@@ -14,6 +14,9 @@ namespace AMRVI.ViewModels
         [Required(ErrorMessage = "Plant selection is required")]
         public required string Plant { get; set; } = "RVI";
 
+        [Required(ErrorMessage = "Department is required")]
+        public required string Department { get; set; }
+
         public bool RememberMe { get; set; }
     }
 }

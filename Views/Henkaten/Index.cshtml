@@ -47,7 +47,8 @@
                     <tr>
                         <th>TGL UPDATE</th>
                         <th>SHIFT</th>
-                        <th>PIC (LEADER)</th>
+                        <th>DEPARTEMEN</th>
+                        <th>PIC LEADER</th>
                         <th>AREA/LINE</th>
                         <th>OPERATOR</th>
                         <th>JENIS 4M</th>
@@ -87,6 +88,13 @@
                         <div class="form-group">
                             <label for="tanggalUpdate">TANGGAL UPDATE</label>
                             <input type="date" id="tanggalUpdate" name="TanggalUpdate" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="department">DEPARTEMEN</label>
+                            <select id="department" name="Department" required>
+                                <option value="">-- Pilih Departemen --</option>
+                                <!-- Will be loaded from Master Data -->
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="shift">SHIFT</label>
