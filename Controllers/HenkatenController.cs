@@ -65,7 +65,7 @@ namespace AMRVI.Controllers
                     .Select(h => new
                     {
                         h.Id,
-                        TanggalUpdate = h.TanggalUpdate != null ? h.TanggalUpdate.ToString("dd/MM/yyyy") : "",
+                        TanggalUpdate = h.TanggalUpdate.ToString("dd/MM/yyyy"),
                         h.Shift,
                         h.PicLeader,
                         h.Department,
@@ -77,9 +77,7 @@ namespace AMRVI.Controllers
                         h.KeteranganProblem,
                         h.TemporaryAction,
                         h.RencanaPerbaikan,
-                        TanggalRencanaPerbaikan = h.TanggalRencanaPerbaikan != null 
-                            ? h.TanggalRencanaPerbaikan.ToString("dd/MM/yyyy") 
-                            : "",
+                        TanggalRencanaPerbaikan = h.TanggalRencanaPerbaikan.ToString("dd/MM/yyyy"),
                         h.FotoTemuan,
                         h.AktualPerbaikan,
                         TanggalAktualPerbaikan = h.TanggalAktualPerbaikan.HasValue 
@@ -137,7 +135,7 @@ namespace AMRVI.Controllers
                     Console.WriteLine("ModelState Keys:");
                     foreach (var key in ModelState.Keys)
                     {
-                        Console.WriteLine($"  {key}: {string.Join(", ", ModelState[key].Errors.Select(e => e.ErrorMessage))}");
+                        Console.WriteLine($"  {key}: {string.Join(", ", ModelState[key]?.Errors.Select(e => e.ErrorMessage) ?? Array.Empty<string>())}");
                     }
                 }
 
@@ -145,8 +143,8 @@ namespace AMRVI.Controllers
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
-                        .Where(x => x.Value.Errors.Count > 0)
-                        .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) })
+                        .Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                        .Select(x => new { Field = x.Key, Errors = x.Value!.Errors.Select(e => e.ErrorMessage) })
                         .ToList();
                     
                     Console.WriteLine("ModelState errors:");

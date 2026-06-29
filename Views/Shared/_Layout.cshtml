@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -387,7 +387,7 @@
     </style>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://unpkg.com/phosphor-icons"></script>
+    <script src="~/lib/offline/js/phosphor-icons.js"></script>
     <script>
         function toggleDropdown(element) {
             // Simple toggle logic regardless of sidebar state
@@ -494,7 +494,7 @@
     </script>
     @await RenderSectionAsync("Scripts", required: false)
     <!-- SignalR Client -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/lib/offline/js/signalr.min.js"></script>
     <script>
         // SignalR Connection Setup
         const connection = new signalR.HubConnectionBuilder()

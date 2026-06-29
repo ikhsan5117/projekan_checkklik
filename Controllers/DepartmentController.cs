@@ -18,7 +18,7 @@ namespace AMRVI.Controllers
 
         // GET: All Departments
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             return View();
         }

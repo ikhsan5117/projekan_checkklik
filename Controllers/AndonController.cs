@@ -59,7 +59,7 @@ namespace AMRVI.Controllers
                 var sql = $"SELECT * FROM [produksi].[tb_elwp_produksi_scw_logs] WHERE CAST([CreatedAt] AS DATE) = '{formattedDate}'";
                 var allLogs = await _prodContext.ScwLogs.FromSqlRaw(sql).ToListAsync();
 
-                if ((allLogs == null || !allLogs.Any()) && !isCustomDate)
+                if (!allLogs.Any() && !isCustomDate)
                 {
                     // If no data today (and no custom date selected), try fetching the last 50 records as fallback to verify connectivity
                     allLogs = await _prodContext.ScwLogs
@@ -68,7 +68,7 @@ namespace AMRVI.Controllers
                 }
 
                 // Get machine names based on MesinId found in the logs
-                var mesinIds = allLogs.Where(l => l.MesinId.HasValue).Select(l => l.MesinId.Value).Distinct().ToList();
+                var mesinIds = allLogs.Where(l => l.MesinId.HasValue).Select(l => l.MesinId!.Value).Distinct().ToList();
                 var mesinDict = new Dictionary<int, string>();
 
                 if (mesinIds.Any())
@@ -104,8 +104,8 @@ namespace AMRVI.Controllers
                             StatusName = a.Status?.ToUpper() ?? "UNKNOWN",
                             FourMCode = a.Jenis4M?.ToUpper() ?? "NONE",
                             FourMName = a.Jenis4M?.ToUpper() ?? "NONE",
-                            AreaName = a.AreaId.ToString(),
-                            DetailProblem = a.DetailProblem,
+                            AreaName = a.AreaId?.ToString() ?? "-",
+                            DetailProblem = a.DetailProblem ?? "-",
                             Remark = a.Keterangan ?? "-",
                             RecordedAt = a.CreatedAt,
                             IsResolved = a.ResolvedAt != null

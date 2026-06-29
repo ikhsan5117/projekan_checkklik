@@ -44,23 +44,23 @@ namespace AMRVI.Controllers
                 {
                     case "BTR":
                         var btrUser = await _context.Users_BTR.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
-                        if (btrUser != null) { targetId = btrUser.Id.ToString(); targetFullName = btrUser.FullName; targetDept = dept ?? btrUser.Department; }
+                        if (btrUser != null) { targetId = btrUser.Id.ToString(); targetFullName = btrUser.FullName ?? ""; targetDept = dept ?? btrUser.Department ?? ""; }
                         break;
                     case "HOSE":
                         var hoseUser = await _context.Users_HOSE.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
-                        if (hoseUser != null) { targetId = hoseUser.Id.ToString(); targetFullName = hoseUser.FullName; targetDept = dept ?? hoseUser.Department; }
+                        if (hoseUser != null) { targetId = hoseUser.Id.ToString(); targetFullName = hoseUser.FullName ?? ""; targetDept = dept ?? hoseUser.Department ?? ""; }
                         break;
                     case "MOLDED":
                         var moldedUser = await _context.Users_MOLDED.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
-                        if (moldedUser != null) { targetId = moldedUser.Id.ToString(); targetFullName = moldedUser.FullName; targetDept = dept ?? moldedUser.Department; }
+                        if (moldedUser != null) { targetId = moldedUser.Id.ToString(); targetFullName = moldedUser.FullName ?? ""; targetDept = dept ?? moldedUser.Department ?? ""; }
                         break;
                     case "MIXING":
                         var mixingUser = await _context.Users_MIXING.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
-                        if (mixingUser != null) { targetId = mixingUser.Id.ToString(); targetFullName = mixingUser.FullName; targetDept = dept ?? mixingUser.Department; }
+                        if (mixingUser != null) { targetId = mixingUser.Id.ToString(); targetFullName = mixingUser.FullName ?? ""; targetDept = dept ?? mixingUser.Department ?? ""; }
                         break;
                     default: // RVI
                         var rviUser = await _context.Users.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
-                        if (rviUser != null) { targetId = rviUser.Id.ToString(); targetFullName = rviUser.FullName; targetDept = dept ?? rviUser.Department; }
+                        if (rviUser != null) { targetId = rviUser.Id.ToString(); targetFullName = rviUser.FullName ?? ""; targetDept = dept ?? rviUser.Department ?? ""; }
                         break;
                 }
 
