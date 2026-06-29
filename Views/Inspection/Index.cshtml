@@ -354,7 +354,7 @@
 
 <!-- Floating Action Buttons -->
 <div class="fab-container">
-    <button class="fab" onclick="window.location.href='@Url.Action("Index", "History")'" title="History" style="background: rgba(129, 140, 248, 0.8); backdrop-filter: blur(20px);">
+    <button class="fab" onclick="openHistory()" title="History" style="background: rgba(129, 140, 248, 0.8); backdrop-filter: blur(20px);">
         <i class="ph-clock-counter-clockwise"></i>
     </button>
     
@@ -407,7 +407,7 @@
              $('#inspectionSection').show();
         }
         setInitialState();
-
+        
         // --- SESSION PERSISTENCE (AUTO-RESUME) ---
         const activeSessionId = @Model.InspectionSessionId;
         if (activeSessionId > 0) {
@@ -470,7 +470,7 @@
         }
 
         // Machine Selection Logic
-        $('#machineSelect').change(function() {
+        $('#machineSelect').change(function(e, selectedNumberId) {
             const machineId = $(this).val();
             $('#machineNumberSelect').prop('disabled', true).html('<option value="">- Pilih No Mesin -</option>');
             setInitialState();
@@ -482,7 +482,33 @@
                         data.forEach(item => options += `<option value="${item.id}">${item.number}</option>`);
                     }
                     $('#machineNumberSelect').html(options).prop('disabled', false);
+                    
+                    // IF we have a pre-selected Number ID from the model or trigger
+                    if (selectedNumberId) {
+                        $('#machineNumberSelect').val(selectedNumberId).change();
+                    } else if ("@Model.SelectedMachineNumberId" != "" && "@Model.SelectedMachineNumberId" != "0") {
+                         $('#machineNumberSelect').val("@Model.SelectedMachineNumberId").change();
+                    }
                 });
+            }
+        });
+
+        // Trigger Auto-Selection on Page Load
+        $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Priority 1: From Model (Server-side detected)
+            let selMachineId = "@Model.SelectedMachineId";
+            let selNumberId = "@Model.SelectedMachineNumberId";
+
+            // Priority 2: From URL (Client-side fallback)
+            if (!selMachineId || selMachineId === "0") {
+                selMachineId = urlParams.get('machine') || urlParams.get('machineId');
+            }
+            
+            if (selMachineId && selMachineId !== "0") {
+                console.log("Auto-selecting Machine:", selMachineId);
+                $('#machineSelect').val(selMachineId).trigger('change', [selNumberId]);
             }
         });
 
@@ -636,6 +662,25 @@
         function showCompletion() {
             $('#selectionSection, #inspectionSection').hide();
             $('#completionSection').fadeIn();
+        }
+
+        // --- DYNAMIC HISTORY FILTERING ---
+        function openHistory() {
+            const machineId = $('#machineSelect').val();
+            const machineNumberId = $('#machineNumberSelect').val();
+            let url = '@Url.Action("Index", "History")';
+            let params = [];
+            
+            if (machineNumberId && machineNumberId !== "") {
+                params.push('machineNumberId=' + machineNumberId);
+            } else if (machineId && machineId !== "") {
+                params.push('machineId=' + machineId);
+            }
+            
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+            window.location.href = url;
         }
     </script>
 }

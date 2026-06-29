@@ -20,7 +20,7 @@ namespace AMRVI.Controllers
             _plantService = plantService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? machineId = null, int? machineNumberId = null)
         {
             var plant = _plantService.GetPlantName();
             var username = User.Identity?.Name;
@@ -40,6 +40,9 @@ namespace AMRVI.Controllers
                         .AsQueryable();
                     if(restrict) qBTR = qBTR.Where(s => s.InspectorName == username || (fullName != null && s.InspectorName == fullName));
                     
+                    if (machineNumberId.HasValue) qBTR = qBTR.Where(s => s.MachineNumberId == machineNumberId.Value);
+                    else if (machineId.HasValue) qBTR = qBTR.Where(s => s.MachineNumber.MachineId == machineId.Value);
+                    
                     var listBTR = await qBTR.OrderByDescending(s => s.InspectionDate).Take(100).ToListAsync();
                     sessions = listBTR.Select(s => new InspectionSession {
                         Id = s.Id,
@@ -56,6 +59,9 @@ namespace AMRVI.Controllers
                 case "HOSE":
                     var qHOSE = _context.InspectionSessions_HOSE.Include(s => s.MachineNumber).ThenInclude(m => m.Machine).Include(s => s.InspectionResults).AsQueryable();
                     if(restrict) qHOSE = qHOSE.Where(s => s.InspectorName == username || (fullName != null && s.InspectorName == fullName));
+                    
+                    if (machineNumberId.HasValue) qHOSE = qHOSE.Where(s => s.MachineNumberId == machineNumberId.Value);
+                    else if (machineId.HasValue) qHOSE = qHOSE.Where(s => s.MachineNumber.MachineId == machineId.Value);
                     var listHOSE = await qHOSE.OrderByDescending(s => s.InspectionDate).Take(100).ToListAsync();
                     sessions = listHOSE.Select(s => new InspectionSession {
                         Id = s.Id, InspectorName = s.InspectorName, InspectionDate = s.InspectionDate, IsCompleted = s.IsCompleted, CompletedAt = s.CompletedAt, MachineNumberId = s.MachineNumberId,
@@ -67,6 +73,9 @@ namespace AMRVI.Controllers
                 case "MOLDED":
                     var qMOLDED = _context.InspectionSessions_MOLDED.Include(s => s.MachineNumber).ThenInclude(m => m.Machine).Include(s => s.InspectionResults).AsQueryable();
                     if(restrict) qMOLDED = qMOLDED.Where(s => s.InspectorName == username || (fullName != null && s.InspectorName == fullName));
+                    
+                    if (machineNumberId.HasValue) qMOLDED = qMOLDED.Where(s => s.MachineNumberId == machineNumberId.Value);
+                    else if (machineId.HasValue) qMOLDED = qMOLDED.Where(s => s.MachineNumber.MachineId == machineId.Value);
                     var listMOLDED = await qMOLDED.OrderByDescending(s => s.InspectionDate).Take(100).ToListAsync();
                     sessions = listMOLDED.Select(s => new InspectionSession {
                         Id = s.Id, InspectorName = s.InspectorName, InspectionDate = s.InspectionDate, IsCompleted = s.IsCompleted, CompletedAt = s.CompletedAt, MachineNumberId = s.MachineNumberId,
@@ -78,6 +87,9 @@ namespace AMRVI.Controllers
                 case "MIXING":
                     var qMIXING = _context.InspectionSessions_MIXING.Include(s => s.MachineNumber).ThenInclude(m => m.Machine).Include(s => s.InspectionResults).AsQueryable();
                     if(restrict) qMIXING = qMIXING.Where(s => s.InspectorName == username || (fullName != null && s.InspectorName == fullName));
+                    
+                    if (machineNumberId.HasValue) qMIXING = qMIXING.Where(s => s.MachineNumberId == machineNumberId.Value);
+                    else if (machineId.HasValue) qMIXING = qMIXING.Where(s => s.MachineNumber.MachineId == machineId.Value);
                     var listMIXING = await qMIXING.OrderByDescending(s => s.InspectionDate).Take(100).ToListAsync();
                     sessions = listMIXING.Select(s => new InspectionSession {
                         Id = s.Id, InspectorName = s.InspectorName, InspectionDate = s.InspectionDate, IsCompleted = s.IsCompleted, CompletedAt = s.CompletedAt, MachineNumberId = s.MachineNumberId,
@@ -89,6 +101,9 @@ namespace AMRVI.Controllers
                 default: // RVI
                     var qRVI = _context.InspectionSessions.Include(s => s.MachineNumber).ThenInclude(m => m.Machine).Include(s => s.InspectionResults).AsQueryable();
                     if(restrict) qRVI = qRVI.Where(s => s.InspectorName == username || (fullName != null && s.InspectorName == fullName));
+                    
+                    if (machineNumberId.HasValue) qRVI = qRVI.Where(s => s.MachineNumberId == machineNumberId.Value);
+                    else if (machineId.HasValue) qRVI = qRVI.Where(s => s.MachineNumber.MachineId == machineId.Value);
                     sessions = await qRVI.OrderByDescending(s => s.InspectionDate).Take(100).ToListAsync();
                     // No mapping needed for RVI as it IS the base class
                     break;

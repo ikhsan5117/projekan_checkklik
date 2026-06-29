@@ -4,6 +4,9 @@ using AMRVI.Models;
 using Microsoft.EntityFrameworkCore;
 
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace AMRVI.Controllers;
 
@@ -33,8 +36,55 @@ public class HomeController : Controller
         return View(viewModel);
     }
 
-    public IActionResult Selection()
+    [AllowAnonymous]
+    public async Task<IActionResult> Selection(string? plant = null, string? dept = null, int? machine = null, string? target = null)
     {
+        // 1. Logic for Automatic Login via URL Parameters
+        // Example: /Home/Selection?plant=MOLDED&dept=Production&machine=5
+        if (!string.IsNullOrEmpty(plant) && !string.IsNullOrEmpty(dept))
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, $"Auto_{plant}"),
+                new Claim(ClaimTypes.Role, "Admin"),
+                new Claim("FullName", $"Auto User ({plant})"),
+                new Claim("Department", dept),
+                new Claim("NIK", "0"),
+                new Claim("Plant", plant.ToUpper())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            
+            // Clear old session first to ensure new role is applied
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                new AuthenticationProperties { IsPersistent = true });
+
+            // If a target is specified as dashboard, go to Index (the management dashboard)
+            if (target?.ToLower() == "dashboard")
+            {
+                return RedirectToAction("Index");
+            }
+
+            // If a machine ID is provided, redirect directly to the Inspection page with that machine pre-selected
+            if (machine.HasValue)
+            {
+                return RedirectToAction("Index", "Inspection", new { machineId = machine.Value });
+            }
+
+            // Otherwise, redirect back to Selection without parameters to clear the URL
+            return RedirectToAction("Selection");
+        }
+
+        // 2. Normal Behavior: If not authenticated and no params, redirect to Login
+        if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         return View();
     }
 

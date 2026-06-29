@@ -28,9 +28,10 @@
             <h1 id="headerTitle">ANDON CONTROL SYSTEM @ViewBag.CurrentPlant</h1>
         </div>
         <div class="header-right">
-            <div class="sync-status">
+            <div class="sync-status" style="cursor: pointer; position: relative;" title="Klik untuk mengubah tanggal filter" onclick="document.getElementById('dateFilter').showPicker()">
                 <i class="ph-calendar" style="color: #00d9ff;"></i>
                 <span id="todayDate">TODAY: Loading...</span>
+                <input type="date" id="dateFilter" style="position: absolute; opacity: 0; width: 1px; height: 1px; z-index: -1;" onchange="changeFilterDate(this.value)">
             </div>
             
             <!-- Auto Scroll Toggle -->
@@ -610,9 +611,15 @@
     <script>
         let allData = []; // Store all data globally
         let selectedPlant = '@ViewBag.CurrentPlant'; // Get plant from server session
+        let selectedDate = ''; // Store selected date
         let isSortedByPriority = false; // Track sorting state for STATUS
         let isSortedBy4M = false; // Track sorting state for 4M
         let isSortedByMachine = true; // Set Machine as default sort
+
+        function changeFilterDate(dateVal) {
+            selectedDate = dateVal;
+            fetchAndonData();
+        }
 
         // ===== PLANT SWITCHER =====
         function switchPlant(plant) {
@@ -630,7 +637,11 @@
 
         async function fetchAndonData() {
             try {
-                const response = await fetch('@Url.Action("GetData", "Andon")?plant=' + selectedPlant);
+                let requestUrl = '@Url.Action("GetData", "Andon")?plant=' + selectedPlant;
+                if (selectedDate) {
+                    requestUrl += '&dateStr=' + selectedDate;
+                }
+                const response = await fetch(requestUrl);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const jsonData = await response.json();
                 console.log("Real Data fetched:", jsonData);
@@ -672,10 +683,16 @@
         }
 
         function updateTodayDate() {
-            const now = new Date();
+            const dateObj = selectedDate ? new Date(selectedDate) : new Date();
             const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-            const dateStr = now.toLocaleDateString('id-ID', options).toUpperCase();
-            document.getElementById('todayDate').textContent = `TODAY: ${dateStr}`;
+            const dateStr = dateObj.toLocaleDateString('id-ID', options).toUpperCase();
+            
+            const todayStr = new Date().toLocaleDateString('id-ID', options).toUpperCase();
+            if (dateStr === todayStr) {
+                document.getElementById('todayDate').textContent = `TODAY: ${dateStr}`;
+            } else {
+                document.getElementById('todayDate').textContent = `DATE: ${dateStr}`;
+            }
         }
 
         function getStatusPriority(status) {
@@ -718,27 +735,30 @@
         }
 
         function applyPlantFilter() {
-            // Dapatkan tanggal hari ini dalam format lokal (YYYY-MM-DD)
-            const now = new Date();
-            const todayStr = now.getFullYear() + '-' + 
-                           String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                           String(now.getDate()).padStart(2, '0');
+            // Dapatkan tanggal target dalam format lokal (YYYY-MM-DD)
+            let targetDateStr = selectedDate;
+            if (!targetDateStr) {
+                const now = new Date();
+                targetDateStr = now.getFullYear() + '-' + 
+                               String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                               String(now.getDate()).padStart(2, '0');
+            }
 
-            // Filter data by current selected plant AND Today's local date
+            // Filter data by current selected plant AND Target local date
             let filteredData = allData.filter(d => {
                 const isSamePlant = d.plant === selectedPlant;
                 
                 // Cek apakah recordedAt ada pada hari yang sama secara lokal
-                let isToday = false;
+                let isTargetDay = false;
                 if (d.recordedAt) {
                     const recordDate = new Date(d.recordedAt);
                     const recordDateStr = recordDate.getFullYear() + '-' + 
                                        String(recordDate.getMonth() + 1).padStart(2, '0') + '-' + 
                                        String(recordDate.getDate()).padStart(2, '0');
-                    isToday = recordDateStr === todayStr;
+                    isTargetDay = recordDateStr === targetDateStr;
                 }
                 
-                return isSamePlant && isToday;
+                return isSamePlant && isTargetDay;
             });
 
             // Apply sorting if enabled

@@ -41,21 +41,41 @@ namespace AMRVI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetData(string? plant = null)
+        public async Task<IActionResult> GetData(string? plant = null, string? dateStr = null)
         {
             try
             {
-                // Filter by date (today) in SQL to improve performance
-                var allLogs = await _prodContext.ScwLogs
-                    .FromSqlRaw("SELECT * FROM [produksi].[tb_elwp_produksi_scw_logs] WHERE CAST([CreatedAt] AS DATE) = CAST(GETDATE() AS DATE)")
-                    .ToListAsync();
-
-                if (allLogs == null || !allLogs.Any())
+                DateTime filterDate = DateTime.Now;
+                bool isCustomDate = false;
+                if (!string.IsNullOrEmpty(dateStr) && DateTime.TryParse(dateStr, out var parsedDate))
                 {
-                    // If no data today, try fetching the last 50 records as fallback to verify connectivity
+                    filterDate = parsedDate;
+                    isCustomDate = true;
+                }
+
+                string formattedDate = filterDate.ToString("yyyy-MM-dd");
+
+                // Filter by date in SQL to improve performance
+                var sql = $"SELECT * FROM [produksi].[tb_elwp_produksi_scw_logs] WHERE CAST([CreatedAt] AS DATE) = '{formattedDate}'";
+                var allLogs = await _prodContext.ScwLogs.FromSqlRaw(sql).ToListAsync();
+
+                if ((allLogs == null || !allLogs.Any()) && !isCustomDate)
+                {
+                    // If no data today (and no custom date selected), try fetching the last 50 records as fallback to verify connectivity
                     allLogs = await _prodContext.ScwLogs
                         .FromSqlRaw("SELECT TOP 50 * FROM [produksi].[tb_elwp_produksi_scw_logs] ORDER BY [CreatedAt] DESC")
                         .ToListAsync();
+                }
+
+                // Get machine names based on MesinId found in the logs
+                var mesinIds = allLogs.Where(l => l.MesinId.HasValue).Select(l => l.MesinId.Value).Distinct().ToList();
+                var mesinDict = new Dictionary<int, string>();
+
+                if (mesinIds.Any())
+                {
+                    mesinDict = await _prodContext.ProduksiMesins
+                        .Where(m => mesinIds.Contains(m.Id))
+                        .ToDictionaryAsync(m => m.Id, m => !string.IsNullOrEmpty(m.NamaMesin) ? m.NamaMesin : (m.KodeMesin ?? m.Id.ToString()));
                 }
 
                 var records = allLogs
@@ -69,11 +89,17 @@ namespace AMRVI.Controllers
                             _ => "UNK"
                         };
 
+                        string machineName = a.MesinId?.ToString() ?? "GENERAL";
+                        if (a.MesinId.HasValue && mesinDict.ContainsKey(a.MesinId.Value))
+                        {
+                            machineName = mesinDict[a.MesinId.Value];
+                        }
+
                         return new AndonRecordDto
                         {
                             Id = a.Id,
                             PlantCode = plantCode,
-                            MachineCode = a.MesinId?.ToString() ?? "GENERAL",
+                            MachineCode = machineName,
                             StatusCode = a.Status?.ToUpper() ?? "UNKNOWN",
                             StatusName = a.Status?.ToUpper() ?? "UNKNOWN",
                             FourMCode = a.Jenis4M?.ToUpper() ?? "NONE",

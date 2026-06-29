@@ -5,7 +5,11 @@ using AMRVI.Models;
 using AMRVI.ViewModels;
 using Microsoft.AspNetCore.SignalR;
 using AMRVI.Hubs;
-using AMRVI.Services; // Added
+using AMRVI.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace AMRVI.Controllers
 {
@@ -24,22 +28,96 @@ namespace AMRVI.Controllers
             _plantService = plantService;
         }
 
-        public async Task<IActionResult> Index()
+        [AllowAnonymous]
+        public async Task<IActionResult> Index(string? plant = null, string? dept = null, int? machine = null, string? no = null, string? id = null)
         {
+            // 1. Silent Login via URL Parameters
+            if (!string.IsNullOrEmpty(plant))
+            {
+                string targetId = id ?? "0";
+                string targetFullName = $"Operator {plant}";
+                string targetDept = dept ?? "Production";
+                string targetUserRole = "User";
+
+                // Look for a real User in the database for this plant
+                switch (plant.ToUpper())
+                {
+                    case "BTR":
+                        var btrUser = await _context.Users_BTR.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
+                        if (btrUser != null) { targetId = btrUser.Id.ToString(); targetFullName = btrUser.FullName; targetDept = dept ?? btrUser.Department; }
+                        break;
+                    case "HOSE":
+                        var hoseUser = await _context.Users_HOSE.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
+                        if (hoseUser != null) { targetId = hoseUser.Id.ToString(); targetFullName = hoseUser.FullName; targetDept = dept ?? hoseUser.Department; }
+                        break;
+                    case "MOLDED":
+                        var moldedUser = await _context.Users_MOLDED.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
+                        if (moldedUser != null) { targetId = moldedUser.Id.ToString(); targetFullName = moldedUser.FullName; targetDept = dept ?? moldedUser.Department; }
+                        break;
+                    case "MIXING":
+                        var mixingUser = await _context.Users_MIXING.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
+                        if (mixingUser != null) { targetId = mixingUser.Id.ToString(); targetFullName = mixingUser.FullName; targetDept = dept ?? mixingUser.Department; }
+                        break;
+                    default: // RVI
+                        var rviUser = await _context.Users.FirstOrDefaultAsync(u => u.Role == "User" || u.Role == "Operator");
+                        if (rviUser != null) { targetId = rviUser.Id.ToString(); targetFullName = rviUser.FullName; targetDept = dept ?? rviUser.Department; }
+                        break;
+                }
+
+                // Normalize Department Name from Database
+                if (!string.IsNullOrEmpty(dept))
+                {
+                    var dbDept = await _context.Departments
+                        .FirstOrDefaultAsync(d => d.Name.ToLower() == dept.ToLower());
+                    if (dbDept != null)
+                    {
+                        targetDept = dbDept.Name; // Use official name from DB
+                    }
+                }
+
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, $"Auto_{plant}_{targetId}"),
+                    new Claim(ClaimTypes.Role, targetUserRole),
+                    new Claim("FullName", targetFullName),
+                    new Claim("Department", targetDept),
+                    new Claim("NIK", targetId),
+                    new Claim("Plant", plant.ToUpper())
+                };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(claimsIdentity);
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    principal,
+                    new AuthenticationProperties { IsPersistent = true });
+
+                HttpContext.User = principal;
+            }
+
+            // Normal authentication check
+            if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                return RedirectToAction("Login", "Account", new { returnUrl = Request.Path + Request.QueryString });
+            }
+
             var inspectorName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Guest";
-            var plant = _plantService.GetPlantName();
+            
+            // Priority: Use URL parameter 'plant', then fallback to User Claim
+            var currentPlant = plant?.ToUpper() ?? _plantService.GetPlantName();
 
             var oneDayAgo = DateTime.Now.AddDays(-1);
             
-            // Helper DTO for active session info
+            // ... (Rest of the previous logic to find active session)
             int activeSessionId = 0;
-            int? selectedMachineId = null;
+            int? selectedMachineId = machine; // Use from parameter if provided
             int? selectedMachineNumberId = null;
             string machineName = "";
-            string machineNumber = "";
+            string machineNumber = no ?? ""; // Use from parameter if provided
 
             // 1. Get Active Session based on Plant
-            switch (plant)
+            switch (currentPlant)
             {
                 case "BTR":
                     var sBTR = await _context.InspectionSessions_BTR
@@ -78,9 +156,22 @@ namespace AMRVI.Controllers
                     break;
             }
 
+            // If no active session but we have 'no', try to find selectedMachineNumberId
+            if (activeSessionId == 0 && !string.IsNullOrEmpty(no) && selectedMachineId.HasValue)
+            {
+                switch (currentPlant)
+                {
+                    case "BTR": selectedMachineNumberId = (await _context.MachineNumbers_BTR.FirstOrDefaultAsync(mn => mn.MachineId == selectedMachineId && mn.Number == no))?.Id; break;
+                    case "HOSE": selectedMachineNumberId = (await _context.MachineNumbers_HOSE.FirstOrDefaultAsync(mn => mn.MachineId == selectedMachineId && mn.Number == no))?.Id; break;
+                    case "MOLDED": selectedMachineNumberId = (await _context.MachineNumbers_MOLDED.FirstOrDefaultAsync(mn => mn.MachineId == selectedMachineId && mn.Number == no))?.Id; break;
+                    case "MIXING": selectedMachineNumberId = (await _context.MachineNumbers_MIXING.FirstOrDefaultAsync(mn => mn.MachineId == selectedMachineId && mn.Number == no))?.Id; break;
+                    default: selectedMachineNumberId = (await _context.MachineNumbers.FirstOrDefaultAsync(mn => mn.MachineId == selectedMachineId && mn.Number == no))?.Id; break;
+                }
+            }
+
             // 2. Get Machines List based on Plant
             List<MachineViewModel> machines = new List<MachineViewModel>();
-            switch (plant)
+            switch (currentPlant)
             {
                 case "BTR": machines = await _context.Machines_BTR.Where(m => m.IsActive).Select(m => new MachineViewModel { Id = m.Id, Name = m.Name }).ToListAsync(); break;
                 case "HOSE": machines = await _context.Machines_HOSE.Where(m => m.IsActive).Select(m => new MachineViewModel { Id = m.Id, Name = m.Name }).ToListAsync(); break;
@@ -102,13 +193,12 @@ namespace AMRVI.Controllers
             return View(viewModel);
         }
 
-        [HttpGet]
         public async Task<IActionResult> GetMachineNumbers(int machineId)
         {
-            var plant = _plantService.GetPlantName();
+            var currentPlant = _plantService.GetPlantName();
             List<MachineNumberViewModel> machineNumbers = new List<MachineNumberViewModel>();
 
-            switch (plant)
+            switch (currentPlant)
             {
                 case "BTR":
                     machineNumbers = await _context.MachineNumbers_BTR

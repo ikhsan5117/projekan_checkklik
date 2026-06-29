@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupSearchFilter();
     setupStatusFilters();
     setupFormSubmit();
-    loadDepartmentOptions();
+    // loadDepartmentOptions(); // Dihapus karena dropdown sudah diload dari ViewBag (Server-side)
     initSignalR();
 });
 

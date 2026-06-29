@@ -38,6 +38,10 @@ namespace AMRVI.Controllers
         {
             ViewData["Title"] = "Henkaten Problem Management";
             ViewBag.CurrentPlant = _plantService.GetPlantName();
+            ViewBag.Departments = _context.Departments
+                .Where(d => d.IsActive)
+                .OrderBy(d => d.Name)
+                .ToList();
             return View();
         }
 
@@ -195,7 +199,12 @@ namespace AMRVI.Controllers
                 var plantId = _plantService.GetPlantId();
                 model.PlantId = plantId;
                 model.CreatedAt = DateTime.Now;
-                model.Department = User.FindFirst("Department")?.Value ?? "Produksi"; // Default ke Produksi jika null
+                
+                // Jika dari form kosong, ambil fallback
+                if (string.IsNullOrEmpty(model.Department))
+                {
+                    model.Department = User.FindFirst("Department")?.Value ?? "Produksi";
+                }
 
                 // Handle Foto Temuan upload
                 if (fotoTemuan != null && fotoTemuan.Length > 0)
@@ -300,6 +309,7 @@ namespace AMRVI.Controllers
 
                 // Update fields
                 existing.TanggalUpdate = model.TanggalUpdate;
+                existing.Department = string.IsNullOrEmpty(model.Department) ? existing.Department : model.Department;
                 existing.Shift = model.Shift;
                 existing.PicLeader = model.PicLeader;
                 existing.NamaAreaLine = model.NamaAreaLine;

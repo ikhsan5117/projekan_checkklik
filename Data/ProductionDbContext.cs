@@ -11,6 +11,7 @@ namespace AMRVI.Data
         }
 
         public DbSet<ScwLog> ScwLogs { get; set; }
+        public DbSet<ProduksiMesin> ProduksiMesins { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -19,6 +20,7 @@ namespace AMRVI.Data
             // Mapping for Production SCW Logs (Table in ELWP_PRD database)
             // Note: Schema 'produksi' is specified here
             modelBuilder.Entity<ScwLog>().ToTable("tb_elwp_produksi_scw_logs", "produksi", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<ProduksiMesin>().ToTable("tb_elwp_produksi_mesins", "produksi", t => t.ExcludeFromMigrations());
         }
     }
 }

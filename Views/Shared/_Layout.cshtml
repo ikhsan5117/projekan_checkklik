@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Daily Machine Checklist @(User.FindFirst("Plant")?.Value ?? "RVI")</title>
+    <link rel="icon" type="image/svg+xml" href="~/icon.svg?v=1" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/dashboard-analytics.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
@@ -185,13 +186,16 @@
                                     <i class="ph-identification-card"></i>
                                     <span>ID: @(User.FindFirst("NIK")?.Value ?? "N/A")</span>
                                 </div>
+                                @if (!string.IsNullOrEmpty(User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value))
+                                {
+                                    <div class="info-row">
+                                        <i class="ph-envelope-simple"></i>
+                                        <span>@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</span>
+                                    </div>
+                                }
                                 <div class="info-row">
-                                    <i class="ph-envelope-simple"></i>
-                                    <span>@(User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "No Email")</span>
-                                </div>
-                                <div class="info-row">
-                                    <i class="ph-buildings"></i>
-                                    <span>Dep: @(User.FindFirst("Department")?.Value ?? "General")</span>
+                                    <i class="ph-factory"></i>
+                                    <span>Plant: @(User.FindFirst("Plant")?.Value ?? "RVI")</span>
                                 </div>
                             </div>
                             

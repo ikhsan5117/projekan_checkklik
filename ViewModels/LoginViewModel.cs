@@ -4,19 +4,21 @@ namespace AMRVI.ViewModels
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "Username is required")]
-        public required string Username { get; set; }
+        // Username & Password hanya dibutuhkan untuk Admin
+        public string? Username { get; set; }
 
-        [Required(ErrorMessage = "Password is required")]
         [DataType(DataType.Password)]
-        public required string Password { get; set; }
+        public string? Password { get; set; }
 
         [Required(ErrorMessage = "Plant selection is required")]
-        public required string Plant { get; set; } = "RVI";
+        public string? Plant { get; set; }
 
-        [Required(ErrorMessage = "Department is required")]
-        public required string Department { get; set; }
+        // Departemen tidak lagi dipilih di login
+        public string? Department { get; set; }
 
         public bool RememberMe { get; set; }
+
+        // Flag apakah ini login sebagai Admin
+        public bool IsAdminLogin { get; set; }
     }
 }

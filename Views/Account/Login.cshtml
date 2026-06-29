@@ -11,6 +11,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Daily Machine Checklist RVI System</title>
+    <link rel="icon" type="image/svg+xml" href="~/icon.svg?v=1" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://unpkg.com/@@phosphor-icons/web@@2.0.3/src/regular/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@@phosphor-icons/web@@2.0.3/src/fill/style.css">
@@ -43,7 +44,7 @@
             border-radius: 50%;
             top: -200px;
             left: -200px;
-            filter: blur(80px);
+            will-change: transform;
             animation: float1 20s ease-in-out infinite;
             z-index: 0;
         }
@@ -57,7 +58,7 @@
             border-radius: 50%;
             bottom: -150px;
             right: -150px;
-            filter: blur(80px);
+            will-change: transform;
             animation: float2 18s ease-in-out infinite;
             z-index: 0;
         }
@@ -71,7 +72,7 @@
             border-radius: 50%;
             top: 50%;
             left: 10%;
-            filter: blur(70px);
+            will-change: transform;
             animation: float3 25s ease-in-out infinite;
             z-index: 0;
         }
@@ -84,7 +85,7 @@
             border-radius: 50%;
             top: 20%;
             right: 15%;
-            filter: blur(75px);
+            will-change: transform;
             animation: float4 22s ease-in-out infinite;
             z-index: 0;
         }
@@ -97,7 +98,7 @@
             border-radius: 50%;
             bottom: 30%;
             left: 50%;
-            filter: blur(65px);
+            will-change: transform;
             animation: float5 28s ease-in-out infinite;
             z-index: 0;
         }
@@ -154,17 +155,17 @@
         .login-card::before {
             content: '';
             position: absolute;
-            top: 0; left: -100%;
+            top: 0; left: 0;
             width: 100%; height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
-            transform: skewX(-25deg);
+            transform: skewX(-25deg) translateX(-150%);
             animation: shineCard 8s infinite ease-in-out;
             pointer-events: none;
         }
 
         @@keyframes shineCard {
-            0%, 80% { left: -100%; }
-            100% { left: 200%; }
+            0%, 80% { transform: skewX(-25deg) translateX(-150%); }
+            100% { transform: skewX(-25deg) translateX(200%); }
         }
 
         @@keyframes cardEntry {
@@ -330,9 +331,10 @@
         .btn-login::before {
             content: '';
             position: absolute;
-            top: 0; left: -100%;
+            top: 0; left: 0;
             width: 100%; height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-150%);
             transition: 0.5s;
         }
 
@@ -345,11 +347,99 @@
         }
 
         .btn-login:hover::before {
-            left: 100%;
+            transform: translateX(100%);
         }
 
         .btn-login:active {
             transform: translateY(1px) scale(0.98);
+        }
+
+        .btn-login.btn-admin {
+            background: linear-gradient(135deg, #dc2626, #9333ea);
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .btn-login.btn-admin:hover {
+            background: linear-gradient(135deg, #b91c1c, #7c3aed);
+            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.5), 0 0 50px rgba(147, 51, 234, 0.3);
+        }
+
+        /* Admin Toggle */
+        .admin-toggle-wrapper {
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .admin-toggle-label input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #64748b;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .admin-toggle-label input:checked ~ .toggle-switch {
+            background: rgba(220, 38, 38, 0.3);
+            border-color: rgba(220, 38, 38, 0.5);
+        }
+
+        .admin-toggle-label input:checked ~ .toggle-switch::after {
+            left: 22px;
+            background: #f87171;
+        }
+
+        .toggle-text {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 500;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .admin-toggle-label input:checked ~ ~ .toggle-text,
+        .admin-toggle-label:has(input:checked) .toggle-text {
+            color: #f87171;
+        }
+
+        /* Admin Credentials Section */
+        .admin-credentials {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+        }
+
+        .admin-credentials.visible {
+            max-height: 200px;
+            opacity: 1;
         }
 
         .login-footer {
@@ -391,10 +481,10 @@
             <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 1rem; text-align: center;"></div>
 
             <div class="form-group">
-                <select asp-for="Plant" class="form-control" style="padding-left: 3.2rem;">
+                <select asp-for="Plant" class="form-control" id="plantSelect" style="padding-left: 3.2rem;" required>
                     <option value="" disabled selected>-- Select Plant --</option>
-                    <option value="RVI">RVI (Rubber Vibration Isolator)</option>
-                    <option value="BTR">BTR (Bridgestone)</option>
+                    <option value="RVI">RVI</option>
+                    <option value="BTR">BTR</option>
                     <option value="HOSE">HOSE</option>
                     <option value="MOLDED">MOLDED</option>
                     <option value="MIXING">MIXING</option>
@@ -403,31 +493,32 @@
                 <span asp-validation-for="Plant" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <select asp-for="Department" class="form-control" style="padding-left: 3.2rem;">
-                    <option value="" disabled selected>-- Select Department --</option>
-                    @if (ViewBag.Departments != null)
-                    {
-                        foreach (var dept in (List<AMRVI.Models.Department>)ViewBag.Departments)
-                        {
-                            <option value="@dept.Name">@dept.Name</option>
-                        }
-                    }
-                </select>
-                <i class="ph ph-users-three input-icon"></i>
-                <span asp-validation-for="Department" class="text-danger"></span>
+            <!-- Controls Wrapper -->
+            <div class="controls-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <!-- Toggle Admin Login -->
+                <label class="admin-toggle-label" for="isAdminToggle" style="margin: 0;">
+                    <input type="checkbox" id="isAdminToggle" name="IsAdminLogin" value="true" />
+                    <span class="toggle-switch"></span>
+                    <span class="toggle-text"><i class="ph ph-shield-check"></i> Login sebagai Admin</span>
+                </label>
+
+                <!-- Button direct to Henkaten -->
+                <button type="submit" formaction="/Account/Login?returnUrl=/Henkaten" class="btn-direct-henkaten" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 20px; padding: 6px 14px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);">
+                    <i class="ph ph-warning-circle" style="font-size: 1.1rem;"></i>
+                    Form Henkaten
+                </button>
             </div>
 
-            <div class="form-group">
-                <input asp-for="Username" class="form-control" placeholder="Username" autocomplete="username" />
-                <i class="ph ph-user input-icon"></i>
-                <span asp-validation-for="Username" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <input asp-for="Password" type="password" class="form-control" placeholder="Password" autocomplete="current-password" />
-                <i class="ph ph-lock-key input-icon"></i>
-                <span asp-validation-for="Password" class="text-danger"></span>
+            <!-- Admin Credentials (hidden by default) -->
+            <div id="adminCredentials" class="admin-credentials">
+                <div class="form-group">
+                    <input asp-for="Username" class="form-control" placeholder="Username Admin" autocomplete="username" />
+                    <i class="ph ph-user input-icon"></i>
+                </div>
+                <div class="form-group">
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Password Admin" autocomplete="current-password" />
+                    <i class="ph ph-lock-key input-icon"></i>
+                </div>
             </div>
 
             <!-- Remember Me -->
@@ -437,8 +528,8 @@
                 <label for="rememberMe">Keep me signed in</label>
             </div>
 
-            <button type="submit" class="btn-login">
-                <span>Access Dashboard</span>
+            <button type="submit" class="btn-login" id="btnSubmit">
+                <span id="btnText">Access Dashboard</span>
                 <i class="ph ph-arrow-right"></i>
             </button>
         </form>
@@ -450,34 +541,38 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const plantSelect = document.getElementById('Plant');
-            const usernameInput = document.getElementById('Username');
-            const passwordInput = document.getElementById('Password');
+            const adminToggle    = document.getElementById('isAdminToggle');
+            const adminSection   = document.getElementById('adminCredentials');
+            const btnSubmit      = document.getElementById('btnSubmit');
+            const btnText        = document.getElementById('btnText');
+            const usernameInput  = document.getElementById('Username');
+            const passwordInput  = document.getElementById('Password');
 
-            const credentialHints = {
-                'RVI': { user: 'AdminRVI / UserRVI', pass: 'RVI123' },
-                'BTR': { user: 'AdminBTR / UserBTR', pass: 'BTR123' },
-                'HOSE': { user: 'AdminHOSE / UserHOSE', pass: 'HOSE123' },
-                'MOLDED': { user: 'AdminMolded / UserMolded', pass: 'Molded123' },
-                'MIXING': { user: 'AdminMixing / UserMixing', pass: 'Mixing123' }
-            };
-
-            function updatePlaceholders() {
-                const plant = plantSelect.value;
-                const hint = credentialHints[plant];
-                if (hint) {
-                    usernameInput.placeholder = `Username (${hint.user})`;
-                    passwordInput.placeholder = `Password (${hint.pass})`;
+            function applyAdminMode(isAdmin) {
+                if (isAdmin) {
+                    adminSection.classList.add('visible');
+                    btnSubmit.classList.add('btn-admin');
+                    btnText.textContent = 'Access Admin Dashboard';
+                    // Wajibkan username & password saat admin aktif
+                    usernameInput.setAttribute('required', 'required');
+                    passwordInput.setAttribute('required', 'required');
                 } else {
-                    usernameInput.placeholder = "Username";
-                    passwordInput.placeholder = "Password";
+                    adminSection.classList.remove('visible');
+                    btnSubmit.classList.remove('btn-admin');
+                    btnText.textContent = 'Access Dashboard';
+                    usernameInput.removeAttribute('required');
+                    passwordInput.removeAttribute('required');
+                    usernameInput.value = '';
+                    passwordInput.value = '';
                 }
             }
 
-            plantSelect.addEventListener('change', updatePlaceholders);
-            
-            // Initial call
-            updatePlaceholders();
+            adminToggle.addEventListener('change', function() {
+                applyAdminMode(this.checked);
+            });
+
+            // Initial state
+            applyAdminMode(adminToggle.checked);
         });
     </script>
 </body>
